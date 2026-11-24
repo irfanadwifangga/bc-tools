@@ -17,6 +17,7 @@ from .errors import (
     BCRequestError,
     BCServerError,
 )
+from .metadata import Metadata
 from .models import Customer, Item
 from .resources import Companies, CompanyResource
 from .settings import BCSettings
@@ -68,6 +69,7 @@ class BCClient:
         self._http = httpx.AsyncClient(
             timeout=10.0, follow_redirects=False, trust_env=False, transport=transport
         )
+        self.metadata = Metadata(self._read_metadata)
         self.companies = Companies(self._iter_records)
         self.customers = CompanyResource(
             self._iter_records, company, "customers", Customer
@@ -103,7 +105,7 @@ class BCClient:
         await self._http.aclose()
 
     def _path_allowed(self, path: str) -> bool:
-        if path == "companies":
+        if path in {"companies", "$metadata"}:
             return True
         if self._company_path is None or not path.startswith(self._company_path):
             return False
@@ -136,6 +138,9 @@ class BCClient:
                 "The API path is outside the configured Sandbox scope."
             )
 
+        if path == f"{self._base_path}$metadata" and url.query:
+            raise BCRequestError("The metadata endpoint does not accept query options.")
+
         for key in url.params:
             if key.casefold() == "company" or (
                 path == f"{self._base_path}companies" and key.casefold() == "$expand"
@@ -164,7 +169,7 @@ class BCClient:
             await asyncio.sleep(delay)
         return response
 
-    async def _read_json(self, url: httpx.URL) -> dict[str, object]:
+    async def _get(self, url: httpx.URL) -> httpx.Response:
         response = await self._request("GET", url)
         if not response.is_success:
             match response.status_code:
@@ -184,6 +189,14 @@ class BCClient:
                 f"Business Central returned an unexpected HTTP status ({response.status_code})."
             )
 
+        return response
+
+    async def _read_metadata(self) -> bytes:
+        response = await self._get(self._initial_url("$metadata", None))
+        return response.content
+
+    async def _read_json(self, url: httpx.URL) -> dict[str, object]:
+        response = await self._get(url)
         try:
             body = response.json()
         except ValueError:
