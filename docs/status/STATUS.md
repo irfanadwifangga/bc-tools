@@ -11,9 +11,10 @@ _Terakhir diperbarui: 2026-11-24_
 - Screenshot dari Irfan mengonfirmasi aplikasi berstatus `Enabled` dengan permission set `D365 READ` di sandbox.
 
 - Review kritis, tooling Python 3.12, dan pemeriksaan Fase 0 selesai. Lihat [review Fase 0](phase-0-review.md) dan [hasil CI](https://github.com/irfanadwifangga/bc-tools/actions/runs/45324683780).
+- `TokenProvider` async dan adapter MSAL tersedia. Delapan unit test autentikasi dengan mock lulus. Lihat [spesifikasi SDK](../modules/bc-sdk.md).
 
 ## Berikutnya
-- Implementasi `bc_sdk` read-only, lalu kerangka frontend minimal sebagai tugas terpisah.
+- Implementasi client GET-only dan resource `bc_sdk`, lalu kerangka frontend minimal sebagai tugas terpisah.
 
 ## Blocker dan pertanyaan terbuka
 | # | Pertanyaan | Pemilik | Dibutuhkan sebelum |

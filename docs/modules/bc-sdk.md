@@ -31,6 +31,16 @@ API publik dan transport menggunakan async sesuai ADR-002.
 ## Konfigurasi
 `BC_TENANT_ID`, `BC_CLIENT_ID`, `BC_CLIENT_SECRET`, `BC_ENVIRONMENT`, `BC_COMPANY_ID` (opsional).
 
+## Implementasi autentikasi
+
+`TokenProvider.get_token()` menyediakan antarmuka async untuk client SDK. `MsalTokenProvider`
+menerima tenant ID berbentuk UUID, client ID, dan client secret. Provider menggunakan cache
+in-memory MSAL dan menerjemahkan kegagalan menjadi `BCAuthError` tanpa detail respons Entra.
+
+Delapan unit test dengan MSAL mock lulus di Windows. Tes mencakup penggunaan ulang aplikasi
+MSAL, validasi tenant dan token, serta redaksi error. Integration test GET dijalankan setelah
+client read-only tersedia.
+
 ## Acceptance criteria
 - [ ] Token diperoleh otomatis dengan client credentials
 - [ ] `companies.list()`, `customers.list()`, `items.list()` berhasil terhadap sandbox (integration test manual)
