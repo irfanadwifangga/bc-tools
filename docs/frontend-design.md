@@ -15,7 +15,7 @@ Rancangan memakai tiga bagian dengan ritme berbeda. Judul **Business Central San
 | Area | Isi dan perilaku |
 |---|---|
 | Header | Nama **BC Tools**, breadcrumb ruang kerja, dan satu tombol ikon tema. Menu menawarkan **Sistem / Terang / Gelap** dengan tanda centang pada pilihan aktif. |
-| Sidebar | Rail 56 px pada desktop. **Ringkasan** adalah satu tujuan aktif. Ikon punya nama aksesibel, tooltip, dan penanda aktif berbentuk garis. |
+| Sidebar | Rail 56 px pada desktop. Tujuan **Ringkasan** dan **API Explorer** berbagi rail dengan penanda pada halaman aktif. Ikon punya nama aksesibel, tooltip, dan penanda aktif berbentuk garis. |
 | Konteks | **Sandbox**, **DEMO COMPANY**, dan **Read-only** bersumber dari cakupan MVP. Label dan nilai dibaca sebagai pasangan. |
 | Indeks SDK | **Companies**, **Customers**, dan **Items**, masing-masing dengan satu deskripsi fungsi. Baris bersifat informatif. |
 

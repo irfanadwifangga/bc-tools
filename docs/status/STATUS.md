@@ -22,8 +22,8 @@ _Terakhir diperbarui: 2026-11-24_
 - Backend menyediakan `GET /api/v1/api-explorer/entities` untuk katalog standar. Kontrak respons dan pemetaan error diuji dengan SDK mock.
 - Irfan menguji route katalog lokal melalui Postman. Respons `200 OK` memuat `entityDefinitions.entityName` bertipe `Edm.String`.
 
-## Berikutnya
-- Tampilkan katalog endpoint dan field dari backend di frontend API Explorer.
+- Frontend API Explorer menyediakan pencarian endpoint dan daftar nama serta tipe field.
+- Irfan menguji API Explorer melalui frontend lokal. Pencarian `customers` menampilkan endpoint `customers` dengan entity type `Microsoft.NAV.customer` dan field `id` bertipe `Edm.Guid`.
 
 ## Blocker dan pertanyaan terbuka
 | # | Pertanyaan | Pemilik | Dibutuhkan sebelum |

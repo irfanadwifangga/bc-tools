@@ -1,4 +1,5 @@
 import {
+  ApiOutlined,
   CheckOutlined,
   DesktopOutlined,
   MenuFoldOutlined,
@@ -10,6 +11,17 @@ import {
 import { Breadcrumb, Button, Dropdown, Layout, Tooltip, theme } from "antd";
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { recordFont } from "../theme/tokens";
+
+import { CatalogPage } from "../features/api-explorer/CatalogPage";
+
+const pages = [
+  { id: "ringkasan", title: "Ringkasan", icon: UnorderedListOutlined },
+  { id: "api-explorer", title: "API Explorer", icon: ApiOutlined },
+];
+
+function currentPage() {
+  return pages.find(page => `#${page.id}` === window.location.hash) ?? pages[0];
+}
 
 export type ThemeChoice = "system" | "light" | "dark";
 
@@ -31,6 +43,15 @@ interface WorkspaceLayoutProps {
 }
 
 export function WorkspaceLayout({ choice, onThemeChange }: WorkspaceLayoutProps) {
+  const [page, setPage] = useState(currentPage);
+  useEffect(() => {
+    const navigate = () => setPage(currentPage());
+    window.addEventListener("hashchange", navigate);
+    return () => window.removeEventListener("hashchange", navigate);
+  }, []);
+  useEffect(() => {
+    document.title = `${page.title} | BC Tools`;
+  }, [page]);
   const { token } = theme.useToken();
   const [narrow, setNarrow] = useState(
     () => window.matchMedia("(max-width: 991.98px)").matches,
@@ -40,7 +61,7 @@ export function WorkspaceLayout({ choice, onThemeChange }: WorkspaceLayoutProps)
   const menuToggle = useRef<HTMLButtonElement>(null);
   const themeToggle = useRef<HTMLButtonElement>(null);
   const ActiveThemeIcon = themeOptions[choice].icon;
-  const overviewLink = useRef<HTMLAnchorElement>(null);
+  const activePageLink = useRef<HTMLAnchorElement>(null);
   const mobileMenuOpen = narrow && !collapsed;
   const styles = {
     "--workspace-page": token.colorBgLayout,
@@ -54,7 +75,7 @@ export function WorkspaceLayout({ choice, onThemeChange }: WorkspaceLayoutProps)
   } as CSSProperties;
 
   useEffect(() => {
-    if (mobileMenuOpen) overviewLink.current?.focus();
+    if (mobileMenuOpen) activePageLink.current?.focus();
   }, [mobileMenuOpen]);
 
   function closeMenu() {
@@ -92,7 +113,7 @@ export function WorkspaceLayout({ choice, onThemeChange }: WorkspaceLayoutProps)
           <span className="workspace-brand">BC Tools</span>
           <Breadcrumb
             className="workspace-breadcrumb"
-            items={[{ title: "Ruang kerja" }, { title: "Ringkasan" }]}
+            items={[{ title: "Ruang kerja" }, { title: page.title }]}
           />
         </div>
         <Dropdown
@@ -148,48 +169,50 @@ export function WorkspaceLayout({ choice, onThemeChange }: WorkspaceLayoutProps)
           width={narrow ? 224 : 56}
         >
           <nav id="workspace-nav" aria-label="Navigasi utama" inert={collapsed}>
-            <Tooltip placement="right" title={narrow ? undefined : "Ringkasan"}>
-              <a
-                className="workspace-nav-link"
-                ref={overviewLink}
-                href="#ringkasan"
-                aria-current="page"
-                aria-label="Ringkasan"
-                onClick={() => {
-                  if (mobileMenuOpen) closeMenu();
-                }}
-              >
-                <UnorderedListOutlined aria-hidden="true" />
-                {narrow && <span>Ringkasan</span>}
-              </a>
-            </Tooltip>
+            {pages.map(({ id, title, icon: Icon }) => (
+              <Tooltip key={id} placement="right" title={narrow ? undefined : title}>
+                <a className="workspace-nav-link" href={`#${id}`}
+                  ref={page.id === id ? activePageLink : undefined}
+                  aria-current={page.id === id ? "page" : undefined} aria-label={title}
+                  onClick={() => { if (mobileMenuOpen) closeMenu(); }}>
+                  <Icon aria-hidden="true" />
+                  {narrow && <span>{title}</span>}
+                </a>
+              </Tooltip>
+            ))}
           </nav>
         </Layout.Sider>
         {mobileMenuOpen && (
           <div className="workspace-scrim" aria-hidden="true" onClick={closeMenu} />
         )}
-        <Layout.Content className="workspace-content" id="ringkasan" inert={mobileMenuOpen}>
-          <section className="workspace-sheet" aria-labelledby="workspace-title">
-            <h1 className="workspace-title" id="workspace-title">Business Central Sandbox</h1>
-            <dl className="workspace-scope">
-              <div><dt>Environment</dt><dd>Sandbox</dd></div>
-              <div><dt>Company</dt><dd>DEMO COMPANY</dd></div>
-              <div><dt>Akses</dt><dd>Read-only</dd></div>
-            </dl>
-            <section className="workspace-index" aria-labelledby="workspace-resources">
-              <h2 id="workspace-resources">Resource SDK</h2>
-              <ul>
-                {resources.map(({ name, description }) => (
-                  <li key={name}>
-                    <span>{name}</span>
-                    <span>{description}</span>
-                  </li>
-                ))}
-              </ul>
-            </section>
-          </section>
+        <Layout.Content className="workspace-content" id={page.id} inert={mobileMenuOpen}>
+          {page.id === "api-explorer" ? <CatalogPage /> : <Overview />}
         </Layout.Content>
       </Layout>
     </Layout>
+  );
+}
+
+function Overview() {
+  return (
+    <section className="workspace-sheet" aria-labelledby="workspace-title">
+      <h1 className="workspace-title" id="workspace-title">Business Central Sandbox</h1>
+      <dl className="workspace-scope">
+        <div><dt>Environment</dt><dd>Sandbox</dd></div>
+        <div><dt>Company</dt><dd>DEMO COMPANY</dd></div>
+        <div><dt>Akses</dt><dd>Read-only</dd></div>
+      </dl>
+      <section className="workspace-index" aria-labelledby="workspace-resources">
+        <h2 id="workspace-resources">Resource SDK</h2>
+        <ul>
+          {resources.map(({ name, description }) => (
+            <li key={name}>
+              <span>{name}</span>
+              <span>{description}</span>
+            </li>
+          ))}
+        </ul>
+      </section>
+    </section>
   );
 }
