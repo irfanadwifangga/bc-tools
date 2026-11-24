@@ -25,4 +25,5 @@ ADR-001 dan ADR-002 tetap **Proposed**. Irfan meninjau autentikasi app-only dan 
 
 - Windows, PowerShell, CPython 3.12.7: sinkronisasi dari lockfile, lint dan format Ruff, mypy, dua test pytest, dan empat hook pre-commit lulus. Smoke test mengirim GET ke aplikasi FastAPI dalam proses dan memeriksa status 200 serta body `{"status":"ok"}`.
 - Cache `uv` dialihkan ke workspace untuk sesi Codex. Akses PyPI dan test yang menggunakan event loop Windows dijalankan di luar pembatas sandbox Codex. Pytest melaporkan satu deprecation warning dari adapter TestClient HTTPX milik Starlette.
-- [PERLU VERIFIKASI: Irfan memeriksa run GitHub Actions pada branch Fase 0 sebelum merge.] Tidak ada integration test atau panggilan ke BC.
+- GitHub Actions untuk commit `cc1f53c` di `chore/phase-0` lulus di Windows dengan Python 3.12. Instalasi dari lockfile, Ruff lint dan format, mypy, serta pytest lulus. [Hasil CI](https://github.com/irfanadwifangga/bc-tools/actions/runs/45324683780).
+- Verifikasi hak efektif dan GET sandbox tetap menjadi pemeriksaan manual oleh Irfan di Fase 1. Tidak ada integration test atau panggilan ke BC selama Fase 0.

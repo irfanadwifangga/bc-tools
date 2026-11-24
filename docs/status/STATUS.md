@@ -2,16 +2,15 @@
 
 _Terakhir diperbarui: 2026-11-24_
 
-## Fase aktif
-**Fase 0 — Fondasi dan keputusan** (lihat `docs/tasks/phase-0.md`)
+## Status fase
+**Fase 0 — Fondasi dan keputusan.** Pekerjaan selesai di `chore/phase-0`, menunggu merge oleh Irfan.
 
 ## Selesai
 - Scaffold repo, `AGENTS.md`, dokumen inti, standar, spesifikasi modul, draft ADR-001/002/003 (disusun Claude sebagai analis)
 - Entra app registration dibuat; environment: sandbox demo company
 - Irfan mengonfirmasi permission set read-only di BC sudah dibuat. Hak efektif aplikasi perlu diverifikasi manual di Fase 1.
 
-## Sedang dikerjakan
-- Review kritis dan persiapan tooling Python 3.12 serta workflow CI Fase 0. Lihat [review Fase 0](phase-0-review.md).
+- Review kritis, tooling Python 3.12, dan pemeriksaan Fase 0 selesai. Lihat [review Fase 0](phase-0-review.md) dan [hasil CI](https://github.com/irfanadwifangga/bc-tools/actions/runs/45324683780).
 
 ## Berikutnya
 - Fase 1: `bc_sdk` (read-only) + kerangka frontend minimal
