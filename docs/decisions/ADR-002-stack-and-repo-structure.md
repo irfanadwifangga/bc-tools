@@ -7,7 +7,7 @@
 ## Konteks
 Satu developer, MVP lokal, jangka panjang ingin reusable. Kebutuhan: maintainability, mudah dites, bisa tumbuh.
 
-## Keputusan-keputusan di dalam ADR ini
+## Opsi
 
 ### 1. Gaya arsitektur
 - **Modular monolith** (usulan): sederhana, mudah debug. Kontra: batas modul dijaga disiplin manual.
@@ -18,12 +18,14 @@ Monorepo dengan tiga unit: `backend/`, `packages/bc_sdk/` (mandiri, bisa di-inst
 Alasan: SDK bisa dites tanpa FastAPI dan dipakai ulang oleh tool lain. Folder modul future tidak dibuat dulu.
 
 ### 3. Backend
-Python 3.13, FastAPI, Pydantic, httpx, MSAL. Kontra Python 3.13: periksa kompatibilitas library saat setup
-(fallback 3.12 jika ada masalah — catat bila terjadi).
+Target Python 3.12 sesuai keputusan pemilik. Deklarasikan `requires-python = ">=3.12"` dan jalankan CI pada 3.12.
+FastAPI, Pydantic, httpx, dan MSAL tetap menjadi stack usulan. Tambahkan dependency runtime saat dipakai.
 
 ### 4. Python tooling
-- **`uv`** (usulan): cepat, satu perintah untuk env + lockfile + workspace. Kontra: relatif baru bagi tim; pemilik perlu terbiasa.
-- pip + venv / Poetry: lebih dikenal, lebih lambat dan/atau lebih berat.
+- **`uv` workspace** (usulan, diuji di Fase 0): satu lockfile dan instalasi untuk backend dan SDK. Kekurangannya, environment bersama dapat menyembunyikan dependency yang lupa dideklarasikan oleh SDK.
+- **Dua project `uv` terpisah**: isolasi dependency dan pengujian SDK lebih baik. Setup dan lockfile bertambah.
+- **pip + venv**: tooling dasar Python mudah dikenali. Resolusi reproducible dan instalasi beberapa unit perlu proses tambahan.
+- **Poetry**: menyediakan lockfile dan packaging. Perlu mendefinisikan alur instalasi untuk beberapa unit.
 
 ### 5. Database
 - **Usulan: tidak ada database sampai fitur membutuhkannya** (MVP read-only, tanpa login). Menunda mengurangi komplikasi.
@@ -39,14 +41,14 @@ Python 3.13, FastAPI, Pydantic, httpx, MSAL. Kontra Python 3.13: periksa kompati
 Lokal saja di MVP. Docker/Compose ditunda sampai ada pengguna kedua atau kebutuhan hosting.
 
 ## Keputusan
-(Kosong — Proposed.)
 
 ## Konsekuensi
-Lihat tiap sub-keputusan. Perubahan ke Accepted dilakukan pemilik setelah review.
+Jika workspace dipilih, commit satu `uv.lock` dan gunakan `uv sync --locked --all-packages` di lokal dan CI. Uji build SDK mandiri sebelum rilis terpisah. Status ADR ditetapkan oleh pemilik setelah review.
 
 ## Kondisi tinjau ulang
-Pengguna kedua; kebutuhan menyimpan data; kebutuhan hosting; masalah kompatibilitas Python 3.13.
+Pengguna kedua; kebutuhan menyimpan data; kebutuhan hosting; perubahan dukungan Python 3.12 atau kompatibilitas dependency.
 
 ## Pertanyaan terbuka
-1. Bersedia memakai `uv`, atau lebih suka pip/Poetry? — Irfan.
+1. Jadikan `uv` workspace tooling berkelanjutan setelah evaluasi Fase 0? — Irfan, sebelum Fase 1.
 2. Pilih SQLAlchemy 2.0 atau SQLModel saat DB dibutuhkan? — Irfan, sebelum fitur pertama yang menyimpan data.
+3. Tetapkan SDK async atau sync berdasarkan pemakai pertama dan batas transport? — Irfan, sebelum menetapkan kontrak publik SDK di Fase 1.

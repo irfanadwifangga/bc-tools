@@ -14,7 +14,7 @@ terbatas pada SDK itu sendiri. AI: tidak relevan.
 ## Lingkup (MVP, read-only)
 - Autentikasi client credentials via MSAL, di balik interface `TokenProvider`
 - Token management (cache, refresh otomatis lewat MSAL)
-- HTTP client (httpx async): timeout, retry dengan backoff untuk 429/5xx (hormati `Retry-After`), paging `@odata.nextLink`
+- Usulan HTTP client async (`httpx`): timeout, retry dengan backoff untuk 429/5xx (hormati `Retry-After`), paging `@odata.nextLink`
 - Resource: `companies`, `customers`, `items`; mekanisme sederhana untuk menambah resource, termasuk Custom API (AL)
 - Error hierarchy standar, logging tanpa secret
 - Penolakan semua method selain GET di level client
@@ -26,7 +26,7 @@ await bc.companies.list()
 await bc.customers.list(company_id=...)
 await bc.items.list(company_id=..., top=50)
 ```
-(Bentuk async vs sync final ditetapkan di Fase 1 dan dicatat di docs ini; wajib konsisten.)
+Contoh di atas mengikuti usulan async. Bentuk API publik dan transport diputuskan bersama di Fase 1 sebelum kontrak SDK dibakukan.
 
 ## Konfigurasi
 `BC_TENANT_ID`, `BC_CLIENT_ID`, `BC_CLIENT_SECRET`, `BC_ENVIRONMENT`, `BC_COMPANY_ID` (opsional).
