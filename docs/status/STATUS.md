@@ -30,6 +30,8 @@ _Terakhir diperbarui: 2026-11-24_
 
 - Preview customer di frontend dimuat saat pengguna memilih **Lihat contoh data**. Irfan menguji preview `customers` melalui UI API Explorer. Tabel menampilkan lima baris dengan kolom `id`, `number`, dan `displayName`.
 
+- Preview `customers` menyediakan pilihan **Tabel** dan **JSON** dari satu respons backend. Irfan memeriksa preview `customers` melalui UI API Explorer. Tampilan JSON memuat lima objek dengan field dan nilai yang sama seperti tampilan Tabel.
+
 ## Blocker dan pertanyaan terbuka
 | # | Pertanyaan | Pemilik | Dibutuhkan sebelum |
 |---|---|---|---|

@@ -1,5 +1,6 @@
 import { Button } from "antd";
 import { useEffect, useId, useRef, useState } from "react";
+import { CustomerPreviewData, type PreviewFormat } from "./CustomerPreviewData";
 import { loadCustomerPreview, type PreviewCustomer } from "./catalog";
 
 type PreviewState =
@@ -9,6 +10,7 @@ type PreviewState =
 
 export function CustomerPreview() {
   const [preview, setPreview] = useState<PreviewState>({ status: "idle" });
+  const [format, setFormat] = useState<PreviewFormat>("Tabel");
   const request = useRef<AbortController | null>(null);
   const resultId = useId();
   useEffect(() => () => request.current?.abort(), []);
@@ -17,6 +19,7 @@ export function CustomerPreview() {
     if (request.current) return;
     if (preview.status === "ready") {
       setPreview({ status: "idle" });
+      setFormat("Tabel");
       return;
     }
     const controller = new AbortController();
@@ -51,13 +54,16 @@ export function CustomerPreview() {
             ? `${preview.rows.length} customer ditampilkan.` : "Demo company ini belum memiliki customer.")}
         </div>
         {preview.status === "error" && <p role="alert">{preview.message}</p>}
-        {preview.status === "ready" && preview.rows.length > 0 && (
-          <table aria-label="Contoh data customer">
-            <thead><tr><th scope="col">id</th><th scope="col">number</th><th scope="col">displayName</th></tr></thead>
-            <tbody>{preview.rows.map(row => (
-              <tr key={row.id}><td>{row.id}</td><td>{row.number}</td><td>{row.displayName}</td></tr>
-            ))}</tbody>
-          </table>
+        {preview.status === "ready" && (
+          <>
+            <div role="group" aria-label="Tampilan contoh data" className="preview-formats">
+              {(["Tabel", "JSON"] as const).map(option => (
+                <button key={option} type="button" aria-pressed={format === option}
+                  onClick={() => setFormat(option)}>{option}</button>
+              ))}
+            </div>
+            <CustomerPreviewData rows={preview.rows} format={format} />
+          </>
         )}
       </div>
     </div>

@@ -42,7 +42,7 @@ Vite meneruskan request katalog dan preview customer ke backend lokal pada port 
 
 ## Preview customer
 
-Buka endpoint **customers**, lalu pilih **Lihat contoh data**. Tabel menampilkan `id`, `number`, dan `displayName`. Jika preview gagal, pilih **Coba lagi**. Menutup detail menghapus preview dari tampilan.
+Buka endpoint **customers**, lalu pilih **Lihat contoh data**. Tampilan awal **Tabel** memuat `id`, `number`, dan `displayName`. Pilih **JSON** untuk melihat respons yang sama dengan indentasi. Hasil kosong ditampilkan sebagai `[]`. Berpindah tampilan menggunakan data yang sudah dimuat. Jika preview gagal, pilih **Coba lagi**. Menutup detail menghapus preview dari tampilan.
 
 `GET /api/v1/api-explorer/customers/preview` mengembalikan array berisi nol sampai lima customer dari demo company yang dipilih melalui `BC_COMPANY_ID`. Setiap baris memuat `id` (UUID), `number`, dan `displayName`. Jika company belum memiliki customer, hasilnya `200 []`.
 
