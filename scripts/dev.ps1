@@ -37,11 +37,18 @@ function Start-DevServer {
 }
 
 $servers = [System.Collections.Generic.List[System.Diagnostics.Process]]::new()
+$backendEnvFile = Join-Path $repoRoot '.env'
+$backendEnvArgs = if (Test-Path -LiteralPath $backendEnvFile -PathType Leaf) {
+    '--env-file', '.env'
+} else {
+    '--no-env-file'
+}
 
 try {
     $servers.Add((Start-DevServer -Executable $uv.Source -Directory $repoRoot -Arguments @(
-        'run', '--locked', '--all-packages', '--no-env-file', 'uvicorn',
-        'backend.app.main:app', '--host', '127.0.0.1', '--port', "$backendPort"
+        'run', '--locked', '--all-packages'
+        $backendEnvArgs
+        'uvicorn', 'backend.app.main:app', '--host', '127.0.0.1', '--port', "$backendPort"
     )))
     $servers.Add((Start-DevServer -Executable $bun.Source -Directory $frontendRoot -Arguments @(
         'run', 'dev', '--port', "$frontendPort"

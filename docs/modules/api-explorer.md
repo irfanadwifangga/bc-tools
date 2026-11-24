@@ -34,6 +34,12 @@ uv run --locked --all-packages --env-file .env uvicorn backend.app.main:app --ho
 
 Skema respons tersedia di OpenAPI. Kredensial atau konfigurasi yang tidak valid menghasilkan 502, metadata yang tidak ditemukan 404, pembatasan laju 429, dan respons upstream yang gagal dibaca 502. Pesan untuk frontend mengikuti format standar backend.
 
+### Tampilan katalog
+
+Jalankan backend dengan perintah di atas, lalu jalankan `bun run dev` dari `frontend/`. Pilih **API Explorer** di navigasi. Pencarian menyaring nama endpoint dari katalog yang sudah dimuat. Pilih endpoint untuk melihat entity type, nama field, dan tipe field. Tombol **Coba lagi** memuat ulang katalog setelah terjadi kesalahan.
+
+Vite meneruskan request katalog ke backend lokal pada port 8000. Jika skema backend berubah, jalankan `bun run api:types` dari frontend saat backend aktif, lalu periksa perubahan tipe dengan `bun run typecheck`.
+
 ## Aturan keamanan
 Hanya GET; path allowlist; tanpa URL penuh dari klien; `$top` dibatasi. Lihat `docs/standards/api.md`.
 
