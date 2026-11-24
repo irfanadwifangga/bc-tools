@@ -19,8 +19,11 @@ _Terakhir diperbarui: 2026-11-24_
 
 - Irfan menjalankan pemeriksaan manual di sandbox pada 24 November 2026 dan mengonfirmasi bahwa katalog metadata mengembalikan `customers.id` dengan tipe `Edm.Guid`.
 
+- Backend menyediakan `GET /api/v1/api-explorer/entities` untuk katalog standar. Kontrak respons dan pemetaan error diuji dengan SDK mock.
+- Irfan menguji route katalog lokal melalui Postman. Respons `200 OK` memuat `entityDefinitions.entityName` bertipe `Edm.String`.
+
 ## Berikutnya
-- Irfan memilih pencarian endpoint dan field sebagai prioritas API Explorer. Katalog dimulai dari metadata API standar di SDK.
+- Tampilkan katalog endpoint dan field dari backend di frontend API Explorer.
 
 ## Blocker dan pertanyaan terbuka
 | # | Pertanyaan | Pemilik | Dibutuhkan sebelum |
