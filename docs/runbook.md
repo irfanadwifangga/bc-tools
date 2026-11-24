@@ -1,10 +1,29 @@
 # Runbook (lokal)
 
-## Prasyarat
-- Windows + PowerShell
-- Python 3.13 dan `uv` (usulan, lihat ADR-002)
-- Bun (frontend)
-- Akses BC sandbox demo company dan Entra app registration
+## Pengembangan lokal (Fase 0)
+
+Prasyarat: Windows, PowerShell, Python 3.12, dan `uv`. Jalankan dari root repo:
+
+```powershell
+uv sync --locked --all-packages
+uv run --locked --all-packages ruff check .
+uv run --locked --all-packages ruff format --check .
+uv run --locked --all-packages mypy
+uv run --locked --all-packages pytest
+uv run --locked --all-packages pre-commit install
+```
+
+`pytest` menguji `GET /api/v1/health` dalam proses dan mengecualikan marker `integration` secara default. Untuk mencoba endpoint dari PowerShell, jalankan:
+
+```powershell
+uv run --locked --all-packages uvicorn backend.app.main:app --host 127.0.0.1
+```
+
+Di terminal lain, jalankan `Invoke-RestMethod http://127.0.0.1:8000/api/v1/health`. Respons yang diharapkan `{"status":"ok"}`. Hentikan server dengan `Ctrl+C` setelah pengecekan.
+
+## Business Central (manual oleh pemilik, Fase 1)
+
+Prasyarat: akses BC sandbox demo company dan Entra app registration.
 
 ## Konfigurasi
 1. `Copy-Item .env.example .env`
@@ -17,9 +36,6 @@ pwsh infra/scripts/check-bc-connection.ps1
 ```
 Berhasil jika mengembalikan daftar companies sandbox. Gagal 401/403 → periksa app registration dan
 status aplikasi di halaman *Microsoft Entra Applications* di BC beserta permission set-nya.
-
-## Perintah pengembangan
-Ditambahkan oleh Tugas T3 Fase 0 (`docs/tasks/phase-0.md`). Sampai itu selesai, bagian ini belum berlaku.
 
 ## Troubleshooting
 | Gejala | Kemungkinan penyebab |

@@ -1,0 +1,33 @@
+[project]
+name = "bc-tools"
+version = "0.0.0"
+requires-python = ">=3.12"
+
+[dependency-groups]
+dev = [
+    "httpx",
+    "mypy",
+    "pre-commit",
+    "pytest",
+    "ruff",
+]
+
+[tool.uv.workspace]
+members = ["backend", "packages/bc_sdk"]
+
+[tool.ruff]
+target-version = "py312"
+
+[tool.mypy]
+python_version = "3.12"
+files = ["backend", "packages/bc_sdk/src", "packages/bc_sdk/tests"]
+
+[[tool.mypy.overrides]]
+module = ["bc_sdk", "bc_sdk.*"]
+strict = true
+
+[tool.pytest.ini_options]
+testpaths = ["backend/tests", "packages/bc_sdk/tests"]
+pythonpath = ["."]
+addopts = "-m 'not integration' --strict-markers"
+markers = ["integration: manual Business Central sandbox tests"]
