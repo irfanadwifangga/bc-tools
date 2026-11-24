@@ -1,6 +1,6 @@
 # Modul: bc_sdk
 
-- **Fase:** 1 · **Status:** Spesifikasi (belum diimplementasi)
+- **Fase:** 1 · **Status:** Implementasi bertahap
 - **Lokasi:** `packages/bc_sdk/`
 
 ## Tujuan
@@ -14,26 +14,46 @@ terbatas pada SDK itu sendiri. AI: tidak relevan.
 ## Lingkup (MVP, read-only)
 - Autentikasi client credentials via MSAL, di balik interface `TokenProvider`
 - Token management (cache, refresh otomatis lewat MSAL)
-- Usulan HTTP client async (`httpx`): timeout, retry dengan backoff untuk 429/5xx (hormati `Retry-After`), paging `@odata.nextLink`
+- HTTP client async (`httpx`): timeout, retry dengan backoff untuk 429/5xx (hormati `Retry-After`), paging `@odata.nextLink`
 - Resource: `companies`, `customers`, `items`; mekanisme sederhana untuk menambah resource, termasuk Custom API (AL)
 - Error hierarchy standar, logging tanpa secret
 - Penolakan semua method selain GET di level client
 
-## API publik target
+## API publik
 ```python
-bc = BCClient.from_settings(settings)
-await bc.companies.list()
-await bc.customers.list(company_id=...)
-await bc.items.list(company_id=..., top=50)
+from bc_sdk import BCClient
+
+async with BCClient.from_settings(settings) as bc:
+    companies = await bc.companies.list()
+    customers = await bc.customers.list()
+    items = await bc.items.list(top=50)
 ```
-Contoh di atas mengikuti usulan async. Bentuk API publik dan transport diputuskan bersama di Fase 1 sebelum kontrak SDK dibakukan.
+API publik dan transport menggunakan async sesuai ADR-002. Setiap `list()` mengembalikan model Pydantic bertipe. `top` membatasi jumlah hasil lintas halaman. Argumen `company_id` pada `customers` dan `items`, jika diberikan, harus cocok dengan ID demo company di konfigurasi.
 
 ## Konfigurasi
-`BC_TENANT_ID`, `BC_CLIENT_ID`, `BC_CLIENT_SECRET`, `BC_ENVIRONMENT`, `BC_COMPANY_ID` (opsional).
+Gunakan `BCSettings` untuk menampung `BC_TENANT_ID`, `BC_CLIENT_ID`, `BC_CLIENT_SECRET`, `BC_ENVIRONMENT`, dan `BC_COMPANY_ID`. ID company boleh kosong saat membaca daftar companies dan wajib diisi saat membaca data customers atau items.
+
+## Implementasi autentikasi
+
+`TokenProvider.get_token()` menyediakan antarmuka async untuk client SDK. `MsalTokenProvider`
+menerima tenant ID berbentuk UUID, client ID, dan client secret. Provider menggunakan cache
+in-memory MSAL dan menerjemahkan kegagalan menjadi `BCAuthError` tanpa detail respons Entra.
+
+Delapan unit test dengan MSAL mock lulus di Windows. Tes mencakup penggunaan ulang aplikasi
+MSAL, validasi tenant dan token, serta redaksi error. Integration test GET dijalankan setelah
+client read-only tersedia.
+
+## Implementasi HTTP client
+
+Client async hanya mengirim GET melalui HTTPS ke API v2.0 pada tenant terkonfigurasi dan environment Sandbox. Daftar company dapat diminta sebelum company ID ditetapkan. Request data company memerlukan ID demo company yang dikonfigurasi.
+
+Pagination memakai nextLink untuk endpoint yang sama. Redirect ditolak. Retry dibatasi tiga percobaan total per halaman untuk HTTP 429 dan 5xx. Retry-After mendukung detik dan tanggal HTTP. Jika waktu tunggu yang diminta melebihi 30 detik, client mengembalikan error tanpa retry lebih awal.
+
+Resource standar `companies`, `customers`, dan `items` memakai client yang sama dan diuji dengan HTTP mock. Integration test GET sandbox bersifat manual. Lihat [runbook](../runbook.md).
 
 ## Acceptance criteria
 - [ ] Token diperoleh otomatis dengan client credentials
-- [ ] `companies.list()`, `customers.list()`, `items.list()` berhasil terhadap sandbox (integration test manual)
+- [x] Ketiga resource lulus integration test GET terhadap `DEMO COMPANY` di sandbox.
 - [ ] Paging mengikuti `@odata.nextLink`
 - [ ] Retry/backoff untuk 429 dan 5xx; `Retry-After` dihormati
 - [ ] Logging berjalan; token/secret tidak pernah tercatat (ada test)

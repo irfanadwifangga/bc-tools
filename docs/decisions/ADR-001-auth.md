@@ -1,6 +1,6 @@
 # ADR-001: Autentikasi ke Business Central
 
-- **Status:** Proposed (draft oleh Claude; Codex diminta me-review di Fase 0, pemilik yang menyetujui)
+- **Status:** Accepted
 - **Tanggal:** 2026-11-24
 - **Pemilik keputusan:** Irfan
 
@@ -29,12 +29,15 @@ yang diberikan di BC. [Dokumentasi S2S Microsoft](https://learn.microsoft.com/en
 
 ## Keputusan
 
+Gunakan client credentials via MSAL untuk sandbox demo company.
+SDK mengambil token melalui `TokenProvider` dan membatasi akses BC ke GET.
+
 ## Konsekuensi
-Jika pemilik memilih Opsi A, `TokenProvider` menjadi batas perolehan token di `bc_sdk`.
+`TokenProvider` menjadi batas perolehan token di `bc_sdk`.
 Alur login portal tetap ditunda.
 
 - Karena tidak ada login di portal, backend **wajib bind `127.0.0.1`** dan CORS dikunci ke origin frontend lokal.
-- Terapkan least privilege lewat permission set aplikasi di BC. Irfan melaporkan permission set read-only sudah dibuat. Validasi hak efektif tetap dilakukan manual di Fase 1.
+- Konfigurasi read-only dikonfirmasi dari screenshot Microsoft Entra Application Card di sandbox. Aplikasi berstatus `Enabled` dengan permission set `D365 READ`.
 - SDK menolak method selain GET di level client (defense in depth).
 - Client secret hanya di `.env`; untuk non-sandbox pertimbangkan sertifikat atau Key Vault (ADR baru).
 - Saat dibagikan ke rekan: wajib ADR baru (Opsi B/C), pemberitahuan ke atasan, dan review security.
@@ -43,6 +46,5 @@ Alur login portal tetap ditunda.
 Pengguna kedua muncul; platform dihosting di luar mesin lokal; kebutuhan operasi write; kebutuhan audit per-user.
 
 ## Pertanyaan terbuka
-1. Apakah aplikasi aktif dan hak efektifnya terbatas pada sandbox demo company serta operasi read-only? Periksa assignment, izin efektif, dan GET sandbox secara manual. — Irfan, sebelum integration test Fase 1.
-2. Apakah kamu menyetujui client credentials dengan secret untuk sandbox? — Irfan, sebelum implementasi autentikasi Fase 1.
-3. Apakah ada kebutuhan Automation API yang konkret? Sampai ada kebutuhan, gunakan izin untuk API BC yang masuk scope MVP. — Irfan, sebelum scope API Explorer ditetapkan pada Fase 2.
+1. Bagaimana hasil integration test GET terhadap sandbox demo company? — Irfan, setelah SDK siap pada Fase 1.
+2. Apakah ada kebutuhan Automation API yang konkret? Sampai ada kebutuhan, gunakan izin untuk API BC yang masuk scope MVP. — Irfan, sebelum scope API Explorer ditetapkan pada Fase 2.

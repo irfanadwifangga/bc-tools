@@ -30,7 +30,7 @@ Microsoft Entra ID (token)  +  Business Central API (sandbox demo company)
 Antar modul tidak saling mengimpor; komunikasi lewat `core` atau `bc_sdk`.
 
 ## Alur autentikasi
-Ada dua alur konseptual. Untuk MVP, ADR-001 mengusulkan alur B tanpa login portal.
+Ada dua alur konseptual. Untuk MVP, ADR-001 menetapkan alur B dengan autentikasi app-only tanpa login portal.
 
 - **A. User → portal:** tidak ada di MVP. Backend bind `127.0.0.1`, hanya pemilik yang mengakses secara lokal.
 - **B. Portal/backend → BC:** OAuth2 client credentials via MSAL (`ConfidentialClientApplication`),
