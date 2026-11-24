@@ -15,9 +15,10 @@ _Terakhir diperbarui: 2026-11-24_
 - Client async GET-only, pagination, dan retry sudah diuji dengan HTTP mock.
 - Resource `companies`, `customers`, dan `items` serta `BCClient.from_settings()` tersedia dan diuji dengan HTTP mock.
 - Integration test GET sandbox lulus dua kali pada 2026-11-24, dijalankan oleh Irfan.
+- Kerangka frontend tersedia: Ringkasan, sidebar responsif, dan pilihan tema.
 
 ## Berikutnya
-- Integration test GET sandbox mengikuti [runbook](../runbook.md). Kerangka frontend minimal dikerjakan sebagai tugas terpisah.
+- Review dan merge kerangka frontend. Fase 2 dimulai setelah prioritas API Explorer ditetapkan.
 
 ## Blocker dan pertanyaan terbuka
 | # | Pertanyaan | Pemilik | Dibutuhkan sebelum |

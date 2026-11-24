@@ -1,0 +1,238 @@
+:root {
+  --workspace-header-height: 64px;
+}
+
+body {
+  margin: 0;
+}
+
+.workspace {
+  min-height: 100dvh;
+  background: var(--workspace-page);
+  color: var(--workspace-text);
+}
+
+.workspace-sider {
+  position: sticky;
+  top: 0;
+  align-self: flex-start;
+  height: 100dvh;
+  overflow: hidden;
+}
+
+.workspace-brand,
+.workspace-location,
+.workspace-panel-heading {
+  display: flex;
+  align-items: center;
+}
+
+.workspace-brand {
+  height: var(--workspace-header-height);
+  gap: 12px;
+  padding-inline: 20px;
+  color: #f1f6fa;
+  font-size: 17px;
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+.workspace-brand-mark,
+.workspace-panel-icon {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+}
+
+.workspace-brand-mark {
+  background: #284355;
+  color: #a8ede1;
+}
+
+.workspace-nav {
+  margin-block-start: 14px;
+  padding-inline: 12px;
+}
+
+.workspace-body {
+  min-width: 0;
+  background: var(--workspace-page);
+}
+
+.workspace-header {
+  position: sticky;
+  z-index: 3;
+  top: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: var(--workspace-header-height);
+  gap: 10px;
+  padding-inline: clamp(14px, 3vw, 36px);
+  border-block-end: 1px solid var(--workspace-line);
+  background: var(--workspace-surface);
+  line-height: normal;
+}
+
+.workspace-location {
+  min-width: 0;
+  gap: 12px;
+}
+
+.workspace-location button:focus-visible,
+.workspace-nav a:focus-visible {
+  outline: 2px solid var(--workspace-focus);
+  outline-offset: 2px;
+}
+
+.workspace-content {
+  padding: clamp(28px, 5vw, 64px) clamp(18px, 5vw, 66px);
+  scroll-margin-block-start: var(--workspace-header-height);
+}
+
+.workspace-overview {
+  max-width: 850px;
+}
+
+.workspace-heading {
+  padding-inline-start: 18px;
+  border-inline-start: 3px solid var(--workspace-accent);
+  font-size: 15px;
+}
+
+.workspace-heading .workspace-title {
+  margin: 0 0 7px;
+  font-size: clamp(27px, 4vw, 39px);
+  line-height: 1.16;
+  letter-spacing: -0.035em;
+}
+
+.workspace-panel {
+  margin-block-start: 30px;
+  border: 1px solid var(--workspace-line);
+  border-radius: 12px;
+  background: var(--workspace-surface);
+}
+
+.workspace-panel-heading {
+  gap: 12px;
+  padding: 19px 24px;
+  border-block-end: 1px solid var(--workspace-line);
+}
+
+.workspace-panel-icon {
+  background: var(--workspace-accent-bg);
+  color: var(--workspace-accent);
+}
+
+.workspace-panel-heading .workspace-panel-title {
+  margin: 0;
+  font-size: 17px;
+}
+
+.workspace-scope {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: 0;
+  padding: 19px 24px;
+}
+
+.workspace-scope > div {
+  min-width: 0;
+  padding-inline: 18px;
+  border-inline-start: 1px solid var(--workspace-line);
+}
+
+.workspace-scope > div:first-child {
+  padding-inline-start: 0;
+  border-inline-start: 0;
+}
+
+.workspace-scope dt,
+.workspace-resources p {
+  margin: 0 0 6px;
+  color: var(--workspace-muted);
+  font-size: 13px;
+}
+
+.workspace-scope dd {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.workspace-resources {
+  padding: 15px 24px 20px;
+  border-block-start: 1px solid var(--workspace-line);
+}
+
+.workspace-resources ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 14px;
+}
+
+@media (max-width: 991px) {
+  .workspace-sider {
+    position: fixed;
+    z-index: 2;
+    inset: var(--workspace-header-height) auto 0 0;
+    height: auto;
+  }
+
+  .workspace-scrim {
+    position: fixed;
+    z-index: 1;
+    inset: var(--workspace-header-height) 0 0;
+    background: rgb(11 25 40 / 48%);
+  }
+}
+
+@media (max-width: 540px) {
+  .workspace-location {
+    gap: 4px;
+  }
+
+  .workspace-panel-heading,
+  .workspace-scope,
+  .workspace-resources {
+    padding-inline: 18px;
+  }
+
+  .workspace-scope {
+    grid-template-columns: 1fr;
+    padding-block: 8px;
+  }
+
+  .workspace-scope > div,
+  .workspace-scope > div:first-child {
+    padding: 10px 0;
+    border-inline-start: 0;
+  }
+
+  .workspace-scope > div + div {
+    border-block-start: 1px solid var(--workspace-line);
+  }
+}
+
+@media (max-width: 400px) {
+  .workspace-header {
+    flex-wrap: wrap;
+    align-content: center;
+    height: auto;
+    min-height: var(--workspace-header-height);
+    padding-block: 5px;
+  }
+
+  .workspace-location {
+    gap: 1px;
+  }
+}
