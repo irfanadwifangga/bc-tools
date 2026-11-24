@@ -3,7 +3,7 @@
 SDK mandiri (tanpa ketergantungan ke FastAPI) untuk berkomunikasi dengan Business Central.
 Spesifikasi lengkap: [`docs/modules/bc-sdk.md`](../../docs/modules/bc-sdk.md).
 
-Contoh usulan pemakaian async untuk MVP read-only. Kontrak publik ditetapkan di Fase 1.
+Contoh target pemakaian async untuk MVP read-only.
 
 ```python
 await bc.companies.list()

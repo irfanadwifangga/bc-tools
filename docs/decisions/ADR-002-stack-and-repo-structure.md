@@ -42,13 +42,13 @@ Lokal saja di MVP. Docker/Compose ditunda sampai ada pengguna kedua atau kebutuh
 
 ## Keputusan
 
+Pemilik menyetujui `uv` workspace dengan satu `uv.lock` serta API publik dan transport async untuk `bc_sdk`.
+
 ## Konsekuensi
-Jika workspace dipilih, commit satu `uv.lock` dan gunakan `uv sync --locked --all-packages` di lokal dan CI. Uji build SDK mandiri sebelum rilis terpisah. Status ADR ditetapkan oleh pemilik setelah review.
+Commit satu `uv.lock` dan gunakan `uv sync --locked --all-packages` di lokal dan CI. Uji build SDK mandiri sebelum rilis terpisah. Status ADR ditetapkan oleh pemilik setelah review.
 
 ## Kondisi tinjau ulang
 Pengguna kedua; kebutuhan menyimpan data; kebutuhan hosting; perubahan dukungan Python 3.12 atau kompatibilitas dependency.
 
 ## Pertanyaan terbuka
-1. Jadikan `uv` workspace tooling berkelanjutan setelah evaluasi Fase 0? — Irfan, sebelum Fase 1.
-2. Pilih SQLAlchemy 2.0 atau SQLModel saat DB dibutuhkan? — Irfan, sebelum fitur pertama yang menyimpan data.
-3. Tetapkan SDK async atau sync berdasarkan pemakai pertama dan batas transport? — Irfan, sebelum menetapkan kontrak publik SDK di Fase 1.
+1. Pilih SQLAlchemy 2.0 atau SQLModel saat DB dibutuhkan? — Irfan, sebelum fitur pertama yang menyimpan data.
