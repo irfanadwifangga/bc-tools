@@ -24,11 +24,18 @@ terbatas pada SDK itu sendiri. AI: tidak relevan.
 from bc_sdk import BCClient
 
 async with BCClient.from_settings(settings) as bc:
+    entities = await bc.metadata.list_entities()
     companies = await bc.companies.list()
     customers = await bc.customers.list()
     items = await bc.items.list(top=50)
 ```
 API publik dan transport menggunakan async sesuai ADR-002. Setiap `list()` mengembalikan model Pydantic bertipe. `top` membatasi jumlah hasil lintas halaman. Argumen `company_id` pada `customers` dan `items`, jika diberikan, harus cocok dengan ID demo company di konfigurasi.
+
+## Katalog metadata (Fase 2)
+
+`bc.metadata.list_entities()` membaca `GET /api/v2.0/$metadata` di sandbox terkonfigurasi. Setiap hasil berisi nama entity set, nama lengkap entity type, serta nama dan tipe field struktural termasuk field warisan. Dua entity set yang memakai tipe sama tetap muncul sebagai dua endpoint. Katalog ini mencakup API standar dan dapat dibaca tanpa ID company.
+
+Irfan menjalankan pemeriksaan manual di sandbox pada 24 November 2026 dan mengonfirmasi bahwa katalog metadata mengembalikan `customers.id` dengan tipe `Edm.Guid`.
 
 ## Konfigurasi
 Gunakan `BCSettings` untuk menampung `BC_TENANT_ID`, `BC_CLIENT_ID`, `BC_CLIENT_SECRET`, `BC_ENVIRONMENT`, dan `BC_COMPANY_ID`. ID company boleh kosong saat membaca daftar companies dan wajib diisi saat membaca data customers atau items.

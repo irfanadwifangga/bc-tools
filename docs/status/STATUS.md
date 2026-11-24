@@ -3,7 +3,7 @@
 _Terakhir diperbarui: 2026-11-24_
 
 ## Status fase
-**Fase 1 — `bc_sdk` read-only dan kerangka frontend minimal.** Fase 0 sudah masuk `main` lewat [PR #1](https://github.com/irfanadwifangga/bc-tools/pull/1).
+**Fase 2 — katalog endpoint dan field untuk API Explorer.** Fase 0 sudah masuk `main` lewat [PR #1](https://github.com/irfanadwifangga/bc-tools/pull/1).
 
 ## Selesai
 - Scaffold repo, `AGENTS.md`, dokumen inti, standar, spesifikasi modul, draft ADR-001/002/003 (disusun Claude sebagai analis)
@@ -17,13 +17,14 @@ _Terakhir diperbarui: 2026-11-24_
 - Integration test GET sandbox lulus dua kali pada 2026-11-24, dijalankan oleh Irfan.
 - Kerangka frontend tersedia: Ringkasan, sidebar responsif, dan pilihan tema.
 
+- Irfan menjalankan pemeriksaan manual di sandbox pada 24 November 2026 dan mengonfirmasi bahwa katalog metadata mengembalikan `customers.id` dengan tipe `Edm.Guid`.
+
 ## Berikutnya
-- Review dan merge kerangka frontend. Fase 2 dimulai setelah prioritas API Explorer ditetapkan.
+- Irfan memilih pencarian endpoint dan field sebagai prioritas API Explorer. Katalog dimulai dari metadata API standar di SDK.
 
 ## Blocker dan pertanyaan terbuka
 | # | Pertanyaan | Pemilik | Dibutuhkan sebelum |
 |---|---|---|---|
-| Q1 | Pain point nyata: 1-2 pekerjaan BC manual yang paling sering dilakukan tiap minggu | Irfan | Fase 2 (menentukan prioritas fitur API Explorer) |
 | Q4 | Pilih SQLAlchemy atau SQLModel jika DB dibutuhkan | Irfan | Sebelum fitur pertama yang menyimpan data |
 | Q5 | Pemberitahuan ke atasan (sebelum dibagikan/di luar sandbox) | Irfan | Sebelum pengguna kedua |
 
