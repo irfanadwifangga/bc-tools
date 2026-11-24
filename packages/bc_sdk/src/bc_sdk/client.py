@@ -9,7 +9,7 @@ from uuid import UUID
 
 import httpx
 
-from .auth import TokenProvider
+from .auth import MsalTokenProvider, TokenProvider
 from .errors import (
     BCAuthError,
     BCNotFoundError,
@@ -17,6 +17,9 @@ from .errors import (
     BCRequestError,
     BCServerError,
 )
+from .models import Customer, Item
+from .resources import Companies, CompanyResource
+from .settings import BCSettings
 
 _BC_HOST = "api.businesscentral.dynamics.com"
 _ENTITY_NAME = re.compile(r"[A-Za-z_][A-Za-z0-9_]*")
@@ -64,6 +67,28 @@ class BCClient:
         self._token_provider = token_provider
         self._http = httpx.AsyncClient(
             timeout=10.0, follow_redirects=False, trust_env=False, transport=transport
+        )
+        self.companies = Companies(self._iter_records)
+        self.customers = CompanyResource(
+            self._iter_records, company, "customers", Customer
+        )
+        self.items = CompanyResource(self._iter_records, company, "items", Item)
+
+    @classmethod
+    def from_settings(cls, settings: BCSettings) -> Self:
+        """Construct a Sandbox client with app-only authentication."""
+        tenant_id = str(settings.tenant_id)
+        return cls(
+            tenant_id=tenant_id,
+            environment=settings.environment,
+            company_id=str(settings.company_id)
+            if settings.company_id is not None
+            else None,
+            token_provider=MsalTokenProvider(
+                tenant_id=tenant_id,
+                client_id=str(settings.client_id),
+                client_secret=settings.client_secret.get_secret_value(),
+            ),
         )
 
     async def __aenter__(self) -> Self:

@@ -27,7 +27,7 @@ Prasyarat: akses BC sandbox demo company dan Entra app registration.
 
 ## Konfigurasi
 1. `Copy-Item .env.example .env`
-2. Isi `BC_TENANT_ID`, `BC_CLIENT_ID`, `BC_CLIENT_SECRET`, `BC_ENVIRONMENT`.
+2. Isi `BC_TENANT_ID`, `BC_CLIENT_ID`, `BC_CLIENT_SECRET`, dan `BC_ENVIRONMENT=Sandbox`. Isi `BC_COMPANY_ID` dengan ID demo company untuk tes SDK.
 3. Jangan pernah commit `.env`.
 
 ## Verifikasi koneksi (read-only)
@@ -36,6 +36,16 @@ pwsh infra/scripts/check-bc-connection.ps1
 ```
 Berhasil jika mengembalikan daftar companies sandbox. Gagal 401/403 → periksa app registration dan
 status aplikasi di halaman *Microsoft Entra Applications* di BC beserta permission set-nya.
+
+## Integration test SDK (GET saja)
+
+Jalankan dari root repo setelah `BC_COMPANY_ID` tersedia:
+
+```powershell
+uv run --locked --all-packages --env-file .env pytest -m integration packages/bc_sdk/tests/test_sandbox_integration.py
+```
+
+Tes memanggil daftar companies dan memastikan ID terkonfigurasi menunjuk ke `DEMO COMPANY` sebelum membaca maksimal satu customer dan satu item. Tes berhasil saat ketiga request GET lulus. Marker `integration` dikecualikan dari pytest default dan CI.
 
 ## Troubleshooting
 | Gejala | Kemungkinan penyebab |

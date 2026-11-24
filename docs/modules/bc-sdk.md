@@ -19,17 +19,19 @@ terbatas pada SDK itu sendiri. AI: tidak relevan.
 - Error hierarchy standar, logging tanpa secret
 - Penolakan semua method selain GET di level client
 
-## API publik target
+## API publik
 ```python
-bc = BCClient.from_settings(settings)
-await bc.companies.list()
-await bc.customers.list(company_id=...)
-await bc.items.list(company_id=..., top=50)
+from bc_sdk import BCClient
+
+async with BCClient.from_settings(settings) as bc:
+    companies = await bc.companies.list()
+    customers = await bc.customers.list()
+    items = await bc.items.list(top=50)
 ```
-API publik dan transport menggunakan async sesuai ADR-002.
+API publik dan transport menggunakan async sesuai ADR-002. Setiap `list()` mengembalikan model Pydantic bertipe. `top` membatasi jumlah hasil lintas halaman. Argumen `company_id` pada `customers` dan `items`, jika diberikan, harus cocok dengan ID demo company di konfigurasi.
 
 ## Konfigurasi
-`BC_TENANT_ID`, `BC_CLIENT_ID`, `BC_CLIENT_SECRET`, `BC_ENVIRONMENT`, `BC_COMPANY_ID` (opsional).
+Gunakan `BCSettings` untuk menampung `BC_TENANT_ID`, `BC_CLIENT_ID`, `BC_CLIENT_SECRET`, `BC_ENVIRONMENT`, dan `BC_COMPANY_ID`. ID company boleh kosong saat membaca daftar companies dan wajib diisi saat membaca data customers atau items.
 
 ## Implementasi autentikasi
 
@@ -47,7 +49,7 @@ Client async hanya mengirim GET melalui HTTPS ke API v2.0 pada tenant terkonfigu
 
 Pagination memakai nextLink untuk endpoint yang sama. Redirect ditolak. Retry dibatasi tiga percobaan total per halaman untuk HTTP 429 dan 5xx. Retry-After mendukung detik dan tanggal HTTP. Jika waktu tunggu yang diminta melebihi 30 detik, client mengembalikan error tanpa retry lebih awal.
 
-Unit test menggunakan HTTP mock. Resource companies, customers, dan items serta integration test GET sandbox berada di slice berikutnya.
+Resource standar `companies`, `customers`, dan `items` memakai client yang sama dan diuji dengan HTTP mock. Integration test GET sandbox bersifat manual. Lihat [runbook](../runbook.md).
 
 ## Acceptance criteria
 - [ ] Token diperoleh otomatis dengan client credentials

@@ -13,9 +13,10 @@ _Terakhir diperbarui: 2026-11-24_
 - Review kritis, tooling Python 3.12, dan pemeriksaan Fase 0 selesai. Lihat [review Fase 0](phase-0-review.md) dan [hasil CI](https://github.com/irfanadwifangga/bc-tools/actions/runs/45324683780).
 - `TokenProvider` async dan adapter MSAL tersedia. Delapan unit test autentikasi dengan mock lulus. Lihat [spesifikasi SDK](../modules/bc-sdk.md).
 - Client async GET-only, pagination, dan retry sudah diuji dengan HTTP mock.
+- Resource `companies`, `customers`, dan `items` serta `BCClient.from_settings()` tersedia dan diuji dengan HTTP mock.
 
 ## Berikutnya
-- Implementasi resource `companies`, `customers`, dan `items` pada `bc_sdk`, lalu kerangka frontend minimal sebagai tugas terpisah.
+- Integration test GET sandbox mengikuti [runbook](../runbook.md). Kerangka frontend minimal dikerjakan sebagai tugas terpisah.
 
 ## Blocker dan pertanyaan terbuka
 | # | Pertanyaan | Pemilik | Dibutuhkan sebelum |
