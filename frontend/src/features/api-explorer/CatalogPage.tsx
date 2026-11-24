@@ -2,6 +2,7 @@ import { Button, Input } from "antd";
 import { RightOutlined, SearchOutlined } from "@ant-design/icons";
 import { useEffect, useId, useState } from "react";
 import { filterEndpoints, loadCatalog, type CatalogEntity } from "./catalog";
+import { CustomerPreview } from "./CustomerPreview";
 import "./catalog.css";
 
 type CatalogState =
@@ -25,6 +26,7 @@ function EndpointRow({ entity, open, onSelect }: {
       <div id={panelId} hidden={!open} className="catalog-detail">
         {open && <>
           <p className="catalog-type">Entity type <code>{entity.entity_type}</code></p>
+          {entity.name === "customers" && <CustomerPreview />}
           {entity.fields.length ? (
             <table aria-label={`Field ${entity.name}`}>
               <thead><tr><th scope="col">Field</th><th scope="col">Tipe</th></tr></thead>

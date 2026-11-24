@@ -28,6 +28,11 @@
 .catalog-endpoint[aria-expanded="true"] svg { transform: rotate(90deg); }
 .catalog-detail { padding: 0 12px 20px; }
 .catalog-type { margin-block: 16px; }
+.customer-preview { margin-block: 16px 24px; }
+.customer-preview [role="status"]:not(:empty) { margin-block: 12px 4px; }
+.customer-preview th, .customer-preview td { overflow-wrap: anywhere; }
+.customer-preview th:first-child { width: 42%; }
+.customer-preview th:nth-child(2) { width: 22%; }
 .catalog-type code { font-family: var(--workspace-record-font); padding-inline-start: 8px; }
 .catalog table { width: 100%; table-layout: fixed; border-collapse: collapse; }
 .catalog th, .catalog td { text-align: start; padding: 8px 8px 8px 0; vertical-align: top; }

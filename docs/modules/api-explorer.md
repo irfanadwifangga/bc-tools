@@ -38,9 +38,11 @@ Skema respons tersedia di OpenAPI. Kredensial atau konfigurasi yang tidak valid 
 
 Jalankan backend dengan perintah di atas, lalu jalankan `bun run dev` dari `frontend/`. Pilih **API Explorer** di navigasi. Pencarian menyaring nama endpoint dari katalog yang sudah dimuat. Pilih endpoint untuk melihat entity type, nama field, dan tipe field. Tombol **Coba lagi** memuat ulang katalog setelah terjadi kesalahan.
 
-Vite meneruskan request katalog ke backend lokal pada port 8000. Jika skema backend berubah, jalankan `bun run api:types` dari frontend saat backend aktif, lalu periksa perubahan tipe dengan `bun run typecheck`.
+Vite meneruskan request katalog dan preview customer ke backend lokal pada port 8000. Jika skema backend berubah, jalankan `bun run api:types` dari frontend saat backend aktif, lalu periksa perubahan tipe dengan `bun run typecheck`.
 
 ## Preview customer
+
+Buka endpoint **customers**, lalu pilih **Lihat contoh data**. Tabel menampilkan `id`, `number`, dan `displayName`. Jika preview gagal, pilih **Coba lagi**. Menutup detail menghapus preview dari tampilan.
 
 `GET /api/v1/api-explorer/customers/preview` mengembalikan array berisi nol sampai lima customer dari demo company yang dipilih melalui `BC_COMPANY_ID`. Setiap baris memuat `id` (UUID), `number`, dan `displayName`. Jika company belum memiliki customer, hasilnya `200 []`.
 
