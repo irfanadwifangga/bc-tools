@@ -30,6 +30,31 @@
 .catalog-type { margin-block: 16px; }
 .customer-preview { margin-block: 16px 24px; }
 .customer-preview [role="status"]:not(:empty) { margin-block: 12px 4px; }
+.preview-formats { display: flex; gap: 4px; margin-block: 4px 8px; }
+.preview-formats button {
+  min-height: 44px;
+  padding-inline: 12px;
+  background: transparent;
+  border: 0;
+  border-block-end: 2px solid transparent;
+  color: var(--workspace-muted);
+  font: inherit;
+  cursor: pointer;
+}
+.preview-formats button[aria-pressed="true"] {
+  color: var(--workspace-accent);
+  border-block-end-color: currentColor;
+  font-weight: 600;
+}
+.preview-formats button:focus-visible { outline: 2px solid var(--workspace-accent); }
+.preview-json {
+  margin: 0;
+  padding: 12px;
+  border-inline-start: 2px solid var(--workspace-line);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.preview-json code { font: 14px/1.5 var(--workspace-record-font); }
 .customer-preview th, .customer-preview td { overflow-wrap: anywhere; }
 .customer-preview th:first-child { width: 42%; }
 .customer-preview th:nth-child(2) { width: 22%; }
