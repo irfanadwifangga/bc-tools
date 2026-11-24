@@ -25,6 +25,9 @@ _Terakhir diperbarui: 2026-11-24_
 - Frontend API Explorer menyediakan pencarian endpoint dan daftar nama serta tipe field.
 - Irfan menguji API Explorer melalui frontend lokal. Pencarian `customers` menampilkan endpoint `customers` dengan entity type `Microsoft.NAV.customer` dan field `id` bertipe `Edm.Guid`.
 
+- Backend API Explorer menyediakan preview maksimum lima customer dari demo company terkonfigurasi. Tes route menggunakan SDK mock.
+- Irfan menguji `GET /api/v1/api-explorer/customers/preview` melalui backend lokal. Respons JSON memuat lima customer, masing-masing dengan field `id`, `number`, dan `displayName`.
+
 ## Blocker dan pertanyaan terbuka
 | # | Pertanyaan | Pemilik | Dibutuhkan sebelum |
 |---|---|---|---|

@@ -40,6 +40,12 @@ Jalankan backend dengan perintah di atas, lalu jalankan `bun run dev` dari `fron
 
 Vite meneruskan request katalog ke backend lokal pada port 8000. Jika skema backend berubah, jalankan `bun run api:types` dari frontend saat backend aktif, lalu periksa perubahan tipe dengan `bun run typecheck`.
 
+## Preview customer
+
+`GET /api/v1/api-explorer/customers/preview` mengembalikan array berisi nol sampai lima customer dari demo company yang dipilih melalui `BC_COMPANY_ID`. Setiap baris memuat `id` (UUID), `number`, dan `displayName`. Jika company belum memiliki customer, hasilnya `200 []`.
+
+Backend memanggil `bc.customers.list(top=5)`. ID company yang kosong atau tidak valid menghasilkan `502 BC_CONFIG_ERROR`. Parameter query menghasilkan `422 INVALID_QUERY`. Error dari BC dipetakan mengikuti standar API backend.
+
 ## Aturan keamanan
 Hanya GET; path allowlist; tanpa URL penuh dari klien; `$top` dibatasi. Lihat `docs/standards/api.md`.
 
