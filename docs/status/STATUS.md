@@ -14,6 +14,7 @@ _Terakhir diperbarui: 2026-11-24_
 - `TokenProvider` async dan adapter MSAL tersedia. Delapan unit test autentikasi dengan mock lulus. Lihat [spesifikasi SDK](../modules/bc-sdk.md).
 - Client async GET-only, pagination, dan retry sudah diuji dengan HTTP mock.
 - Resource `companies`, `customers`, dan `items` serta `BCClient.from_settings()` tersedia dan diuji dengan HTTP mock.
+- Integration test GET sandbox lulus dua kali pada 2026-11-24, dijalankan oleh Irfan.
 
 ## Berikutnya
 - Integration test GET sandbox mengikuti [runbook](../runbook.md). Kerangka frontend minimal dikerjakan sebagai tugas terpisah.
@@ -22,7 +23,6 @@ _Terakhir diperbarui: 2026-11-24_
 | # | Pertanyaan | Pemilik | Dibutuhkan sebelum |
 |---|---|---|---|
 | Q1 | Pain point nyata: 1-2 pekerjaan BC manual yang paling sering dilakukan tiap minggu | Irfan | Fase 2 (menentukan prioritas fitur API Explorer) |
-| Q2 | Hasil integration test GET terhadap sandbox demo company | Irfan | Setelah SDK siap pada Fase 1 |
 | Q4 | Pilih SQLAlchemy atau SQLModel jika DB dibutuhkan | Irfan | Sebelum fitur pertama yang menyimpan data |
 | Q5 | Pemberitahuan ke atasan (sebelum dibagikan/di luar sandbox) | Irfan | Sebelum pengguna kedua |
 

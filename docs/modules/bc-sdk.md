@@ -53,7 +53,7 @@ Resource standar `companies`, `customers`, dan `items` memakai client yang sama 
 
 ## Acceptance criteria
 - [ ] Token diperoleh otomatis dengan client credentials
-- [ ] `companies.list()`, `customers.list()`, `items.list()` berhasil terhadap sandbox (integration test manual)
+- [x] Ketiga resource lulus integration test GET terhadap `DEMO COMPANY` di sandbox.
 - [ ] Paging mengikuti `@odata.nextLink`
 - [ ] Retry/backoff untuk 429 dan 5xx; `Retry-After` dihormati
 - [ ] Logging berjalan; token/secret tidak pernah tercatat (ada test)
