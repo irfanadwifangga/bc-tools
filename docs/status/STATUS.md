@@ -28,6 +28,8 @@ _Terakhir diperbarui: 2026-11-24_
 - Backend API Explorer menyediakan preview maksimum lima customer dari demo company terkonfigurasi. Tes route menggunakan SDK mock.
 - Irfan menguji `GET /api/v1/api-explorer/customers/preview` melalui backend lokal. Respons JSON memuat lima customer, masing-masing dengan field `id`, `number`, dan `displayName`.
 
+- Preview customer di frontend dimuat saat pengguna memilih **Lihat contoh data**. Irfan menguji preview `customers` melalui UI API Explorer. Tabel menampilkan lima baris dengan kolom `id`, `number`, dan `displayName`.
+
 ## Blocker dan pertanyaan terbuka
 | # | Pertanyaan | Pemilik | Dibutuhkan sebelum |
 |---|---|---|---|
