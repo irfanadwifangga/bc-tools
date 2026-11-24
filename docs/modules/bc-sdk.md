@@ -1,6 +1,6 @@
 # Modul: bc_sdk
 
-- **Fase:** 1 · **Status:** Spesifikasi (belum diimplementasi)
+- **Fase:** 1 · **Status:** Implementasi bertahap
 - **Lokasi:** `packages/bc_sdk/`
 
 ## Tujuan
@@ -40,6 +40,14 @@ in-memory MSAL dan menerjemahkan kegagalan menjadi `BCAuthError` tanpa detail re
 Delapan unit test dengan MSAL mock lulus di Windows. Tes mencakup penggunaan ulang aplikasi
 MSAL, validasi tenant dan token, serta redaksi error. Integration test GET dijalankan setelah
 client read-only tersedia.
+
+## Implementasi HTTP client
+
+Client async hanya mengirim GET melalui HTTPS ke API v2.0 pada tenant terkonfigurasi dan environment Sandbox. Daftar company dapat diminta sebelum company ID ditetapkan. Request data company memerlukan ID demo company yang dikonfigurasi.
+
+Pagination memakai nextLink untuk endpoint yang sama. Redirect ditolak. Retry dibatasi tiga percobaan total per halaman untuk HTTP 429 dan 5xx. Retry-After mendukung detik dan tanggal HTTP. Jika waktu tunggu yang diminta melebihi 30 detik, client mengembalikan error tanpa retry lebih awal.
+
+Unit test menggunakan HTTP mock. Resource companies, customers, dan items serta integration test GET sandbox berada di slice berikutnya.
 
 ## Acceptance criteria
 - [ ] Token diperoleh otomatis dengan client credentials

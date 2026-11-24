@@ -113,11 +113,15 @@ name = "bc-sdk"
 version = "0.0.0"
 source = { editable = "packages/bc_sdk" }
 dependencies = [
+    { name = "httpx" },
     { name = "msal" },
 ]
 
 [package.metadata]
-requires-dist = [{ name = "msal", specifier = ">=1.39" }]
+requires-dist = [
+    { name = "httpx" },
+    { name = "msal", specifier = ">=1.39" },
+]
 
 [[package]]
 name = "bc-tools"
