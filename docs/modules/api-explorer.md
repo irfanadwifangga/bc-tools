@@ -36,7 +36,7 @@ Skema respons tersedia di OpenAPI. Kredensial atau konfigurasi yang tidak valid 
 
 ### Tampilan katalog
 
-Jalankan backend dengan perintah di atas, lalu jalankan `bun run dev` dari `frontend/`. Pilih **API Explorer** di navigasi. Pencarian menyaring nama endpoint dari katalog yang sudah dimuat. Pilih endpoint untuk melihat entity type, nama field, dan tipe field. Tombol **Coba lagi** memuat ulang katalog setelah terjadi kesalahan.
+Jalankan backend dengan perintah di atas, lalu jalankan `bun run dev` dari `frontend/`. Pilih **API Explorer** di navigasi. Pencarian mencocokkan sebagian nama endpoint atau nama field dari katalog yang sudah dimuat. Misalnya, `postalCode` menampilkan setiap endpoint yang memiliki field dengan nama tersebut. Teks yang cocok disorot. Saat endpoint tertutup, nama field pertama yang cocok tampil di samping nama endpoint. Buka endpoint untuk melihat semua field yang cocok dalam daftar lengkap. Pilih endpoint untuk melihat entity type, nama field, dan tipe field. Tombol **Coba lagi** memuat ulang katalog setelah terjadi kesalahan.
 
 Vite meneruskan request katalog dan preview customer ke backend lokal pada port 8000. Jika skema backend berubah, jalankan `bun run api:types` dari frontend saat backend aktif, lalu periksa perubahan tipe dengan `bun run typecheck`.
 
