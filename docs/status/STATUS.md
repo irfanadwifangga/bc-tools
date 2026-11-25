@@ -32,6 +32,8 @@ _Terakhir diperbarui: 2026-11-24_
 
 - Preview `customers` menyediakan pilihan **Tabel** dan **JSON** dari satu respons backend. Irfan memeriksa preview `customers` melalui UI API Explorer. Tampilan JSON memuat lima objek dengan field dan nilai yang sama seperti tampilan Tabel.
 
+- Tampilan JSON preview `customers` membedakan nama field dan nilai string dengan warna pada tema terang dan gelap serta menyediakan tombol **Salin JSON**. Irfan memeriksa kedua tema dan mengonfirmasi hasil tempel di editor lokal sesuai dengan JSON yang ditampilkan.
+
 ## Blocker dan pertanyaan terbuka
 | # | Pertanyaan | Pemilik | Dibutuhkan sebelum |
 |---|---|---|---|

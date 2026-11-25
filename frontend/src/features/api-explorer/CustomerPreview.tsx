@@ -55,7 +55,7 @@ export function CustomerPreview() {
         </div>
         {preview.status === "error" && <p role="alert">{preview.message}</p>}
         {preview.status === "ready" && (
-          <>
+          <div className="preview-panel">
             <div role="group" aria-label="Tampilan contoh data" className="preview-formats">
               {(["Tabel", "JSON"] as const).map(option => (
                 <button key={option} type="button" aria-pressed={format === option}
@@ -63,7 +63,7 @@ export function CustomerPreview() {
               ))}
             </div>
             <CustomerPreviewData rows={preview.rows} format={format} />
-          </>
+          </div>
         )}
       </div>
     </div>
