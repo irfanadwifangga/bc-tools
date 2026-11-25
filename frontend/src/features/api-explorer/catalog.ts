@@ -25,5 +25,8 @@ export async function loadCustomerPreview(signal: AbortSignal, client = api): Pr
 
 export function filterEndpoints(entities: CatalogEntity[], search: string) {
   const query = search.trim().toLowerCase();
-  return entities.filter(({ name }) => name.toLowerCase().includes(query));
+  return entities.filter(({ name, fields }) =>
+    name.toLowerCase().includes(query) ||
+    fields.some(field => field.name.toLowerCase().includes(query)),
+  );
 }

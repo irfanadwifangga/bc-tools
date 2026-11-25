@@ -1,6 +1,6 @@
 # STATUS
 
-_Terakhir diperbarui: 2026-11-24_
+_Terakhir diperbarui: 2026-11-25_
 
 ## Status fase
 **Fase 2 — katalog endpoint dan field untuk API Explorer.** Fase 0 sudah masuk `main` lewat [PR #1](https://github.com/irfanadwifangga/bc-tools/pull/1).
@@ -22,7 +22,9 @@ _Terakhir diperbarui: 2026-11-24_
 - Backend menyediakan `GET /api/v1/api-explorer/entities` untuk katalog standar. Kontrak respons dan pemetaan error diuji dengan SDK mock.
 - Irfan menguji route katalog lokal melalui Postman. Respons `200 OK` memuat `entityDefinitions.entityName` bertipe `Edm.String`.
 
-- Frontend API Explorer menyediakan pencarian endpoint dan daftar nama serta tipe field.
+- Frontend API Explorer menyediakan pencarian berdasarkan nama endpoint atau nama field. Hasil menyorot teks yang cocok dan menampilkan contoh nama field pada endpoint tertutup. Detail menampilkan daftar nama serta tipe field.
+- Tangkapan layar Irfan menunjukkan pencarian `user` menghasilkan 9 endpoint. Saat detail tertutup, bagian nama endpoint dan field yang cocok tersorot di tema terang dan gelap.
+- Pada katalog uji lokal, detail `approvalUserSetups` diperiksa melalui browser di kedua tema. Pencarian `user` menyorot bagian yang cocok pada `userId` dan `assignedUserId`. Field `city` tetap terlihat tanpa sorotan.
 - Irfan menguji API Explorer melalui frontend lokal. Pencarian `customers` menampilkan endpoint `customers` dengan entity type `Microsoft.NAV.customer` dan field `id` bertipe `Edm.Guid`.
 
 - Backend API Explorer menyediakan preview maksimum lima customer dari demo company terkonfigurasi. Tes route menggunakan SDK mock.

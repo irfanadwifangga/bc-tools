@@ -10,17 +10,36 @@ type CatalogState =
   | { status: "ready"; entities: CatalogEntity[] }
   | { status: "error"; message: string };
 
-function EndpointRow({ entity, open, onSelect }: {
+function highlightMatch(text: string, query: string) {
+  if (!query) return text;
+  const lower = text.toLowerCase();
+  const parts = [];
+  let start = 0;
+  for (let index = lower.indexOf(query); index !== -1; index = lower.indexOf(query, start)) {
+    parts.push(text.slice(start, index), <mark key={index}>{text.slice(index, index + query.length)}</mark>);
+    start = index + query.length;
+  }
+  return parts.length ? [...parts, text.slice(start)] : text;
+}
+
+export function EndpointRow({ entity, open, query, onSelect }: {
   entity: CatalogEntity;
   open: boolean;
+  query: string;
   onSelect: () => void;
 }) {
   const panelId = useId();
+  const fieldHint = !open && query
+    ? entity.fields.find(field => field.name.toLowerCase().includes(query))
+    : undefined;
   return (
     <li className="catalog-row">
       <button type="button" className="catalog-endpoint" aria-expanded={open}
         aria-controls={panelId} onClick={onSelect}>
-        <span>{entity.name}</span>
+        <span className="catalog-result-name">
+          {highlightMatch(entity.name, query)}
+          {fieldHint && <span className="catalog-field-hint"> · {highlightMatch(fieldHint.name, query)}</span>}
+        </span>
         <RightOutlined aria-hidden="true" />
       </button>
       <div id={panelId} hidden={!open} className="catalog-detail">
@@ -31,7 +50,7 @@ function EndpointRow({ entity, open, onSelect }: {
             <table aria-label={`Field ${entity.name}`}>
               <thead><tr><th scope="col">Field</th><th scope="col">Tipe</th></tr></thead>
               <tbody>{entity.fields.map(field => (
-                <tr key={field.name}><td>{field.name}</td><td>{field.type}</td></tr>
+                <tr key={field.name}><td>{highlightMatch(field.name, query)}</td><td>{field.type}</td></tr>
               ))}</tbody>
             </table>
           ) : <p>Endpoint ini tidak memiliki field struktural.</p>}
@@ -63,6 +82,7 @@ export function CatalogPage() {
     return () => controller.abort();
   }, [attempt]);
 
+  const query = search.trim().toLowerCase();
   const results = catalog.status === "ready" ? filterEndpoints(catalog.entities, search) : [];
   return (
     <section className="workspace-sheet catalog" aria-labelledby="catalog-title">
@@ -80,15 +100,15 @@ export function CatalogPage() {
       {catalog.status === "ready" && (catalog.entities.length === 0
         ? <p role="status">Katalog sandbox kosong.</p>
         : <>
-            <label htmlFor="endpoint-search">Cari endpoint</label>
+            <label htmlFor="endpoint-search">Cari endpoint atau field</label>
             <Input id="endpoint-search" type="search" prefix={<SearchOutlined aria-hidden="true" />}
-              placeholder="Misalnya customers" value={search}
+              placeholder="Misalnya customers atau postalCode" value={search}
               onChange={event => setSearch(event.target.value)} />
             <p className="catalog-count" role="status">
               {results.length ? `${results.length} endpoint` : "Tidak ada endpoint yang cocok."}
             </p>
             <ul className="catalog-results">
-              {results.map(entity => <EndpointRow key={entity.name} entity={entity}
+              {results.map(entity => <EndpointRow key={entity.name} entity={entity} query={query}
                 open={selected === entity.name}
                 onSelect={() => setSelected(selected === entity.name ? null : entity.name)} />)}
             </ul>
