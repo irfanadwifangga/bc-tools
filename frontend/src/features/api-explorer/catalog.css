@@ -30,7 +30,15 @@
 .catalog-type { margin-block: 16px; }
 .customer-preview { margin-block: 16px 24px; }
 .customer-preview [role="status"]:not(:empty) { margin-block: 12px 4px; }
-.preview-formats { display: flex; gap: 4px; margin-block: 4px 8px; }
+.preview-panel {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-block-start: 4px;
+}
+.preview-panel > :is(pre, table, p) { flex: 0 0 100%; min-width: 0; box-sizing: border-box; }
+.preview-formats { display: flex; gap: 4px; }
 .preview-formats button {
   min-height: 44px;
   padding-inline: 12px;
@@ -47,13 +55,46 @@
   font-weight: 600;
 }
 .preview-formats button:focus-visible { outline: 2px solid var(--workspace-accent); }
+.preview-copy {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  inline-size: 9.5rem;
+  max-inline-size: 100%;
+  margin-inline-start: auto;
+  min-height: 44px;
+  padding-inline: 12px;
+  border: 1px solid var(--workspace-line);
+  border-radius: 4px;
+  color: var(--workspace-text);
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
+}
+.preview-copy:hover { color: var(--workspace-accent); background: var(--workspace-selection); }
+.preview-copy[aria-disabled="true"] { cursor: default; }
+.preview-copy:focus-visible { outline: 2px solid var(--workspace-accent); }
+.preview-copy-error { margin: 0; }
 .preview-json {
+  --json-key: #00657a;
+  --json-string: #835511;
+  --json-literal: #96366e;
+  color: var(--workspace-muted);
   margin: 0;
   padding: 12px;
   border-inline-start: 2px solid var(--workspace-line);
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
+:root[data-theme="dark"] .preview-json {
+  --json-key: #54daee;
+  --json-string: #ffd166;
+  --json-literal: #f295d0;
+}
+.preview-json .json-key { color: var(--json-key); }
+.preview-json .json-string { color: var(--json-string); }
+.preview-json .json-literal { color: var(--json-literal); }
 .preview-json code { font: 14px/1.5 var(--workspace-record-font); }
 .customer-preview th, .customer-preview td { overflow-wrap: anywhere; }
 .customer-preview th:first-child { width: 42%; }

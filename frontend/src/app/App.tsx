@@ -30,7 +30,9 @@ export function App() {
   const theme = useMemo(() => workspaceTheme(dark), [dark]);
 
   useEffect(() => {
-    document.documentElement.style.colorScheme = dark ? "dark" : "light";
+    const scheme = dark ? "dark" : "light";
+    document.documentElement.style.colorScheme = scheme;
+    document.documentElement.dataset.theme = scheme;
   }, [dark]);
 
   function changeTheme(value: ThemeChoice) {
