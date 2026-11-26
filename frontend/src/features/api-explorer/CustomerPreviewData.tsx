@@ -1,5 +1,4 @@
-import { CheckOutlined, CopyOutlined, LoadingOutlined, ReloadOutlined } from "@ant-design/icons";
-import { useEffect, useState } from "react";
+import { CopyTextButton } from "./CopyTextButton";
 import type { PreviewCustomer } from "./catalog";
 
 export type PreviewFormat = "Tabel" | "JSON";
@@ -17,55 +16,16 @@ export function JsonCode({ text }: { text: string }) {
   })}</code>;
 }
 
-const copyStates = {
-  idle: { label: "Salin JSON", icon: CopyOutlined },
-  copying: { label: "Menyalin…", icon: LoadingOutlined },
-  copied: { label: "Tersalin", icon: CheckOutlined },
-  error: { label: "Coba salin lagi", icon: ReloadOutlined },
-};
-
-function JsonPreview({ text }: { text: string }) {
-  const [status, setStatus] = useState<keyof typeof copyStates>("idle");
-  const { label, icon: Icon } = copyStates[status];
-  const busy = status === "copying" || status === "copied";
-
-  useEffect(() => {
-    if (status !== "copied") return;
-    const timer = window.setTimeout(() => setStatus("idle"), 2000);
-    return () => window.clearTimeout(timer);
-  }, [status]);
-
-  async function copyJson() {
-    if (busy) return;
-    setStatus("copying");
-    try {
-      await navigator.clipboard.writeText(text);
-      setStatus("copied");
-    } catch {
-      setStatus("error");
-    }
-  }
-
-  return (
-    <>
-      <button className="preview-copy" type="button" onClick={copyJson} aria-disabled={busy}>
-        <Icon aria-hidden="true" />
-        <span aria-live="polite" aria-atomic="true">{label}</span>
-      </button>
-      {status === "error" && (
-        <p className="preview-copy-error" role="alert">Gagal menyalin. Kamu juga bisa menyalin teks JSON secara manual.</p>
-      )}
-      <pre className="preview-json"><JsonCode text={text} /></pre>
-    </>
-  );
-}
-
 export function CustomerPreviewData({ rows, format }: {
   rows: PreviewCustomer[];
   format: PreviewFormat;
 }) {
   if (format === "JSON") {
-    return <JsonPreview text={JSON.stringify(rows, null, 2)} />;
+    const text = JSON.stringify(rows, null, 2);
+    return <>
+      <CopyTextButton text={text} label="Salin JSON" />
+      <pre className="preview-json"><JsonCode text={text} /></pre>
+    </>;
   }
   if (rows.length === 0) return null;
 

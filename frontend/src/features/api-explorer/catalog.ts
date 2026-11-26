@@ -30,3 +30,21 @@ export function filterEndpoints(entities: CatalogEntity[], search: string) {
     fields.some(field => field.name.toLowerCase().includes(query)),
   );
 }
+
+const byName = new Intl.Collator("id", { sensitivity: "base" });
+
+export function groupEndpoints(entities: CatalogEntity[]) {
+  const groups = new Map<string, CatalogEntity[]>();
+  for (const entity of entities) {
+    const initial = entity.name.charAt(0).toUpperCase();
+    const letter = /^[A-Z]$/.test(initial) ? initial : "#";
+    const group = groups.get(letter);
+    if (group) group.push(entity);
+    else groups.set(letter, [entity]);
+  }
+
+  return [...groups].sort(([a], [b]) => byName.compare(a, b)).map(([letter, members]) => ({
+    letter,
+    entities: members.sort((a, b) => byName.compare(a.name, b.name)),
+  }));
+}

@@ -1,7 +1,8 @@
 import { Button, Input } from "antd";
 import { RightOutlined, SearchOutlined } from "@ant-design/icons";
 import { useEffect, useId, useState } from "react";
-import { filterEndpoints, loadCatalog, type CatalogEntity } from "./catalog";
+import { filterEndpoints, groupEndpoints, loadCatalog, type CatalogEntity } from "./catalog";
+import { CustomerCodeSamples } from "./CustomerCodeSamples";
 import { CustomerPreview } from "./CustomerPreview";
 import "./catalog.css";
 
@@ -45,7 +46,10 @@ export function EndpointRow({ entity, open, query, onSelect }: {
       <div id={panelId} hidden={!open} className="catalog-detail">
         {open && <>
           <p className="catalog-type">Entity type <code>{entity.entity_type}</code></p>
-          {entity.name === "customers" && <CustomerPreview />}
+          {entity.name === "customers" && <>
+            <CustomerPreview />
+            <CustomerCodeSamples />
+          </>}
           {entity.fields.length ? (
             <table aria-label={`Field ${entity.name}`}>
               <thead><tr><th scope="col">Field</th><th scope="col">Tipe</th></tr></thead>
@@ -107,11 +111,16 @@ export function CatalogPage() {
             <p className="catalog-count" role="status">
               {results.length ? `${results.length} endpoint` : "Tidak ada endpoint yang cocok."}
             </p>
-            <ul className="catalog-results">
-              {results.map(entity => <EndpointRow key={entity.name} entity={entity} query={query}
-                open={selected === entity.name}
-                onSelect={() => setSelected(selected === entity.name ? null : entity.name)} />)}
-            </ul>
+            {groupEndpoints(results).map(({ letter, entities }) => (
+              <div key={letter} className="catalog-group">
+                <h2 className="catalog-letter">{letter}</h2>
+                <ul className="catalog-results" aria-label={`Endpoint ${letter}`}>
+                  {entities.map(entity => <EndpointRow key={entity.name} entity={entity} query={query}
+                    open={selected === entity.name}
+                    onSelect={() => setSelected(selected === entity.name ? null : entity.name)} />)}
+                </ul>
+              </div>
+            ))}
           </>)}
     </section>
   );
