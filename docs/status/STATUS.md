@@ -3,7 +3,7 @@
 _Terakhir diperbarui: 2026-11-26_
 
 ## Status fase
-**Fase 2 — katalog endpoint dan field untuk API Explorer.** Fase 0 sudah masuk `main` lewat [PR #1](https://github.com/irfanadwifangga/bc-tools/pull/1).
+**MVP Fase 0–2 selesai (`v0.2.0`)** dan masuk `main` lewat [PR #23](https://github.com/irfanadwifangga/bc-tools/pull/23). Tahap berikutnya: desain **Fase 3 — Permission Analyzer** (B-11); lihat [retrospektif MVP](mvp-retrospective.md), [spesifikasi modul](../modules/permission-analyzer.md), dan [ADR-004](../decisions/ADR-004-automation-api-readonly.md) (`Proposed`).
 
 ## Selesai
 - Scaffold repo, `AGENTS.md`, dokumen inti, standar, spesifikasi modul, draft ADR-001/002/003 (disusun Claude sebagai analis)
