@@ -58,6 +58,8 @@ _Terakhir diperbarui: 2026-11-26_
 
 - Halaman **Ringkasan** (`#ringkasan`) diperbarui menjadi Workspace Hub (`OverviewPage`) yang memuat status backend lokal (`/api/v1/health`), jumlah endpoint Standar & Custom, total Customer & Item `DEMO COMPANY`, tombol aksi cepat ke **API Explorer**, serta tombol **Periksa ulang**, dengan unit test mock dan SSR. Irfan memverifikasi tampilan live di browser (`Backend lokal: Aktif`, `150 endpoint` Standar, `7 endpoint` Custom, `12` Customer, `51` Item).
 
+- **Fase 3 Slice 1 (Permission Analyzer SDK):** [ADR-004](../decisions/ADR-004-automation-api-readonly.md) disetujui (`Accepted`), `bc.automation` ditambahkan di `bc_sdk` dengan allowlist GET-only `microsoft/automation/v2.0` dan diuji dengan HTTP mock (`test_automation.py`). Integration test Sandbox (`test_sandbox_automation_integration.py`) lulus oleh Irfan: 25 entity Automation terdeteksi (`permissionSets` mengembalikan `id`, `appId`, `displayName`, `extensionName`, `scope`). Cetak skema field entity izin untuk Slice 2 menunggu langkah berikutnya.
+
 ## Blocker dan pertanyaan terbuka
 | # | Pertanyaan | Pemilik | Dibutuhkan sebelum |
 |---|---|---|---|

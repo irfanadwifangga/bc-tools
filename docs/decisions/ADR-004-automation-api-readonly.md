@@ -1,6 +1,6 @@
 # ADR-004: Pembacaan Automation API (`microsoft/automation/v2.0`) secara Read-Only di `bc_sdk`
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Tanggal:** 2026-11-26
 - **Pemilik keputusan:** Irfan
 
@@ -33,7 +33,7 @@ Modul **Permission Analyzer** (Fase 3) membutuhkan daftar user, assignment permi
 
 ## Keputusan
 
-(Kosong selama status `Proposed` — menunggu konfirmasi dan uji akses `D365 AUTOMATION` di Sandbox oleh Irfan.)
+**Opsi A** disetujui Irfan pada 2026-11-26: `bc_sdk` membuka allowlist GET-only terpisah khusus endpoint read-only Automation API `microsoft/automation/v2.0` (`$metadata`, `users`, `permissionSets`, `userPermissionSets`, `expandedPermissionSets`, `accessControls`, `usersPermissions`, `userPermissions`, `aggregatePermissionSets`), sementara `D365 AUTOMATION` dipasang pada `BC-Sandbox-Latihan` di Sandbox. Rute `BC_CUSTOM_API_ROUTE` tetap menolak prefix `microsoft`.
 
 ## Konsekuensi
 

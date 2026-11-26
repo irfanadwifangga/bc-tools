@@ -10,6 +10,7 @@ from uuid import UUID
 import httpx
 
 from .auth import MsalTokenProvider, TokenProvider
+from .automation import AUTOMATION_ENTITIES, AutomationAPI
 from .errors import (
     BCAuthError,
     BCNotFoundError,
@@ -73,6 +74,7 @@ class BCClient:
 
         api_path = f"/v2.0/{tenant}/Sandbox/api/"
         self._base_path = f"{api_path}v2.0/"
+        self._automation_path = f"{api_path}microsoft/automation/v2.0/"
         self._custom_metadata_path = (
             f"{api_path}{custom_api_route}/$metadata"
             if custom_api_route is not None
@@ -85,6 +87,11 @@ class BCClient:
         )
         self.metadata = Metadata(self._read_metadata)
         self.custom_metadata = Metadata(self._read_custom_metadata)
+        self.automation = AutomationAPI(
+            company_id=str(company) if company is not None else None,
+            read_metadata=self._read_automation_metadata,
+            iter_records=self._iter_automation_records,
+        )
         self.companies = Companies(self._iter_records)
         self.customers = CompanyResource(
             self._iter_records, company, "customers", Customer, self._iter_pages
@@ -129,12 +136,31 @@ class BCClient:
             return False
         return _ENTITY_NAME.fullmatch(path[len(self._company_path) :]) is not None
 
-    def _initial_url(self, path: str, params: httpx.QueryParams | None) -> httpx.URL:
-        if not self._path_allowed(path):
+    def _automation_path_allowed(self, path: str) -> bool:
+        if path == "$metadata" or path in AUTOMATION_ENTITIES:
+            return True
+        if self._company_path is None or not path.startswith(self._company_path):
+            return False
+        return path[len(self._company_path) :] in AUTOMATION_ENTITIES
+
+    def _initial_url(
+        self,
+        path: str,
+        params: httpx.QueryParams | None,
+        *,
+        base_path: str | None = None,
+    ) -> httpx.URL:
+        root = base_path or self._base_path
+        allowed = (
+            self._automation_path_allowed(path)
+            if root == self._automation_path
+            else self._path_allowed(path)
+        )
+        if not allowed:
             raise BCRequestError(
                 "The API path is outside the configured Sandbox scope."
             )
-        url = httpx.URL(f"https://{_BC_HOST}{self._base_path}{path}")
+        url = httpx.URL(f"https://{_BC_HOST}{root}{path}")
         return url.copy_merge_params(params) if params is not None else url
 
     def _validate_url(self, url: httpx.URL) -> None:
@@ -155,7 +181,16 @@ class BCClient:
                     "The metadata endpoint does not accept query options."
                 )
             return
-        if not path.startswith(self._base_path) or not self._path_allowed(
+        if path.startswith(self._automation_path):
+            if not self._automation_path_allowed(path[len(self._automation_path) :]):
+                raise BCRequestError(
+                    "The API path is outside the configured Sandbox scope."
+                )
+            if path == f"{self._automation_path}$metadata" and url.query:
+                raise BCRequestError(
+                    "The metadata endpoint does not accept query options."
+                )
+        elif not path.startswith(self._base_path) or not self._path_allowed(
             path[len(self._base_path) :]
         ):
             raise BCRequestError(
@@ -233,6 +268,10 @@ class BCClient:
         url = httpx.URL(f"https://{_BC_HOST}{self._custom_metadata_path}")
         return (await self._get(url)).content
 
+    async def _read_automation_metadata(self) -> bytes:
+        url = self._initial_url("$metadata", None, base_path=self._automation_path)
+        return (await self._get(url)).content
+
     async def _read_json(self, url: httpx.URL) -> dict[str, object]:
         response = await self._get(url)
         try:
@@ -246,9 +285,13 @@ class BCClient:
         return body
 
     async def _iter_pages(
-        self, path: str, params: httpx.QueryParams | None = None
+        self,
+        path: str,
+        params: httpx.QueryParams | None = None,
+        *,
+        base_path: str | None = None,
     ) -> AsyncIterator[tuple[list[dict[str, object]], int | None]]:
-        current = self._initial_url(path, params)
+        current = self._initial_url(path, params, base_path=base_path)
         original_path = current.raw_path.partition(b"?")[0]
         visited: set[httpx.URL] = set()
         while True:
@@ -293,5 +336,14 @@ class BCClient:
         self, path: str, params: httpx.QueryParams | None = None
     ) -> AsyncIterator[dict[str, object]]:
         async for records, _ in self._iter_pages(path, params):
+            for record in records:
+                yield record
+
+    async def _iter_automation_records(
+        self, path: str, params: httpx.QueryParams | None = None
+    ) -> AsyncIterator[dict[str, object]]:
+        async for records, _ in self._iter_pages(
+            path, params, base_path=self._automation_path
+        ):
             for record in records:
                 yield record
