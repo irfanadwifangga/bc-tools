@@ -11,8 +11,7 @@ export function EndpointCodeSamples({ endpoint, query }: {
   const [language, setLanguage] = useState<SampleLanguage>("Python");
   const text = getCodeSample(endpoint, language, query.limit, query.order, query.number);
   return (
-    <details className="customer-samples">
-      <summary>Contoh kode GET</summary>
+    <div className="customer-samples">
       <div className="preview-panel">
         <div className="preview-formats" role="group" aria-label="Bahasa contoh kode">
           {(["Python", "C#"] as const).map(option => (
@@ -23,6 +22,6 @@ export function EndpointCodeSamples({ endpoint, query }: {
         <CopyTextButton key={text} text={text} label="Salin kode" />
         <pre className="preview-json" tabIndex={0} aria-label={`Contoh kode ${language}`}><SampleCode language={language} text={text} /></pre>
       </div>
-    </details>
+    </div>
   );
 }

@@ -50,6 +50,8 @@ _Terakhir diperbarui: 2026-11-26_
 
 - API Explorer dapat menampilkan katalog satu custom API yang dikonfigurasi, dengan penanda sumber dan daftar field. Pengambilan metadata custom diuji dengan mock, 4 skenario browser simulasi lulus, dan Irfan mengonfirmasi `customers` Custom beserta field custom tampil dari Sandbox (`ptmis/demo/v1.0`).
 
+- API Explorer memakai komponen bersama `PageHeader` rata tengah dengan deskripsi, toolbar pencarian dengan filter sumber (`Semua`, `Standar`, `Custom`) dan toggle List/Grid di bawah kotak pencarian, kontrol `<Select>` Ant Design berikon di preview, serta modal detail split-pane (struktur field ber-filter & scroll mandiri di kiri, tab **Preview Data** dan **Contoh Kode GET** di kanan).
+
 ## Blocker dan pertanyaan terbuka
 | # | Pertanyaan | Pemilik | Dibutuhkan sebelum |
 |---|---|---|---|

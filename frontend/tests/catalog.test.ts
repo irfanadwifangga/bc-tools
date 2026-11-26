@@ -62,3 +62,19 @@ test("field search includes only groups with matching endpoints", () => {
   ]);
   expect(groupEndpoints(filterEndpoints(catalog, "missing"))).toEqual([]);
 });
+
+test("source filter narrows results to standard or custom endpoints alongside search", () => {
+  const custom: CatalogEntity = {
+    name: "customers",
+    entity_type: "Custom.customer",
+    source: "custom",
+    fields: [{ name: "creditLimitLCY", type: "Edm.Decimal" }],
+  };
+  const catalog = [entities[0], entities[2], custom];
+  expect(filterEndpoints(catalog, "", "all")).toEqual(catalog);
+  expect(filterEndpoints(catalog, "", "standard")).toEqual([entities[0], entities[2]]);
+  expect(filterEndpoints(catalog, "", "custom")).toEqual([custom]);
+  expect(filterEndpoints(catalog, "customers", "standard")).toEqual([entities[0]]);
+  expect(filterEndpoints(catalog, "creditLimit", "standard")).toEqual([]);
+  expect(filterEndpoints(catalog, "creditLimit", "custom")).toEqual([custom]);
+});

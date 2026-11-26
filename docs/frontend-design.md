@@ -40,7 +40,7 @@ Warna, radius, dan font didefinisikan lewat `ConfigProvider` di `frontend/src/th
 ## Tipografi dan responsif
 
 - **Segoe UI** untuk judul, navigasi, dan deskripsi. Judul 28–44 px, isi 14–16 px, label 13 px. **Cascadia Mono**, dengan fallback **Consolas**, untuk nilai konteks dan nama resource.
-- Kolom baca maksimal 820 px. Gunakan jarak 8–12 px di dalam kelompok dan 24–40 px antarbagian. Susun semua kelompok pada sisi kiri yang sama.
+- Kolom baca maksimal 820 px (terpusat horizontal di layar lebar; halaman katalog mode Grid meluas hingga 1040 px). Gunakan jarak 8–12 px di dalam kelompok dan 24–40 px antarbagian. Susun kelompok isi pada sisi kiri yang sama di dalam kolom tersebut.
 - Di bawah breakpoint `lg`, tombol header membuka menu sementara. Escape menutup menu dan mengembalikan fokus ke tombol. Target sentuh minimal 44 × 44 px.
 - Pada layar sempit, konteks bisa turun ke baris berikutnya dan deskripsi resource bisa pindah ke bawah nama. Tema dan kontrol navigasi tetap bisa dipakai pada lebar 320 px.
 

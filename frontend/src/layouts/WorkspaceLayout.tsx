@@ -9,9 +9,9 @@ import {
   UnorderedListOutlined,
 } from "@ant-design/icons";
 import { Breadcrumb, Button, Dropdown, Layout, Tooltip, theme } from "antd";
-import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { recordFont } from "../theme/tokens";
-
+import { PageHeader } from "../components/PageHeader";
 import { CatalogPage } from "../features/api-explorer/CatalogPage";
 
 const pages = [
@@ -63,7 +63,7 @@ export function WorkspaceLayout({ choice, onThemeChange }: WorkspaceLayoutProps)
   const ActiveThemeIcon = themeOptions[choice].icon;
   const activePageLink = useRef<HTMLAnchorElement>(null);
   const mobileMenuOpen = narrow && !collapsed;
-  const styles = {
+  const styles = useMemo(() => ({
     "--workspace-page": token.colorBgLayout,
     "--workspace-chrome": token.colorBgContainer,
     "--workspace-line": token.colorBorderSecondary,
@@ -72,7 +72,13 @@ export function WorkspaceLayout({ choice, onThemeChange }: WorkspaceLayoutProps)
     "--workspace-accent": token.colorPrimary,
     "--workspace-selection": token.colorPrimaryBg,
     "--workspace-record-font": recordFont,
-  } as CSSProperties;
+  }), [token]);
+
+  useEffect(() => {
+    for (const [key, value] of Object.entries(styles)) {
+      document.documentElement.style.setProperty(key, value);
+    }
+  }, [styles]);
 
   useEffect(() => {
     if (mobileMenuOpen) activePageLink.current?.focus();
@@ -93,7 +99,7 @@ export function WorkspaceLayout({ choice, onThemeChange }: WorkspaceLayoutProps)
   return (
     <Layout
       className="workspace"
-      style={styles}
+      style={styles as CSSProperties}
       onKeyDown={(event) => {
         if (event.key === "Escape" && mobileMenuOpen) closeMenu();
       }}
@@ -196,7 +202,11 @@ export function WorkspaceLayout({ choice, onThemeChange }: WorkspaceLayoutProps)
 function Overview() {
   return (
     <section className="workspace-sheet" aria-labelledby="workspace-title">
-      <h1 className="workspace-title" id="workspace-title">Business Central Sandbox</h1>
+      <PageHeader
+        title="Business Central Sandbox"
+        description="Lingkup kerja lokal dan resource standar SDK."
+        titleId="workspace-title"
+      />
       <dl className="workspace-scope">
         <div><dt>Environment</dt><dd>Sandbox</dd></div>
         <div><dt>Company</dt><dd>DEMO COMPANY</dd></div>
