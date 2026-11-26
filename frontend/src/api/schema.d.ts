@@ -107,15 +107,12 @@ export interface components {
     schemas: {
         /** CustomerPreview */
         CustomerPreview: {
-            /**
-             * Id
-             * Format: uuid
-             */
-            id: string;
+            /** Id */
+            id?: string | null;
             /** Number */
-            number: string;
+            number?: string | null;
             /** Displayname */
-            displayName: string;
+            displayName?: string | null;
         };
         /** ErrorDetail */
         ErrorDetail: {
@@ -143,15 +140,12 @@ export interface components {
         };
         /** ItemPreview */
         ItemPreview: {
-            /**
-             * Id
-             * Format: uuid
-             */
-            id: string;
+            /** Id */
+            id?: string | null;
             /** Number */
-            number: string;
+            number?: string | null;
             /** Displayname */
-            displayName: string;
+            displayName?: string | null;
         };
         /** MetadataEntity */
         MetadataEntity: {
@@ -296,6 +290,7 @@ export interface operations {
                 limit?: number;
                 order?: "number asc" | "number desc" | "displayName asc" | "displayName desc";
                 number?: string;
+                fields?: string;
             };
             header?: never;
             path?: never;
@@ -356,6 +351,7 @@ export interface operations {
                 limit?: number;
                 order?: "number asc" | "number desc" | "displayName asc" | "displayName desc";
                 number?: string;
+                fields?: string;
             };
             header?: never;
             path?: never;

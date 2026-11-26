@@ -35,6 +35,8 @@ Resource `customers` dan `items` menerima `order_by` opsional dari enum `RecordO
 
 Resource `customers` dan `items` juga menerima `number` opsional untuk kecocokan persis. SDK membatasi nomor ke 100 karakter cetak dan menangani apostrof sebagai bagian dari nilai literal.
 
+Resource `customers` dan `items` juga menerima `fields` opsional dari enum `RecordField` (`id`, `number`, `displayName`, minimal satu field unik) untuk mengirim `$select` sesuai pilihan tanpa field asing.
+
 ## Katalog metadata (Fase 2)
 
 Jika `BCSettings.custom_api_route` terisi, `bc.custom_metadata.list_entities()` membaca `$metadata` dari satu kombinasi publisher, group, dan version pada host Business Central Sandbox yang dikonfigurasi. SDK membatasi permintaan custom ke path metadata tersebut.

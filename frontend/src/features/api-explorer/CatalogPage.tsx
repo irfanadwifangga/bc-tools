@@ -1,5 +1,5 @@
-import { Button, Input, Modal, Tabs } from "antd";
-import { ApiOutlined, AppstoreOutlined, BarsOutlined, CodeOutlined, DatabaseOutlined, RightOutlined, SearchOutlined } from "@ant-design/icons";
+import { Alert, Button, Empty, Input, Modal, Skeleton, Spin, Tabs } from "antd";
+import { ApiOutlined, AppstoreOutlined, BarsOutlined, CodeOutlined, DatabaseOutlined, ReloadOutlined, RightOutlined, SearchOutlined } from "@ant-design/icons";
 import { useEffect, useState } from "react";
 import { PageHeader } from "../../components/PageHeader";
 import {
@@ -100,9 +100,14 @@ export function EndpointDetail({ entity, query }: { entity: CatalogEntity; query
               </table>
             </div>
           ) : (
-            <p className="catalog-type">
-              {entity.fields.length ? "Tidak ada field yang cocok." : "Endpoint ini tidak memiliki field struktural."}
-            </p>
+            <div className="catalog-empty-inline">
+              <Empty
+                image={Empty.PRESENTED_IMAGE_SIMPLE}
+                description={entity.fields.length ? "Tidak ada field yang cocok." : "Endpoint ini tidak memiliki field struktural."}
+              >
+                {localQuery && <Button size="small" onClick={() => setFieldSearch("")}>Reset pencarian</Button>}
+              </Empty>
+            </div>
           )}
         </section>
         {examplesEndpoint && (
@@ -190,15 +195,36 @@ export function CatalogPage() {
         description="Telusuri endpoint standar dan custom Business Central Sandbox beserta field dan contoh query."
         titleId="catalog-title"
       />
-      {loading && <p role="status">Memuat katalog endpoint…</p>}
+      {loading && (
+        <div className={entities.length === 0 ? "catalog-state-box" : "catalog-state-banner"} role="status" aria-live="polite">
+          <div className="catalog-state-spinner">
+            <Spin size={entities.length === 0 ? "default" : "small"} />
+            <span>Memuat katalog endpoint…</span>
+          </div>
+          {entities.length === 0 && <Skeleton active title={false} paragraph={{ rows: 4 }} />}
+        </div>
+      )}
       {([["Standar", standard], ["Custom", custom]] as const).map(([source, { catalog, retry }]) =>
         catalog.status === "error" && (
           <div key={source} className="catalog-source-error">
-            <p role="alert">{source} · {catalog.message}</p>
-            <Button onClick={retry} aria-label={"Coba lagi katalog " + source.toLowerCase()}>Coba lagi</Button>
+            <Alert
+              type="error"
+              showIcon
+              message={`${source} · ${catalog.message}`}
+              action={
+                <Button size="small" icon={<ReloadOutlined aria-hidden="true" />}
+                  onClick={retry} aria-label={"Coba lagi katalog " + source.toLowerCase()}>
+                  Coba lagi
+                </Button>
+              }
+            />
           </div>
         ))}
-      {allReady && entities.length === 0 && <p role="status">Katalog sandbox kosong.</p>}
+      {allReady && entities.length === 0 && (
+        <div className="catalog-state-box" role="status">
+          <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="Katalog sandbox kosong." />
+        </div>
+      )}
       {entities.length > 0 && (
         <>
             <label htmlFor="endpoint-search">Cari endpoint atau field</label>
@@ -235,22 +261,34 @@ export function CatalogPage() {
               </div>
             </div>
             <p className="catalog-count" role="status">
-              {results.length ? `${results.length} endpoint` : "Tidak ada endpoint yang cocok."}
+              {`${results.length} endpoint`}
             </p>
-            {groupEndpoints(results).map(({ letter, entities }) => (
-              <div key={letter} className="catalog-group">
-                <h2 className="catalog-letter">{letter}</h2>
-                <ul className={viewMode === "grid" ? "catalog-results catalog-results--grid" : "catalog-results"}
-                  aria-label={`Endpoint ${letter}`}>
-                  {entities.map(entity => {
-                    const key = endpointKey(entity);
-                    return <EndpointRow key={key} entity={entity} query={query}
-                      open={selected === key}
-                      onSelect={() => setSelected(key)} />;
-                  })}
-                </ul>
+            {results.length === 0 ? (
+              <div className="catalog-state-box">
+                <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="Tidak ada endpoint yang cocok.">
+                  {(search || sourceFilter !== "all") && (
+                    <Button onClick={() => { setSearch(""); setSourceFilter("all"); }}>
+                      Reset filter
+                    </Button>
+                  )}
+                </Empty>
               </div>
-            ))}
+            ) : (
+              groupEndpoints(results).map(({ letter, entities }) => (
+                <div key={letter} className="catalog-group">
+                  <h2 className="catalog-letter">{letter}</h2>
+                  <ul className={viewMode === "grid" ? "catalog-results catalog-results--grid" : "catalog-results"}
+                    aria-label={`Endpoint ${letter}`}>
+                    {entities.map(entity => {
+                      const key = endpointKey(entity);
+                      return <EndpointRow key={key} entity={entity} query={query}
+                        open={selected === key}
+                        onSelect={() => setSelected(key)} />;
+                    })}
+                  </ul>
+                </div>
+              ))
+            )}
             <Modal
               open={selectedEntity !== null}
               onCancel={() => setSelected(null)}

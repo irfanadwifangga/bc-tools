@@ -1,5 +1,5 @@
 import { CopyTextButton } from "./CopyTextButton";
-import type { PreviewCustomer } from "./catalog";
+import { PREVIEW_FIELDS, type PreviewCustomer, type PreviewField } from "./catalog";
 
 export type PreviewFormat = "Tabel" | "JSON";
 
@@ -16,10 +16,11 @@ export function JsonCode({ text }: { text: string }) {
   })}</code>;
 }
 
-export function CustomerPreviewData({ rows, format, resource = "customer" }: {
+export function CustomerPreviewData({ rows, format, resource = "customer", fields = PREVIEW_FIELDS }: {
   rows: PreviewCustomer[];
   format: PreviewFormat;
   resource?: "customer" | "item";
+  fields?: readonly PreviewField[];
 }) {
   if (format === "JSON") {
     const text = JSON.stringify(rows, null, 2);
@@ -33,9 +34,9 @@ export function CustomerPreviewData({ rows, format, resource = "customer" }: {
   return (
     <div className="preview-table-scroll">
       <table aria-label={`Contoh data ${resource}`}>
-        <thead><tr><th scope="col">id</th><th scope="col">number</th><th scope="col">displayName</th></tr></thead>
-        <tbody>{rows.map(row => (
-          <tr key={row.id}><td>{row.id}</td><td>{row.number}</td><td>{row.displayName}</td></tr>
+        <thead><tr>{fields.map(field => <th key={field} scope="col">{field}</th>)}</tr></thead>
+        <tbody>{rows.map((row, index) => (
+          <tr key={row.id ?? index}>{fields.map(field => <td key={field}>{row[field]}</td>)}</tr>
         ))}</tbody>
       </table>
     </div>

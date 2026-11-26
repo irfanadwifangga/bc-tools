@@ -1,4 +1,4 @@
-import type { PreviewOrder } from "./catalog";
+import { PREVIEW_FIELDS, type PreviewField, type PreviewOrder } from "./catalog";
 
 export type SampleEndpoint = "customers" | "items";
 export type SampleLanguage = "Python" | "C#";
@@ -6,14 +6,15 @@ export const DEFAULT_PREVIEW_LIMIT = 5;
 
 export function getCodeSample(
   endpoint: SampleEndpoint, language: SampleLanguage, limit = DEFAULT_PREVIEW_LIMIT, order?: PreviewOrder,
-  number?: string,
+  number?: string, fields: readonly PreviewField[] = PREVIEW_FIELDS,
 ): string {
   const filter = number?.trim() ? "number eq '" + number.replaceAll("'", "''") + "'" : undefined;
-  return samples[language](endpoint, limit, order, filter);
+  const selected = fields.length ? fields : PREVIEW_FIELDS;
+  return samples[language](endpoint, limit, order, filter, selected);
 }
 
 const samples = {
-  Python: (endpoint: SampleEndpoint, limit: number, order?: PreviewOrder, filter?: string) => `# Atur variabel BC_* untuk DEMO COMPANY sebelum menjalankan contoh.
+  Python: (endpoint: SampleEndpoint, limit: number, order?: PreviewOrder, filter?: string, selected: readonly PreviewField[] = PREVIEW_FIELDS) => `# Atur variabel BC_* untuk DEMO COMPANY sebelum menjalankan contoh.
 import json
 import os
 from uuid import UUID
@@ -44,12 +45,12 @@ with httpx.Client(headers=headers, timeout=10.0, follow_redirects=False) as clie
     if info.json()["name"].casefold() != "demo company":
         raise SystemExit("BC_COMPANY_ID harus menunjuk ke DEMO COMPANY.")
 
-    fields = ("id", "number", "displayName")
+    fields = (${selected.map(field => `"${field}"`).join(", ")}${selected.length === 1 ? "," : ""})
     response = client.get(f"{url}/${endpoint}", params={"$top": ${limit}, "$select": ",".join(fields)${order ? `, "$orderby": "${order}"` : ""}${filter ? `, "$filter": ${JSON.stringify(filter)}` : ""}})
     response.raise_for_status()
     rows = [{field: row[field] for field in fields} for row in response.json()["value"]]
     print(json.dumps(rows, indent=2, ensure_ascii=False))`,
-  "C#": (endpoint: SampleEndpoint, limit: number, order?: PreviewOrder, filter?: string) => `// Atur variabel BC_* untuk DEMO COMPANY sebelum menjalankan contoh.
+  "C#": (endpoint: SampleEndpoint, limit: number, order?: PreviewOrder, filter?: string, selected: readonly PreviewField[] = PREVIEW_FIELDS) => `// Atur variabel BC_* untuk DEMO COMPANY sebelum menjalankan contoh.
 using System;
 using System.Linq;
 using System.Net.Http;
@@ -83,12 +84,10 @@ using var info = JsonDocument.Parse(await client.GetStringAsync(url + "?$select=
 if (!string.Equals(info.RootElement.GetProperty("name").GetString(), "DEMO COMPANY", StringComparison.OrdinalIgnoreCase))
     throw new InvalidOperationException("BC_COMPANY_ID harus menunjuk ke DEMO COMPANY.");
 
-using var data = JsonDocument.Parse(await client.GetStringAsync(url + "/${endpoint}?$top=${limit}&$select=id,number,displayName${order ? `&$orderby=${encodeURIComponent(order)}` : ""}${filter ? `&$filter=${encodeURIComponent(filter)}` : ""}"));
+using var data = JsonDocument.Parse(await client.GetStringAsync(url + "/${endpoint}?$top=${limit}&$select=${selected.join(",")}${order ? `&$orderby=${encodeURIComponent(order)}` : ""}${filter ? `&$filter=${encodeURIComponent(filter)}` : ""}"));
 var rows = data.RootElement.GetProperty("value").EnumerateArray().Select(row => new
 {
-    id = row.GetProperty("id").GetString(),
-    number = row.GetProperty("number").GetString(),
-    displayName = row.GetProperty("displayName").GetString()
+${selected.map(field => `    ${field} = row.GetProperty("${field}").GetString()`).join(",\n")}
 });
 Console.WriteLine(JsonSerializer.Serialize(rows, new JsonSerializerOptions { WriteIndented = true }));`,
 } as const;

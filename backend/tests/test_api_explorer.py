@@ -2,7 +2,7 @@ from unittest.mock import AsyncMock, patch
 from uuid import UUID
 
 import pytest
-from bc_sdk import Customer, Item, RecordOrder
+from bc_sdk import Customer, Item, RecordField, RecordOrder
 from bc_sdk.errors import (
     BCAuthError,
     BCNotFoundError,
@@ -244,6 +244,12 @@ def test_preview_rejects_parameters_and_writes_before_sdk_creation(
             {"number": "A\nB"},
             {"$filter": "number eq 'A'"},
             [("number", "A"), ("number", "B")],
+            {"fields": ""},
+            {"fields": "id,"},
+            {"fields": "id,city"},
+            {"fields": "id,id"},
+            {"$select": "id"},
+            [("fields", "id"), ("fields", "number")],
         ):
             response = http.get(url, params=params)
             assert response.status_code == 422
@@ -329,3 +335,27 @@ def test_preview_filters_by_number(
         )
     assert response.status_code == 200
     assert response.json() == ([row] if match else [])
+
+
+@pytest.mark.parametrize(
+    ("endpoint", "model"), [("customers", Customer), ("items", Item)]
+)
+def test_preview_selects_requested_fields(
+    preview_config: None, endpoint: str, model: type[Customer] | type[Item]
+) -> None:
+    row = {"number": "D1", "displayName": "Demo 1"}
+    with patch(_FACTORY) as factory, TestClient(app) as http:
+        resource = getattr(factory.return_value, endpoint)
+        resource.list = AsyncMock(return_value=[model.model_validate(row)])
+        response = http.get(
+            f"/api/v1/api-explorer/{endpoint}/preview",
+            params={"fields": "number,displayName"},
+        )
+        resource.list.assert_awaited_once_with(
+            top=5,
+            order_by=None,
+            number=None,
+            fields=(RecordField.NUMBER, RecordField.DISPLAY_NAME),
+        )
+    assert response.status_code == 200
+    assert response.json() == [row]

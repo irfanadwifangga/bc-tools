@@ -5,7 +5,15 @@ from uuid import UUID
 
 import httpx
 import pytest
-from bc_sdk import BCClient, BCSettings, Company, Customer, Item, RecordOrder
+from bc_sdk import (
+    BCClient,
+    BCSettings,
+    Company,
+    Customer,
+    Item,
+    RecordField,
+    RecordOrder,
+)
 from bc_sdk.errors import BCRequestError
 from pydantic import ValidationError
 
@@ -149,11 +157,37 @@ def test_rejects_invalid_scope_and_top_before_sending_a_request() -> None:
                 await client.items.list(order_by="number asc,id desc")  # type: ignore[arg-type]
             with pytest.raises(BCRequestError, match="Invalid record number"):
                 await client.items.list(number="X" * 101)
+            with pytest.raises(BCRequestError, match="Unsupported record fields"):
+                await client.customers.list(fields=[])
+            with pytest.raises(BCRequestError, match="Unsupported record fields"):
+                await client.customers.list(fields=[RecordField.ID, RecordField.ID])
+            with pytest.raises(BCRequestError, match="Unsupported record fields"):
+                await client.items.list(fields=["city"])  # type: ignore[list-item]
         async with _client(handle, company_id=None) as client:
             with pytest.raises(BCRequestError, match="Configure the demo company"):
                 await client.items.list(company_id=_COMPANY)
 
     asyncio.run(run())
+
+
+def test_company_resources_select_requested_fields() -> None:
+    def handle(request: httpx.Request) -> httpx.Response:
+        assert request.url.params["$select"] == "number,displayName"
+        return httpx.Response(
+            200, json={"value": [{"number": "1", "displayName": "A"}]}
+        )
+
+    async def run() -> list[Customer]:
+        async with _client(handle) as client:
+            return await client.customers.list(
+                fields=[RecordField.NUMBER, RecordField.DISPLAY_NAME]
+            )
+
+    rows = asyncio.run(run())
+    assert len(rows) == 1
+    assert rows[0].id is None
+    assert rows[0].number == "1"
+    assert rows[0].display_name == "A"
 
 
 def test_company_discovery_works_without_company_id() -> None:

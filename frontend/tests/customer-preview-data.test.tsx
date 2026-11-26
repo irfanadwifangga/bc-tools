@@ -46,3 +46,14 @@ test("renders an empty response as a JSON array", () => {
   expect(json).toContain("<code>[]</code>");
   expect(renderToStaticMarkup(<CustomerPreviewData rows={[]} format="Tabel" />)).toBe("");
 });
+
+test("table preview renders only the selected fields", () => {
+  const partial = rows.map(({ number, displayName }) => ({ number, displayName }));
+  const html = renderToStaticMarkup(
+    <CustomerPreviewData rows={partial} format="Tabel" fields={["number", "displayName"]} />,
+  );
+  expect(html).not.toContain(">id</th>");
+  expect(html).toContain(">number</th>");
+  expect(html).toContain(">displayName</th>");
+  expect(html).toContain("TEST-01");
+});
