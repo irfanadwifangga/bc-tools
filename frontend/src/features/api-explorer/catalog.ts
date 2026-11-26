@@ -4,6 +4,8 @@ import type { components, paths } from "../../api/schema";
 export type CatalogEntity = components["schemas"]["MetadataEntity"];
 
 export type PreviewCustomer = components["schemas"]["CustomerPreview"];
+export type PreviewQuery = NonNullable<paths["/api/v1/api-explorer/customers/preview"]["get"]["parameters"]["query"]>;
+export type PreviewOrder = NonNullable<PreviewQuery["order"]>;
 
 const api = createClient<paths>();
 
@@ -15,16 +17,16 @@ export async function loadCatalog(signal: AbortSignal): Promise<CatalogEntity[]>
   return data;
 }
 
-export async function loadCustomerPreview(signal: AbortSignal, limit?: number, client = api): Promise<PreviewCustomer[]> {
-  const { data, error } = await client.GET("/api/v1/api-explorer/customers/preview", { signal, params: { query: { limit } } });
+export async function loadCustomerPreview(signal: AbortSignal, query: PreviewQuery = {}, client = api): Promise<PreviewCustomer[]> {
+  const { data, error } = await client.GET("/api/v1/api-explorer/customers/preview", { signal, params: { query } });
   if (!Array.isArray(data)) {
     throw new Error(error?.error?.message || "Contoh data gagal dimuat.");
   }
   return data;
 }
 
-export async function loadItemPreview(signal: AbortSignal, limit?: number, client = api) {
-  const { data, error } = await client.GET("/api/v1/api-explorer/items/preview", { signal, params: { query: { limit } } });
+export async function loadItemPreview(signal: AbortSignal, query: PreviewQuery = {}, client = api) {
+  const { data, error } = await client.GET("/api/v1/api-explorer/items/preview", { signal, params: { query } });
   if (!Array.isArray(data)) {
     throw new Error(error?.error?.message || "Contoh data gagal dimuat.");
   }

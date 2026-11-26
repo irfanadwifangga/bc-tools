@@ -1,15 +1,17 @@
+import type { PreviewOrder } from "./catalog";
+
 export type SampleEndpoint = "customers" | "items";
 export type SampleLanguage = "Python" | "C#";
 export const DEFAULT_PREVIEW_LIMIT = 5;
 
 export function getCodeSample(
-  endpoint: SampleEndpoint, language: SampleLanguage, limit = DEFAULT_PREVIEW_LIMIT,
+  endpoint: SampleEndpoint, language: SampleLanguage, limit = DEFAULT_PREVIEW_LIMIT, order?: PreviewOrder,
 ): string {
-  return samples[language](endpoint, limit);
+  return samples[language](endpoint, limit, order);
 }
 
 const samples = {
-  Python: (endpoint: SampleEndpoint, limit: number) => `# Atur variabel BC_* untuk DEMO COMPANY sebelum menjalankan contoh.
+  Python: (endpoint: SampleEndpoint, limit: number, order?: PreviewOrder) => `# Atur variabel BC_* untuk DEMO COMPANY sebelum menjalankan contoh.
 import json
 import os
 from uuid import UUID
@@ -41,11 +43,11 @@ with httpx.Client(headers=headers, timeout=10.0, follow_redirects=False) as clie
         raise SystemExit("BC_COMPANY_ID harus menunjuk ke DEMO COMPANY.")
 
     fields = ("id", "number", "displayName")
-    response = client.get(f"{url}/${endpoint}", params={"$top": ${limit}, "$select": ",".join(fields)})
+    response = client.get(f"{url}/${endpoint}", params={"$top": ${limit}, "$select": ",".join(fields)${order ? `, "$orderby": "${order}"` : ""}})
     response.raise_for_status()
     rows = [{field: row[field] for field in fields} for row in response.json()["value"]]
     print(json.dumps(rows, indent=2, ensure_ascii=False))`,
-  "C#": (endpoint: SampleEndpoint, limit: number) => `// Atur variabel BC_* untuk DEMO COMPANY sebelum menjalankan contoh.
+  "C#": (endpoint: SampleEndpoint, limit: number, order?: PreviewOrder) => `// Atur variabel BC_* untuk DEMO COMPANY sebelum menjalankan contoh.
 using System;
 using System.Linq;
 using System.Net.Http;
@@ -79,7 +81,7 @@ using var info = JsonDocument.Parse(await client.GetStringAsync(url + "?$select=
 if (!string.Equals(info.RootElement.GetProperty("name").GetString(), "DEMO COMPANY", StringComparison.OrdinalIgnoreCase))
     throw new InvalidOperationException("BC_COMPANY_ID harus menunjuk ke DEMO COMPANY.");
 
-using var data = JsonDocument.Parse(await client.GetStringAsync(url + "/${endpoint}?$top=${limit}&$select=id,number,displayName"));
+using var data = JsonDocument.Parse(await client.GetStringAsync(url + "/${endpoint}?$top=${limit}&$select=id,number,displayName${order ? `&$orderby=${encodeURIComponent(order)}` : ""}"));
 var rows = data.RootElement.GetProperty("value").EnumerateArray().Select(row => new
 {
     id = row.GetProperty("id").GetString(),

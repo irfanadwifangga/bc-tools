@@ -44,6 +44,8 @@ _Terakhir diperbarui: 2026-11-25_
 
 - Contoh GET Python dan C# untuk `customers` dan `items` memakai pilihan jumlah baris yang sama dengan preview.
 
+- Preview dan contoh GET `customers` dan `items` mendukung urutan nomor atau nama, naik atau turun. Pengiriman `$orderby` diuji dengan HTTP mock. Uji Sandbox menunggu verifikasi Irfan.
+
 ## Blocker dan pertanyaan terbuka
 | # | Pertanyaan | Pemilik | Dibutuhkan sebelum |
 |---|---|---|---|

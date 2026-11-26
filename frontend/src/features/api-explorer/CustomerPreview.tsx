@@ -1,19 +1,27 @@
 import { Button } from "antd";
 import { useEffect, useId, useRef, useState } from "react";
 import { CustomerPreviewData, type PreviewFormat } from "./CustomerPreviewData";
-import { loadCustomerPreview, loadItemPreview, type PreviewCustomer } from "./catalog";
+import { loadCustomerPreview, loadItemPreview, type PreviewCustomer, type PreviewOrder } from "./catalog";
 
 const loaders = { customer: loadCustomerPreview, item: loadItemPreview };
+const orderOptions: { value: PreviewOrder; label: string }[] = [
+  { value: "number asc", label: "Nomor naik" },
+  { value: "number desc", label: "Nomor turun" },
+  { value: "displayName asc", label: "Nama A–Z" },
+  { value: "displayName desc", label: "Nama Z–A" },
+];
 
 type PreviewState =
   | { status: "idle" | "loading" }
   | { status: "ready"; rows: PreviewCustomer[] }
   | { status: "error"; message: string };
 
-export function CustomerPreview({ resource, limit, onLimitChange }: {
+export function CustomerPreview({ resource, limit, onLimitChange, order, onOrderChange }: {
   resource: keyof typeof loaders;
   limit: number;
   onLimitChange: (limit: number) => void;
+  order?: PreviewOrder;
+  onOrderChange: (order?: PreviewOrder) => void;
 }) {
   const [preview, setPreview] = useState<PreviewState>({ status: "idle" });
   const [format, setFormat] = useState<PreviewFormat>("Tabel");
@@ -32,7 +40,7 @@ export function CustomerPreview({ resource, limit, onLimitChange }: {
     request.current = controller;
     setPreview({ status: "loading" });
     try {
-      const rows = await loaders[resource](controller.signal, limit);
+      const rows = await loaders[resource](controller.signal, { limit, order });
       if (!controller.signal.aborted) setPreview({ status: "ready", rows });
     } catch (reason) {
       if (!controller.signal.aborted) {
@@ -47,14 +55,24 @@ export function CustomerPreview({ resource, limit, onLimitChange }: {
 
   const label = preview.status === "error" ? "Coba lagi"
     : preview.status === "ready" ? "Sembunyikan contoh data" : "Lihat contoh data";
+  const settingsLocked = preview.status === "loading" || preview.status === "ready";
   return (
     <div className="customer-preview">
       <div className="preview-controls">
         <label htmlFor={resultId + "-limit"}>Jumlah baris</label>
         <select id={resultId + "-limit"} value={limit}
-          disabled={preview.status === "loading" || preview.status === "ready"}
+          disabled={settingsLocked}
           onChange={event => onLimitChange(Number(event.target.value))}>
           {[1, 2, 3, 4, 5].map(value => <option key={value} value={value}>{value}</option>)}
+        </select>
+        <label htmlFor={resultId + "-order"}>Urutkan</label>
+        <select id={resultId + "-order"} value={order ?? ""} disabled={settingsLocked}
+          onChange={event => {
+            const value = event.target.value;
+            onOrderChange(orderOptions.find(option => option.value === value)?.value);
+          }}>
+          <option value="">Urutan BC</option>
+          {orderOptions.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}
         </select>
         <Button onClick={togglePreview} aria-controls={resultId}
           aria-expanded={preview.status !== "idle"} aria-disabled={preview.status === "loading"}>

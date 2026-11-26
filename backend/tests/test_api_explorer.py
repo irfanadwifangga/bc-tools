@@ -2,7 +2,7 @@ from unittest.mock import AsyncMock, patch
 from uuid import UUID
 
 import pytest
-from bc_sdk import Customer, Item
+from bc_sdk import Customer, Item, RecordOrder
 from bc_sdk.errors import (
     BCAuthError,
     BCNotFoundError,
@@ -126,7 +126,7 @@ def test_customer_preview_contract(preview_config: None, count: int) -> None:
         )
         response = http.get(_PREVIEW)
         assert factory.call_args.args[0].company_id == _COMPANY
-        client.customers.list.assert_awaited_once_with(top=5)
+        client.customers.list.assert_awaited_once_with(top=5, order_by=None)
         client.__aexit__.assert_awaited_once()
     assert response.status_code == 200
     assert response.json() == rows[:5]
@@ -189,6 +189,11 @@ def test_preview_rejects_parameters_and_writes_before_sdk_creation(
             {"limit": "abc"},
             {"limit": "2", "$top": "2"},
             [("limit", "1"), ("limit", "2")],
+            {"order": ""},
+            {"order": "id asc"},
+            {"order": "number asc,id desc"},
+            {"$orderby": "number asc"},
+            [("order", "number asc"), ("order", "number desc")],
         ):
             response = http.get(url, params=params)
             assert response.status_code == 422
@@ -210,7 +215,7 @@ def test_item_preview_contract(preview_config: None, count: int) -> None:
         )
         response = http.get("/api/v1/api-explorer/items/preview")
         assert factory.call_args.args[0].company_id == _COMPANY
-        client.items.list.assert_awaited_once_with(top=5)
+        client.items.list.assert_awaited_once_with(top=5, order_by=None)
     assert response.status_code == 200
     assert response.json() == rows[:5]
 
@@ -234,6 +239,19 @@ def test_preview_applies_selected_limit(
         response = http.get(
             f"/api/v1/api-explorer/{endpoint}/preview", params={"limit": limit}
         )
-        resource.list.assert_awaited_once_with(top=limit)
+        resource.list.assert_awaited_once_with(top=limit, order_by=None)
     assert response.status_code == 200
     assert response.json() == rows[:limit]
+
+
+@pytest.mark.parametrize("endpoint", ["customers", "items"])
+@pytest.mark.parametrize("order", list(RecordOrder))
+def test_preview_forwards_order_with_limit(
+    preview_config: None, endpoint: str, order: RecordOrder
+) -> None:
+    with patch(_FACTORY) as factory, TestClient(app) as http:
+        resource = getattr(factory.return_value, endpoint)
+        resource.list = AsyncMock(return_value=[])
+        url = f"/api/v1/api-explorer/{endpoint}/preview"
+        assert http.get(url, params={"limit": 2, "order": order.value}).json() == []
+        resource.list.assert_awaited_once_with(top=2, order_by=order)

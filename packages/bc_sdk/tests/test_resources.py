@@ -5,7 +5,7 @@ from uuid import UUID
 
 import httpx
 import pytest
-from bc_sdk import BCClient, BCSettings, Company, Customer, Item
+from bc_sdk import BCClient, BCSettings, Company, Customer, Item, RecordOrder
 from bc_sdk.errors import BCRequestError
 from pydantic import ValidationError
 
@@ -36,6 +36,7 @@ def _client(
 def test_lists_typed_standard_resources_with_selected_fields() -> None:
     def handle(request: httpx.Request) -> httpx.Response:
         assert request.method == "GET"
+        assert "$orderby" not in request.url.params
         path = request.url.path
         if path.endswith("/companies"):
             assert request.url.params["$select"] == "id,name,displayName"
@@ -62,6 +63,22 @@ def test_lists_typed_standard_resources_with_selected_fields() -> None:
     assert customers[0].number == "1"
     assert customers[0].display_name == "customers"
     assert items[0].display_name == "items"
+
+
+@pytest.mark.parametrize("order", list(RecordOrder))
+def test_company_resources_send_order_with_top(order: RecordOrder) -> None:
+    def handle(request: httpx.Request) -> httpx.Response:
+        assert request.method == "GET"
+        assert request.url.params["$orderby"] == order.value
+        assert request.url.params["$top"] == "2"
+        return httpx.Response(200, json={"value": []})
+
+    async def run() -> None:
+        async with _client(handle) as client:
+            await client.customers.list(top=2, order_by=order)
+            await client.items.list(top=2, order_by=order)
+
+    asyncio.run(run())
 
 
 def test_top_caps_total_records_without_reading_an_extra_page() -> None:
@@ -102,6 +119,8 @@ def test_rejects_invalid_scope_and_top_before_sending_a_request() -> None:
                 await client.items.list(company_id="invalid")
             with pytest.raises(BCRequestError, match="positive integer"):
                 await client.companies.list(top=0)
+            with pytest.raises(BCRequestError, match="Unsupported record order"):
+                await client.items.list(order_by="number asc,id desc")  # type: ignore[arg-type]
         async with _client(handle, company_id=None) as client:
             with pytest.raises(BCRequestError, match="Configure the demo company"):
                 await client.items.list(company_id=_COMPANY)

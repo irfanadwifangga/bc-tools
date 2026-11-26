@@ -5,6 +5,14 @@ import { EndpointRow } from "../src/features/api-explorer/CatalogPage";
 import { getCodeSample } from "../src/features/api-explorer/customerSamples";
 
 for (const language of ["Python", "C#"] as const) {
+  test(`${language} includes the selected order and leaves it out by default`, () => {
+    const expected = language === "Python" ? '"$orderby": "displayName desc"' : "$orderby=displayName%20desc";
+    for (const endpoint of ["customers", "items"] as const) {
+      expect(getCodeSample(endpoint, language, 2, "displayName desc")).toContain(expected);
+      expect(getCodeSample(endpoint, language, 2)).not.toContain("$orderby");
+    }
+  });
+
   test(`customer GET sample for ${language}`, () => {
     expect(getCodeSample("customers", language)).toMatchSnapshot();
   });
