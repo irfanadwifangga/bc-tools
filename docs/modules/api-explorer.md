@@ -34,6 +34,12 @@ uv run --locked --all-packages --env-file .env uvicorn backend.app.main:app --ho
 
 Skema respons tersedia di OpenAPI. Kredensial atau konfigurasi yang tidak valid menghasilkan 502, metadata yang tidak ditemukan 404, pembatasan laju 429, dan respons upstream yang gagal dibaca 502. Pesan untuk frontend mengikuti format standar backend.
 
+## Katalog custom API
+
+Atur `BC_CUSTOM_API_ROUTE` pada konfigurasi backend lokal ke satu kombinasi publisher, group, dan version, misalnya `demoPublisher/demoGroup/v1.0`. Restart backend setelah mengubah konfigurasi. `GET /api/v1/api-explorer/custom-entities` membaca `$metadata` untuk kombinasi itu di Sandbox. Jika konfigurasi kosong, route mengembalikan `200 []`.
+
+API Explorer menandai sumber setiap endpoint sebagai **Standar** atau **Custom**. Nama yang sama dari kedua sumber bisa dibuka secara terpisah. Jika katalog custom gagal, katalog standar yang berhasil dimuat tetap tersedia. Endpoint custom menyediakan nama dan tipe field.
+
 ### Tampilan katalog
 
 Endpoint dikelompokkan menurut huruf awal nama dan diurutkan A–Z tanpa membedakan huruf besar dan kecil. Grup `#` menampung nama dengan karakter awal di luar A–Z. Saat mencari nama endpoint atau field, hanya grup yang memiliki hasil yang tampil.

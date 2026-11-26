@@ -1,7 +1,11 @@
 import createClient from "openapi-fetch";
 import type { components, paths } from "../../api/schema";
 
-export type CatalogEntity = components["schemas"]["MetadataEntity"];
+export type CatalogEntity = components["schemas"]["MetadataEntity"] & { source?: "custom" };
+
+export function endpointKey(entity: CatalogEntity): string {
+  return (entity.source ?? "standard") + "/" + entity.name;
+}
 
 export type PreviewCustomer = components["schemas"]["CustomerPreview"];
 export type PreviewQuery = NonNullable<paths["/api/v1/api-explorer/customers/preview"]["get"]["parameters"]["query"]>;
@@ -15,6 +19,14 @@ export async function loadCatalog(signal: AbortSignal): Promise<CatalogEntity[]>
     throw new Error(error?.error?.message || "Katalog gagal dimuat. Periksa backend lokal.");
   }
   return data;
+}
+
+export async function loadCustomCatalog(signal: AbortSignal, client = api): Promise<CatalogEntity[]> {
+  const { data, error } = await client.GET("/api/v1/api-explorer/custom-entities", { signal });
+  if (!Array.isArray(data)) {
+    throw new Error(error?.error?.message || "Katalog custom gagal dimuat.");
+  }
+  return data.map(entity => ({ ...entity, source: "custom" }));
 }
 
 export async function loadCustomerPreview(signal: AbortSignal, query: PreviewQuery = {}, client = api): Promise<PreviewCustomer[]> {

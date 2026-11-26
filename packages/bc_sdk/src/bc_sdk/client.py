@@ -24,6 +24,7 @@ from .settings import BCSettings
 
 _BC_HOST = "api.businesscentral.dynamics.com"
 _ENTITY_NAME = re.compile(r"[A-Za-z_][A-Za-z0-9_]*")
+_CUSTOM_API_ROUTE = re.compile(r"[A-Za-z0-9]+/[A-Za-z0-9]+/(?:v[0-9]+\.[0-9]+|beta)")
 _MAX_ATTEMPTS = 3
 _MAX_RETRY_DELAY = 30
 
@@ -44,7 +45,7 @@ def _retry_delay(header: str | None, attempt: int) -> float:
 
 
 class BCClient:
-    """Read-only HTTP client for Business Central's standard Sandbox API."""
+    """Read-only HTTP client for the standard API and configured custom metadata."""
 
     def __init__(
         self,
@@ -53,6 +54,7 @@ class BCClient:
         environment: str,
         token_provider: TokenProvider,
         company_id: str | None = None,
+        custom_api_route: str | None = None,
         transport: httpx.AsyncBaseTransport | None = None,
     ) -> None:
         if environment.casefold() != "sandbox":
@@ -63,13 +65,26 @@ class BCClient:
         except ValueError:
             raise BCRequestError("Tenant and company IDs must be UUIDs.") from None
 
-        self._base_path = f"/v2.0/{tenant}/Sandbox/api/v2.0/"
+        if custom_api_route is not None and (
+            not _CUSTOM_API_ROUTE.fullmatch(custom_api_route)
+            or custom_api_route.split("/", 1)[0].casefold() == "microsoft"
+        ):
+            raise BCRequestError("Invalid custom API route.")
+
+        api_path = f"/v2.0/{tenant}/Sandbox/api/"
+        self._base_path = f"{api_path}v2.0/"
+        self._custom_metadata_path = (
+            f"{api_path}{custom_api_route}/$metadata"
+            if custom_api_route is not None
+            else None
+        )
         self._company_path = f"companies({company})/" if company is not None else None
         self._token_provider = token_provider
         self._http = httpx.AsyncClient(
             timeout=10.0, follow_redirects=False, trust_env=False, transport=transport
         )
         self.metadata = Metadata(self._read_metadata)
+        self.custom_metadata = Metadata(self._read_custom_metadata)
         self.companies = Companies(self._iter_records)
         self.customers = CompanyResource(
             self._iter_records, company, "customers", Customer
@@ -86,6 +101,7 @@ class BCClient:
             company_id=str(settings.company_id)
             if settings.company_id is not None
             else None,
+            custom_api_route=settings.custom_api_route,
             token_provider=MsalTokenProvider(
                 tenant_id=tenant_id,
                 client_id=str(settings.client_id),
@@ -131,6 +147,12 @@ class BCClient:
             raise BCRequestError("The API destination is outside the Sandbox scope.")
 
         path = url.raw_path.partition(b"?")[0].decode("ascii")
+        if path == self._custom_metadata_path:
+            if url.query:
+                raise BCRequestError(
+                    "The metadata endpoint does not accept query options."
+                )
+            return
         if not path.startswith(self._base_path) or not self._path_allowed(
             path[len(self._base_path) :]
         ):
@@ -194,6 +216,14 @@ class BCClient:
     async def _read_metadata(self) -> bytes:
         response = await self._get(self._initial_url("$metadata", None))
         return response.content
+
+    async def _read_custom_metadata(self) -> bytes:
+        if self._custom_metadata_path is None:
+            raise BCRequestError(
+                "Configure a custom API route before reading metadata."
+            )
+        url = httpx.URL(f"https://{_BC_HOST}{self._custom_metadata_path}")
+        return (await self._get(url)).content
 
     async def _read_json(self, url: httpx.URL) -> dict[str, object]:
         response = await self._get(url)

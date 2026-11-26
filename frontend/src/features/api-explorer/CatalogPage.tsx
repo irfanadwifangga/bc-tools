@@ -1,7 +1,10 @@
 import { Button, Input } from "antd";
 import { RightOutlined, SearchOutlined } from "@ant-design/icons";
 import { useEffect, useId, useState } from "react";
-import { filterEndpoints, groupEndpoints, loadCatalog, type CatalogEntity, type PreviewQuery } from "./catalog";
+import {
+  endpointKey, filterEndpoints, groupEndpoints, loadCatalog, loadCustomCatalog,
+  type CatalogEntity, type PreviewQuery,
+} from "./catalog";
 import { EndpointCodeSamples } from "./CustomerCodeSamples";
 import { CustomerPreview } from "./CustomerPreview";
 import { DEFAULT_PREVIEW_LIMIT, type SampleEndpoint } from "./customerSamples";
@@ -51,6 +54,7 @@ export function EndpointRow({ entity, open, query, onSelect }: {
         aria-controls={panelId} onClick={onSelect}>
         <span className="catalog-result-name">
           {highlightMatch(entity.name, query)}
+          <span className="catalog-source">{entity.source === "custom" ? "Custom" : "Standar"}</span>
           {fieldHint && <span className="catalog-field-hint"> · {highlightMatch(fieldHint.name, query)}</span>}
         </span>
         <RightOutlined aria-hidden="true" />
@@ -58,7 +62,7 @@ export function EndpointRow({ entity, open, query, onSelect }: {
       <div id={panelId} hidden={!open} className="catalog-detail">
         {open && <>
           <p className="catalog-type">Entity type <code>{entity.entity_type}</code></p>
-          {(entity.name === "customers" || entity.name === "items") &&
+          {entity.source !== "custom" && (entity.name === "customers" || entity.name === "items") &&
             <EndpointExamples endpoint={entity.name} />}
           {entity.fields.length ? (
             <table aria-label={`Field ${entity.name}`}>
@@ -74,46 +78,58 @@ export function EndpointRow({ entity, open, query, onSelect }: {
   );
 }
 
-export function CatalogPage() {
+function useCatalog(load: typeof loadCatalog, fallback: string) {
   const [catalog, setCatalog] = useState<CatalogState>({ status: "loading" });
   const [attempt, setAttempt] = useState(0);
-  const [search, setSearch] = useState("");
-  const [selected, setSelected] = useState<string | null>(null);
 
   useEffect(() => {
     const controller = new AbortController();
-    loadCatalog(controller.signal).then(
+    load(controller.signal).then(
       entities => {
         if (!controller.signal.aborted) setCatalog({ status: "ready", entities });
       },
       reason => {
         if (controller.signal.aborted) return;
         const message = reason instanceof Error && !(reason instanceof TypeError)
-          ? reason.message : "Katalog gagal dimuat. Periksa backend lokal.";
+          ? reason.message : fallback;
         setCatalog({ status: "error", message });
       },
     );
     return () => controller.abort();
-  }, [attempt]);
+  }, [attempt, load, fallback]);
+
+  function retry() {
+    setCatalog({ status: "loading" });
+    setAttempt(value => value + 1);
+  }
+  return { catalog, retry };
+}
+
+export function CatalogPage() {
+  const standard = useCatalog(loadCatalog, "Katalog standar gagal dimuat. Periksa backend lokal.");
+  const custom = useCatalog(loadCustomCatalog, "Katalog custom gagal dimuat. Periksa backend lokal.");
+  const [search, setSearch] = useState("");
+  const [selected, setSelected] = useState<string | null>(null);
 
   const query = search.trim().toLowerCase();
-  const results = catalog.status === "ready" ? filterEndpoints(catalog.entities, search) : [];
+  const entities = [standard, custom].flatMap(({ catalog }) => catalog.status === "ready" ? catalog.entities : []);
+  const loading = standard.catalog.status === "loading" || custom.catalog.status === "loading";
+  const allReady = standard.catalog.status === "ready" && custom.catalog.status === "ready";
+  const results = filterEndpoints(entities, search);
   return (
     <section className="workspace-sheet catalog" aria-labelledby="catalog-title">
       <h1 id="catalog-title" className="workspace-title">API Explorer</h1>
-      {catalog.status === "loading" && <p role="status">Memuat katalog endpoint…</p>}
-      {catalog.status === "error" && (
+      {loading && <p role="status">Memuat katalog endpoint…</p>}
+      {([["Standar", standard], ["Custom", custom]] as const).map(([source, { catalog, retry }]) =>
+        catalog.status === "error" && (
+          <div key={source} className="catalog-source-error">
+            <p role="alert">{source} · {catalog.message}</p>
+            <Button onClick={retry} aria-label={"Coba lagi katalog " + source.toLowerCase()}>Coba lagi</Button>
+          </div>
+        ))}
+      {allReady && entities.length === 0 && <p role="status">Katalog sandbox kosong.</p>}
+      {entities.length > 0 && (
         <>
-          <p role="alert">{catalog.message}</p>
-          <Button onClick={() => {
-            setCatalog({ status: "loading" });
-            setAttempt(value => value + 1);
-          }}>Coba lagi</Button>
-        </>
-      )}
-      {catalog.status === "ready" && (catalog.entities.length === 0
-        ? <p role="status">Katalog sandbox kosong.</p>
-        : <>
             <label htmlFor="endpoint-search">Cari endpoint atau field</label>
             <Input id="endpoint-search" type="search" prefix={<SearchOutlined aria-hidden="true" />}
               placeholder="Misalnya customers atau postalCode" value={search}
@@ -125,9 +141,12 @@ export function CatalogPage() {
               <div key={letter} className="catalog-group">
                 <h2 className="catalog-letter">{letter}</h2>
                 <ul className="catalog-results" aria-label={`Endpoint ${letter}`}>
-                  {entities.map(entity => <EndpointRow key={entity.name} entity={entity} query={query}
-                    open={selected === entity.name}
-                    onSelect={() => setSelected(selected === entity.name ? null : entity.name)} />)}
+                  {entities.map(entity => {
+                    const key = endpointKey(entity);
+                    return <EndpointRow key={key} entity={entity} query={query}
+                      open={selected === key}
+                      onSelect={() => setSelected(selected === key ? null : key)} />;
+                  })}
                 </ul>
               </div>
             ))}

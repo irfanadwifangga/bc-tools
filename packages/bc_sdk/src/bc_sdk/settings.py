@@ -13,3 +13,4 @@ class BCSettings(BaseModel):
     client_secret: SecretStr = Field(repr=False, min_length=1)
     environment: str = "Sandbox"
     company_id: UUID | None = None
+    custom_api_route: str | None = None

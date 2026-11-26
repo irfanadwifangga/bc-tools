@@ -92,7 +92,7 @@ def _error(status: int, code: str, message: str) -> JSONResponse:
     return JSONResponse(status_code=status, content=body.model_dump())
 
 
-def _client(*, require_company: bool) -> BCClient:
+def _client(*, require_company: bool, custom_api_route: str | None = None) -> BCClient:
     settings = BCSettings.model_validate(
         {
             "tenant_id": os.getenv("BC_TENANT_ID"),
@@ -100,6 +100,7 @@ def _client(*, require_company: bool) -> BCClient:
             "client_secret": os.getenv("BC_CLIENT_SECRET"),
             "company_id": os.getenv("BC_COMPANY_ID") if require_company else None,
             "environment": os.getenv("BC_ENVIRONMENT", "Sandbox"),
+            "custom_api_route": custom_api_route,
         }
     )
     if require_company and settings.company_id is None:
@@ -112,9 +113,12 @@ async def _read[T](
     label: str,
     *,
     require_company: bool = False,
+    custom_api_route: str | None = None,
 ) -> T | JSONResponse:
     try:
-        client = _client(require_company=require_company)
+        client = _client(
+            require_company=require_company, custom_api_route=custom_api_route
+        )
     except (ValidationError, BCError):
         return _error(502, "BC_CONFIG_ERROR", "Periksa konfigurasi sandbox di backend.")
 
@@ -143,6 +147,23 @@ async def list_entities(request: Request) -> list[MetadataEntity] | JSONResponse
     if request.query_params:
         return _error(422, "INVALID_QUERY", "Katalog tidak menerima parameter query.")
     return await _read(lambda client: client.metadata.list_entities(), "metadata")
+
+
+@router.get(
+    "/custom-entities", response_model=list[MetadataEntity], responses=_ERROR_RESPONSES
+)
+async def list_custom_entities(request: Request) -> list[MetadataEntity] | JSONResponse:
+    """Return the catalog of the one locally configured custom API."""
+    if request.query_params:
+        return _error(422, "INVALID_QUERY", "Katalog tidak menerima parameter query.")
+    route = os.getenv("BC_CUSTOM_API_ROUTE", "").strip()
+    if not route:
+        return []
+    return await _read(
+        lambda client: client.custom_metadata.list_entities(),
+        "metadata custom API",
+        custom_api_route=route,
+    )
 
 
 def _preview_query(
