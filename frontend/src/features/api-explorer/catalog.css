@@ -160,7 +160,7 @@
 }
 .preview-controls-row {
   display: grid;
-  grid-template-columns: auto minmax(8.5rem, 1fr) minmax(9.5rem, 1.25fr);
+  grid-template-columns: auto minmax(8rem, 1fr) minmax(7.5rem, 1fr) minmax(8.5rem, 1.1fr);
   gap: 10px;
   align-items: end;
 }
@@ -168,13 +168,16 @@
   display: flex;
   flex-wrap: wrap;
   align-items: flex-end;
-  justify-content: space-between;
   gap: 10px;
 }
+.preview-actions-row > .ant-btn { margin-inline-start: auto; }
 .preview-field { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
 .preview-controls-row .preview-limit { width: 4.5rem; }
-.preview-controls-row .preview-order, .preview-controls-row .preview-number { width: 100%; }
+.preview-controls-row .preview-order,
+.preview-controls-row .preview-number,
+.preview-controls-row .preview-name { width: 100%; }
 @media (max-width: 560px) {
+  .ant-modal-body { max-height: 75dvh; overflow-y: auto; }
   .preview-controls-row { grid-template-columns: 1fr; }
   .preview-controls-row .preview-limit { width: 100%; }
 }
@@ -188,7 +191,8 @@
   color: var(--workspace-muted);
 }
 .preview-select-fields { display: inline-flex; flex-wrap: wrap; gap: 4px; }
-.preview-select-fields button {
+.preview-select-fields button,
+.preview-count-toggle {
   min-height: 32px;
   padding-inline: 10px;
   border: 1px solid var(--workspace-line);
@@ -198,14 +202,17 @@
   font: 500 13px/1 var(--workspace-record-font);
   cursor: pointer;
 }
-.preview-select-fields button[aria-pressed="true"] {
+.preview-select-fields button[aria-pressed="true"],
+.preview-count-toggle[aria-pressed="true"] {
   color: var(--workspace-accent);
   border-color: currentColor;
   background: var(--workspace-selection);
   font-weight: 600;
 }
-.preview-select-fields button:disabled { opacity: 0.65; cursor: default; }
-.preview-select-fields button:focus-visible { outline: 2px solid var(--workspace-accent); }
+.preview-select-fields button:disabled,
+.preview-count-toggle:disabled { opacity: 0.65; cursor: default; }
+.preview-select-fields button:focus-visible,
+.preview-count-toggle:focus-visible { outline: 2px solid var(--workspace-accent); }
 .preview-state {
   display: flex;
   align-items: center;

@@ -3,7 +3,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { SampleCode } from "../src/features/api-explorer/SampleCode";
 import { EndpointDetail } from "../src/features/api-explorer/CatalogPage";
 import { PageHeader } from "../src/components/PageHeader";
-import { getCodeSample } from "../src/features/api-explorer/customerSamples";
+import { getCodeSample, getEntityCodeSample } from "../src/features/api-explorer/customerSamples";
 
 test("number filter preserves leading zeros and escapes content in both languages", () => {
   const number = "00'A & B+#" + String.fromCharCode(34, 92);
@@ -79,6 +79,8 @@ test("only customers and items offer copyable examples without loading previews"
     expect(html).toContain("Jumlah baris");
     expect(html).toContain("Urutkan");
     expect(html).toContain("Nomor");
+    expect(html).toContain("Nama");
+    expect(html).toContain("Jumlah total ($count)");
     expect(html).toContain("anticon-ordered-list");
     expect(html).toContain("anticon-sort-ascending");
     expect(html).toContain("anticon-filter");
@@ -87,7 +89,8 @@ test("only customers and items offer copyable examples without loading previews"
   const vendorHtml = detail("vendors");
   expect(vendorHtml).toContain("Struktur field");
   expect(vendorHtml).not.toContain("Preview Data");
-  expect(vendorHtml).not.toContain("Contoh Kode GET");
+  expect(vendorHtml).toContain("Contoh Kode GET");
+  expect(vendorHtml).toContain("/vendors");
 });
 
 test("selected fields update $select and object projection in both languages", () => {
@@ -108,7 +111,7 @@ test("PageHeader renders centered heading and optional description", () => {
   expect(html).toContain("Ringkas");
 });
 
-test("custom customers shows its fields without standard preview controls", () => {
+test("custom customers shows its fields and GET sample without preview controls", () => {
   const html = renderToStaticMarkup(<EndpointDetail
     entity={{ name: "customers", entity_type: "Demo.Customer", source: "custom",
       fields: [{ name: "customNumber", type: "Edm.String" }] }}
@@ -116,5 +119,74 @@ test("custom customers shows its fields without standard preview controls", () =
   expect(html).toContain("Demo.Customer");
   expect(html).toContain("customNumber");
   expect(html).not.toContain("Lihat contoh data");
-  expect(html).not.toContain("Contoh kode GET");
+  expect(html).not.toContain("Preview Data");
+  expect(html).toContain("Contoh Kode GET");
+  expect(html).toContain("BC_CUSTOM_API_ROUTE");
+});
+
+test("name filter and $count update Python and C# samples", () => {
+  const pyName = getCodeSample("customers", "Python", 5, undefined, undefined, undefined, "O'Brien");
+  expect(pyName).toContain('"$filter": "contains(displayName,\'O\'\'Brien\')"');
+
+  const csBoth = getCodeSample("items", "C#", 3, undefined, "100", undefined, "Desk", true);
+  expect(decodeURIComponent(csBoth.split("&$filter=")[1].split("&")[0]))
+    .toBe("number eq '100' and contains(displayName,'Desk')");
+  expect(csBoth).toContain("&$count=true\"");
+  expect(csBoth).toContain('TryGetProperty("@odata.count"');
+
+  const pyCount = getCodeSample("customers", "Python", 5, undefined, undefined, undefined, undefined, true);
+  expect(pyCount).toContain('"$count": "true"');
+  expect(pyCount).toContain('"@odata.count"');
+});
+
+test("generic standard endpoints generate Python and C# GET samples with special companies path", () => {
+  const vendors = {
+    name: "vendors",
+    entity_type: "Microsoft.NAV.vendor",
+    fields: ["id", "number", "displayName", "city", "email", "extraField"].map(name => ({ name, type: "Edm.String" })),
+  };
+  const pyVendors = getEntityCodeSample(vendors, "Python");
+  expect(pyVendors).toContain('f"{url}/vendors"');
+  expect(pyVendors).toContain('fields = ("id", "number", "displayName", "city", "email")');
+  expect(pyVendors).not.toContain("extraField");
+  expect(pyVendors).toContain('"$top": 5');
+
+  const csVendors = getEntityCodeSample(vendors, "C#");
+  expect(csVendors).toContain('url + "/vendors?$top=5&$select=id,number,displayName,city,email"');
+  expect(csVendors).not.toContain("extraField");
+
+  const emptyEntity = { name: "dimensions", entity_type: "Microsoft.NAV.dimension", fields: [] };
+  expect(getEntityCodeSample(emptyEntity, "Python")).toContain('f"{url}/dimensions", params={"$top": 5}');
+  expect(getEntityCodeSample(emptyEntity, "C#")).toContain('url + "/dimensions?$top=5"');
+
+  const companies = {
+    name: "companies",
+    entity_type: "Microsoft.NAV.company",
+    fields: [{ name: "id", type: "Edm.Guid" }, { name: "name", type: "Edm.String" }],
+  };
+  const pyCompanies = getEntityCodeSample(companies, "Python");
+  expect(pyCompanies).toContain('/api/v2.0/companies"');
+  expect(pyCompanies).not.toContain("companies({company})/");
+
+  const csCompanies = getEntityCodeSample(companies, "C#");
+  expect(csCompanies).toContain('/api/v2.0/companies";');
+  expect(csCompanies).not.toContain("companies({company})/");
+});
+
+test("custom API endpoints read BC_CUSTOM_API_ROUTE from env in Python and C#", () => {
+  const custom = {
+    name: "customOrders",
+    entity_type: "Custom.Order",
+    source: "custom" as const,
+    fields: [{ name: "id", type: "Edm.Guid" }, { name: "orderNo", type: "Edm.String" }],
+  };
+  const pyCustom = getEntityCodeSample(custom, "Python");
+  expect(pyCustom).toContain('os.environ["BC_CUSTOM_API_ROUTE"]');
+  expect(pyCustom).toContain("/api/{route}/companies({company})/customOrders");
+  expect(pyCustom).toContain('fields = ("id", "orderNo")');
+
+  const csCustom = getEntityCodeSample(custom, "C#");
+  expect(csCustom).toContain('Required("BC_CUSTOM_API_ROUTE")');
+  expect(csCustom).toContain("/api/{route}/companies({company})");
+  expect(csCustom).toContain('/customOrders?$top=5&$select=id,orderNo"');
 });

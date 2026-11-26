@@ -1,22 +1,15 @@
 import { useState } from "react";
 import { SampleCode } from "./SampleCode";
 import { CopyTextButton } from "./CopyTextButton";
-import { getCodeSample, type SampleEndpoint, type SampleLanguage } from "./customerSamples";
-import { selectedPreviewFields, type PreviewQuery } from "./catalog";
+import { getEntityCodeSample, type SampleLanguage } from "./customerSamples";
+import type { CatalogEntity, PreviewQuery } from "./catalog";
 
-export function EndpointCodeSamples({ endpoint, query }: {
-  endpoint: SampleEndpoint;
-  query: PreviewQuery;
+export function EndpointCodeSamples({ entity, query }: {
+  entity: CatalogEntity;
+  query?: PreviewQuery;
 }) {
   const [language, setLanguage] = useState<SampleLanguage>("Python");
-  const text = getCodeSample(
-    endpoint,
-    language,
-    query.limit,
-    query.order,
-    query.number,
-    selectedPreviewFields(query.fields),
-  );
+  const text = getEntityCodeSample(entity, language, query);
   return (
     <div className="customer-samples">
       <div className="preview-panel">

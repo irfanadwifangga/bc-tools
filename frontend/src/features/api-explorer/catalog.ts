@@ -8,7 +8,11 @@ export function endpointKey(entity: CatalogEntity): string {
 }
 
 export type PreviewCustomer = components["schemas"]["CustomerPreview"];
-export type PreviewQuery = NonNullable<paths["/api/v1/api-explorer/customers/preview"]["get"]["parameters"]["query"]>;
+type BasePreviewQuery = NonNullable<paths["/api/v1/api-explorer/customers/preview"]["get"]["parameters"]["query"]>;
+export type PreviewQuery = BasePreviewQuery & {
+  name?: string;
+  count?: boolean;
+};
 export type PreviewOrder = NonNullable<PreviewQuery["order"]>;
 export const PREVIEW_FIELDS = ["id", "number", "displayName"] as const;
 export type PreviewField = (typeof PREVIEW_FIELDS)[number];
@@ -38,20 +42,42 @@ export async function loadCustomCatalog(signal: AbortSignal, client = api): Prom
   return data.map(entity => ({ ...entity, source: "custom" }));
 }
 
-export async function loadCustomerPreview(signal: AbortSignal, query: PreviewQuery = {}, client = api): Promise<PreviewCustomer[]> {
-  const { data, error } = await client.GET("/api/v1/api-explorer/customers/preview", { signal, params: { query } });
+type PreviewPath = "/api/v1/api-explorer/customers/preview" | "/api/v1/api-explorer/items/preview";
+
+async function loadPreview(
+  path: PreviewPath,
+  signal: AbortSignal,
+  query: PreviewQuery = {},
+  client = api,
+  onCount?: (total: number | null) => void,
+): Promise<PreviewCustomer[]> {
+  const { data, error, response } = await client.GET(path, { signal, params: { query } });
   if (!Array.isArray(data)) {
     throw new Error(error?.error?.message || "Contoh data gagal dimuat.");
+  }
+  if (onCount) {
+    const raw = response.headers.get("X-Total-Count")?.trim() ?? "";
+    onCount(/^\d+$/.test(raw) ? Number(raw) : null);
   }
   return data;
 }
 
-export async function loadItemPreview(signal: AbortSignal, query: PreviewQuery = {}, client = api) {
-  const { data, error } = await client.GET("/api/v1/api-explorer/items/preview", { signal, params: { query } });
-  if (!Array.isArray(data)) {
-    throw new Error(error?.error?.message || "Contoh data gagal dimuat.");
-  }
-  return data;
+export function loadCustomerPreview(
+  signal: AbortSignal,
+  query: PreviewQuery = {},
+  client = api,
+  onCount?: (total: number | null) => void,
+): Promise<PreviewCustomer[]> {
+  return loadPreview("/api/v1/api-explorer/customers/preview", signal, query, client, onCount);
+}
+
+export function loadItemPreview(
+  signal: AbortSignal,
+  query: PreviewQuery = {},
+  client = api,
+  onCount?: (total: number | null) => void,
+): Promise<PreviewCustomer[]> {
+  return loadPreview("/api/v1/api-explorer/items/preview", signal, query, client, onCount);
 }
 
 export type SourceFilter = "all" | "standard" | "custom";

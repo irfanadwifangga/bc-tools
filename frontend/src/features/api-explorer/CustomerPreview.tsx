@@ -6,6 +6,7 @@ import {
   FilterOutlined,
   OrderedListOutlined,
   ReloadOutlined,
+  SearchOutlined,
   SortAscendingOutlined,
 } from "@ant-design/icons";
 import { useEffect, useId, useRef, useState } from "react";
@@ -25,7 +26,7 @@ const orderOptions: { value: PreviewOrder; label: string }[] = [
 
 type PreviewState =
   | { status: "idle" | "loading" }
-  | { status: "ready"; rows: PreviewCustomer[] }
+  | { status: "ready"; rows: PreviewCustomer[]; totalCount: number | null }
   | { status: "error"; message: string };
 
 export function CustomerPreview({ resource, query, onQueryChange }: {
@@ -50,10 +51,19 @@ export function CustomerPreview({ resource, query, onQueryChange }: {
     request.current = controller;
     setPreview({ status: "loading" });
     try {
-      const rows = await loaders[resource](controller.signal, {
-        ...query, number: query.number?.trim() ? query.number : undefined,
-      });
-      if (!controller.signal.aborted) setPreview({ status: "ready", rows });
+      let totalCount: number | null = null;
+      const rows = await loaders[resource](
+        controller.signal,
+        {
+          ...query,
+          number: query.number?.trim() ? query.number : undefined,
+          name: query.name?.trim() ? query.name : undefined,
+          count: query.count ? true : undefined,
+        },
+        undefined,
+        total => { totalCount = total; },
+      );
+      if (!controller.signal.aborted) setPreview({ status: "ready", rows, totalCount });
     } catch (reason) {
       if (!controller.signal.aborted) {
         const message = reason instanceof Error && !(reason instanceof TypeError)
@@ -69,8 +79,11 @@ export function CustomerPreview({ resource, query, onQueryChange }: {
     : preview.status === "ready" ? "Sembunyikan contoh data" : "Lihat contoh data";
   const settingsLocked = preview.status === "loading" || preview.status === "ready";
   const selectedFields = selectedPreviewFields(query.fields);
-  const emptyMessage = query.number?.trim()
-    ? "Tidak ada hasil untuk nomor ini." : `Demo company ini belum memiliki ${resource}.`;
+  const emptyMessage = query.name?.trim()
+    ? "Tidak ada hasil untuk filter ini."
+    : query.number?.trim()
+      ? "Tidak ada hasil untuk nomor ini."
+      : `Demo company ini belum memiliki ${resource}.`;
 
   function toggleField(field: PreviewField) {
     const active = selectedFields.includes(field);
@@ -109,6 +122,13 @@ export function CustomerPreview({ resource, query, onQueryChange }: {
               value={query.number ?? ""} maxLength={100} disabled={settingsLocked}
               onChange={event => onQueryChange({ ...query, number: event.target.value })} />
           </div>
+          <div className="preview-field">
+            <label htmlFor={resultId + "-name"}><SearchOutlined aria-hidden="true" /><span>Nama</span></label>
+            <Input id={resultId + "-name"} className="preview-name" placeholder="Opsional" allowClear
+              prefix={<SearchOutlined aria-hidden="true" />}
+              value={query.name ?? ""} maxLength={100} disabled={settingsLocked}
+              onChange={event => onQueryChange({ ...query, name: event.target.value })} />
+          </div>
         </div>
         <div className="preview-actions-row">
           <div className="preview-field">
@@ -132,6 +152,15 @@ export function CustomerPreview({ resource, query, onQueryChange }: {
               })}
             </div>
           </div>
+          <button
+            type="button"
+            className="preview-count-toggle"
+            aria-pressed={Boolean(query.count)}
+            disabled={settingsLocked}
+            onClick={() => onQueryChange({ ...query, count: query.count ? undefined : true })}
+          >
+            Jumlah total ($count)
+          </button>
           <Button
             type={preview.status === "ready" ? "default" : "primary"}
             icon={
@@ -155,8 +184,12 @@ export function CustomerPreview({ resource, query, onQueryChange }: {
             <span>Memuat contoh data…</span>
           </div>
         )}
-        {preview.status === "ready" && preview.rows.length > 0 && (
-          <div className="preview-status" role="status">{`${preview.rows.length} ${resource} ditampilkan.`}</div>
+        {preview.status === "ready" && (preview.rows.length > 0 || preview.totalCount !== null) && (
+          <div className="preview-status" role="status">
+            {preview.totalCount !== null
+              ? `${preview.rows.length} ditampilkan dari ${preview.totalCount} total`
+              : `${preview.rows.length} ${resource} ditampilkan.`}
+          </div>
         )}
         {preview.status === "error" && (
           <div className="preview-state">
