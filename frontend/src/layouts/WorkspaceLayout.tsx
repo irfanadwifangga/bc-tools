@@ -5,6 +5,7 @@ import {
   MenuFoldOutlined,
   MenuUnfoldOutlined,
   MoonOutlined,
+  SafetyCertificateOutlined,
   SunOutlined,
   UnorderedListOutlined,
 } from "@ant-design/icons";
@@ -13,10 +14,12 @@ import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react"
 import { recordFont } from "../theme/tokens";
 import { CatalogPage } from "../features/api-explorer/CatalogPage";
 import { OverviewPage } from "../features/overview/OverviewPage";
+import { PermissionAnalyzerPage } from "../features/permission-analyzer/PermissionAnalyzerPage";
 
 const pages = [
   { id: "ringkasan", title: "Ringkasan", icon: UnorderedListOutlined },
   { id: "api-explorer", title: "API Explorer", icon: ApiOutlined },
+  { id: "permission-analyzer", title: "Permission Analyzer", icon: SafetyCertificateOutlined },
 ];
 
 function currentPage() {
@@ -186,7 +189,9 @@ export function WorkspaceLayout({ choice, onThemeChange }: WorkspaceLayoutProps)
           <div className="workspace-scrim" aria-hidden="true" onClick={closeMenu} />
         )}
         <Layout.Content className="workspace-content" id={page.id} inert={mobileMenuOpen}>
-          {page.id === "api-explorer" ? <CatalogPage /> : <OverviewPage />}
+          {page.id === "api-explorer" ? <CatalogPage />
+            : page.id === "permission-analyzer" ? <PermissionAnalyzerPage />
+            : <OverviewPage />}
         </Layout.Content>
       </Layout>
     </Layout>

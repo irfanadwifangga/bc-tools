@@ -1,5 +1,6 @@
 import asyncio
 import os
+import time
 
 import pytest
 from bc_sdk import BCClient, BCSettings
@@ -33,7 +34,7 @@ def test_sandbox_automation_permission_discovery() -> None:
         )
 
     async def check() -> None:
-        async with BCClient.from_settings(settings) as client:
+        async with BCClient.from_settings(settings, timeout=45.0) as client:
             entities = await client.automation.list_metadata()
             assert any(entity.name == "permissionSets" for entity in entities)
             sets = await client.automation.list_records("permissionSets", top=3)
@@ -44,6 +45,7 @@ def test_sandbox_automation_permission_discovery() -> None:
                 "permissionSets",
                 "userPermissionSets",
                 "expandedPermissionSets",
+                "aggregatePermissionSets",
                 "accessControls",
                 "usersPermissions",
                 "userPermissions",
@@ -54,6 +56,65 @@ def test_sandbox_automation_permission_discovery() -> None:
                     print(f"Schema {entity.name}:", fields)
             if sets:
                 print("Sample permissionSet keys:", sorted(sets[0].keys()))
+            controls = await client.automation.list_records("accessControls", top=1)
+            assert isinstance(controls, list)
+            if controls:
+                print("Sample accessControl keys:", sorted(controls[0].keys()))
+            for entity_name in (
+                "usersPermissions",
+                "accessControls",
+                "permissionSets",
+            ):
+                rows = await client.automation.list_records(
+                    entity_name, company_scoped=True
+                )
+                print(f"Full-read {entity_name}: ok, count={len(rows)}")
+            for label, entity_name, top_val, filter_val in (
+                ("aggregate top=1", "aggregatePermissionSets", 1, None),
+                ("expanded top=5", "expandedPermissionSets", 5, None),
+                (
+                    "expanded role=D365 READ",
+                    "expandedPermissionSets",
+                    None,
+                    "roleId eq 'D365 READ'",
+                ),
+                (
+                    "expanded objectId=18 full",
+                    "expandedPermissionSets",
+                    None,
+                    "objectId eq 18",
+                ),
+                (
+                    "expanded contains(objectName,Customer) top=5",
+                    "expandedPermissionSets",
+                    5,
+                    "contains(objectName,'Customer')",
+                ),
+                (
+                    "expanded contains(18) or objectId=18",
+                    "expandedPermissionSets",
+                    None,
+                    "(contains(objectName,'18') or contains(alObjectName,'18') or objectId eq 18)",
+                ),
+            ):
+                started = time.perf_counter()
+                try:
+                    rows = await client.automation.list_records(
+                        entity_name,
+                        company_scoped=True,
+                        top=top_val,
+                        filter_expr=filter_val,
+                    )
+                    elapsed = time.perf_counter() - started
+                    keys = sorted(rows[0].keys()) if rows else []
+                    print(
+                        f"Probe {label}: ok in {elapsed:.2f}s, count={len(rows)}, keys={keys}"
+                    )
+                except BCError as probe_err:
+                    elapsed = time.perf_counter() - started
+                    print(
+                        f"Probe {label}: ERR in {elapsed:.2f}s ({type(probe_err).__name__}: {probe_err})"
+                    )
 
     try:
         asyncio.run(check())

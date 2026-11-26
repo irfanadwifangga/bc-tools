@@ -37,6 +37,9 @@ export default defineConfig({
       "/api/v1/api-explorer/custom-entities": "http://127.0.0.1:8000",
       "/api/v1/api-explorer/customers/preview": "http://127.0.0.1:8000",
       "/api/v1/api-explorer/items/preview": "http://127.0.0.1:8000",
+      "/api/v1/permission-analyzer/users": "http://127.0.0.1:8000",
+      "/api/v1/permission-analyzer/objects": "http://127.0.0.1:8000",
+      "/api/v1/permission-analyzer/diff": "http://127.0.0.1:8000",
     },
   },
 });

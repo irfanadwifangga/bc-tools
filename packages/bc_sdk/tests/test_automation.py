@@ -114,6 +114,35 @@ def test_automation_supports_environment_scoped_records() -> None:
     assert asyncio.run(run()) == [{"userName": "ADMIN"}]
 
 
+def test_automation_supports_filter_expr_and_validates_it() -> None:
+    seen_filters: list[str] = []
+
+    def handle(request: httpx.Request) -> httpx.Response:
+        seen_filters.append(request.url.params["$filter"])
+        return httpx.Response(200, json={"value": [{"roleId": "D365 READ"}]})
+
+    async def run() -> list[dict[str, object]]:
+        async with _client(handle) as client:
+            rows = await client.automation.list_records(
+                "expandedPermissionSets", filter_expr="  roleId eq 'D365 READ'  "
+            )
+            with pytest.raises(BCRequestError, match="filter expression"):
+                await client.automation.list_records(
+                    "expandedPermissionSets", filter_expr="   "
+                )
+            with pytest.raises(BCRequestError, match="Timeout"):
+                BCClient(
+                    tenant_id=_TENANT,
+                    environment="Sandbox",
+                    token_provider=_TokenProvider(),
+                    timeout=0,
+                )
+            return rows
+
+    assert asyncio.run(run()) == [{"roleId": "D365 READ"}]
+    assert seen_filters == ["roleId eq 'D365 READ'"]
+
+
 def test_automation_rejects_disallowed_endpoints_and_invalid_inputs() -> None:
     def handle(_request: httpx.Request) -> httpx.Response:
         pytest.fail("Unexpected request")

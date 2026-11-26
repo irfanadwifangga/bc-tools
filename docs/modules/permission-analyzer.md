@@ -1,6 +1,6 @@
 # Modul: Permission Analyzer (B-11)
 
-- **Fase:** 3 (Pasca-MVP) · **Status:** Spesifikasi & evaluasi awal (belum ada kode)
+- **Fase:** 3 (Pasca-MVP) · **Status:** Slice 1 (SDK) & Slice 2 (Backend & UI) selesai; tab **User & Aplikasi** terverifikasi live Sandbox (`DEMO COMPANY`, 16 akun), tab **Cari Akses Objek** (pasca-fix `$filter`) & **Bandingkan (Diff)** menunggu uji live browser
 - **Lokasi target (saat implementasi):** `backend/app/modules/permission_analyzer/` + `frontend/src/features/permission-analyzer/` + ekstensi read-only di `packages/bc_sdk/`
 
 ## Tujuan
@@ -25,7 +25,22 @@ Membantu BA dan administrator Business Central mengaudit siapa yang memiliki aks
 
 ## Sumber data BC (Automation API)
 
-Irfan mengonfirmasi pada 2026-11-26 melalui integration test Sandbox (`DEMO COMPANY`, `D365 AUTOMATION`) bahwa `$metadata` `microsoft/automation/v2.0` mengembalikan 25 entity termasuk `users`, `permissionSets`, `userPermissionSets`, `expandedPermissionSets`, `accessControls`, `usersPermissions`, dan `userPermissions`, serta `permissionSets` mengembalikan field `id`, `appId`, `displayName`, `extensionName`, `scope`. [PERLU VERIFIKASI: skema field `$metadata` untuk `users`, `userPermissionSets`, `expandedPermissionSets`, `accessControls`, `usersPermissions`, dan `userPermissions` di Sandbox.]
+Irfan memverifikasi melalui integration test Sandbox (`DEMO COMPANY`, `D365 AUTOMATION`) pada 2026-11-26 bahwa `$metadata` `microsoft/automation/v2.0` mengembalikan 25 entity dengan skema terverifikasi berikut:
+- `users`: `userSecurityId` (`Edm.Guid`), `userName` (`Edm.String`), `displayName` (`Edm.String`), `state` (`Edm.String`), `expiryDate` (`Edm.DateTimeOffset`), `contactEmail` (`Edm.String`).
+- `usersPermissions`: `id`, `userSecurityId`, `userName`, `fullName`, `state`, `expiryDate`, `windowsSecurityID`, `changePassword`, `licenseType`, `authenticationEmail`, `contactEmail`, `exchangeIdentifier`, `applicationId` (`Edm.Guid` — dipakai membedakan User BC vs Aplikasi Entra).
+- `permissionSets`: `scope`, `appId`, `id`, `displayName`, `extensionName`.
+- `accessControls`: `id`, `userSecurityId`, `roleId`, `roleName`, `company`, `userName`, `fullName`, `userLicenseType`, `scope`, `appId`, `appName` — dipakai sebagai sumber assignment role per user & company karena lolos query langsung (`company_scoped=True`).
+- `expandedPermissionSets`: `id`, `appId`, `appName`, `roleId`, `roleName`, `objectType`, `objectId` (`Edm.Int32`), `objectName`, `readPermission`, `insertPermission`, `modifyPermission`, `deletePermission`, `executePermission`, `alObjectName`, `scope`. Uji Sandbox menunjukkan query berfilter `$filter` per role (`D365 READ`) mengembalikan `2.986` baris dalam `6.38s`–`6.92s`, `objectId eq 18` penuh mengembalikan `58` baris dalam `0.53s`, dan `contains(objectName,'Customer')` (`top=5`) selesai dalam `1.35s`, sedangkan filter gabungan `(contains(objectName,...) or contains(alObjectName,...) or objectId eq ...)` ditolak BC (`BCServerError`). Karena itu `_object_filter_expr()` memakai filter tunggal (`objectId eq N` untuk angka atau `contains(objectName,'...')` untuk teks) dan filter `objectType` dijalankan di backend Python, dengan `timeout=45.0` detik dan batch `5` role.
+- `aggregatePermissionSets`: `id`, `appId`, `appName`, `name`, `roleId`, `scope` (terverifikasi `ok` dalam `0.25s`).
+- `userPermissionSets` & `userPermissions`: tersedia di `$metadata`, tetapi hasil uji Sandbox menunjukkan HTTP `400` jika diakses langsung pada `companies({id})/...` tanpa parent navigation, dan HTTP `404` di root tenant.
+
+[PERLU VERIFIKASI: hasil live tab **Cari Akses Objek** (pasca-penyederhanaan `$filter`) dan **Bandingkan (Diff)** di browser terhadap Sandbox `DEMO COMPANY`.]
+
+## Kontrak Endpoint Backend (`/api/v1/permission-analyzer`)
+
+- `GET /api/v1/permission-analyzer/users`: mengembalikan daftar user/aplikasi Entra (`usersPermissions`), assignment role per company (`accessControls`), flag `isSuper`, serta daftar `permissionSets` dan `companies`.
+- `GET /api/v1/permission-analyzer/objects?query=...&object_type=...&access=...&company=...`: pencarian terbalik objek dari `expandedPermissionSets` yang digabungkan ke pemegang izin (`accessControls` + `usersPermissions`) dengan penanda sensitif.
+- `GET /api/v1/permission-analyzer/diff?kind=user|role&left=...&right=...`: membandingkan 2 user (`userSecurityId`) atau 2 permission set (`roleId`) untuk menghasilkan `roleDiff` dan `objectDiff` (`same`, `onlyLeft`, `onlyRight`).
 
 ## Batasan keamanan & arsitektur
 
@@ -37,15 +52,15 @@ Irfan mengonfirmasi pada 2026-11-26 melalui integration test Sandbox (`DEMO COMP
 
 | # | Pertanyaan | Pemilik | Dibutuhkan sebelum |
 |---|---|---|---|
-| PA-1 | Akses `D365 AUTOMATION` + 25 entity `microsoft/automation/v2.0` sudah lulus uji Sandbox; tinggal konfirmasi daftar field `$metadata` entity izin | Irfan | Implementasi backend Fase 3 |
+| PA-1 | Selesai — daftar field `$metadata` 7 entity izin telah diverifikasi di Sandbox pada 2026-11-26 | Irfan | Selesai |
 | PA-2 | Persetujuan [ADR-004](../decisions/ADR-004-automation-api-readonly.md) — **Disetujui (Opsi A)** pada 2026-11-26 | Irfan | Selesai |
-| PA-3 | Cakupan audit mencakup **User BC dan Aplikasi Entra** jika terekspos oleh endpoint `microsoft/automation/v2.0` (`D365 AUTOMATION` sudah ditambahkan di `BC-Sandbox-Latihan`) | Irfan | Implementasi backend Fase 3 |
+| PA-3 | Selesai — `usersPermissions.applicationId` & `licenseType` mencakup **User BC dan Aplikasi Entra** (`D365 AUTOMATION` di `BC-Sandbox-Latihan`) | Irfan | Selesai |
 
 ## Acceptance criteria awal
-- [ ] `bc_sdk` mendukung pembacaan GET-only endpoint Automation API yang disetujui di ADR-004 dengan HTTP mock test
-- [ ] Backend menyediakan endpoint read-only untuk ringkasan izin user, pencarian akses objek (Read/Write/Delete/`SUPER`), dan diff dua user/permission set
-- [ ] UI menampilkan filter user/objek/akses berisiko serta tampilan diff berdampingan
-- [ ] `ruff`, `mypy`, `pytest`, `bun test`, `tsc`, dan `vite build` lulus; verifikasi manual Sandbox terdokumentasi di `STATUS.md`
+- [x] `bc_sdk` mendukung pembacaan GET-only endpoint Automation API yang disetujui di ADR-004 dengan HTTP mock test
+- [x] Backend menyediakan endpoint read-only untuk ringkasan izin user, pencarian akses objek (Read/Write/Delete/`SUPER`), dan diff dua user/permission set
+- [x] UI menampilkan filter user/objek/akses berisiko serta tampilan diff berdampingan
+- [x] `ruff`, `mypy`, `pytest`, `bun test`, `tsc`, dan `vite build` lulus (dengan HTTP/client mock); tab **User & Aplikasi** + probe Sandbox terdokumentasi di `STATUS.md` (tab `/objects` & `/diff` menunggu verifikasi live pasca-fix `$filter`)
 
 ## Definition of Done
 Irfan dapat memeriksa siapa yang memiliki akses baca/tulis/hapus ke suatu objek dan membandingkan dua user atau permission set di Sandbox secara lokal tanpa menelusuri layar BC satu per satu.

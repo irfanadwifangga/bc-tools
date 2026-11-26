@@ -3,7 +3,7 @@
 _Terakhir diperbarui: 2026-11-26_
 
 ## Status fase
-**MVP Fase 0–2 selesai (`v0.2.0`)** dan masuk `main` lewat [PR #23](https://github.com/irfanadwifangga/bc-tools/pull/23). Tahap berikutnya: desain **Fase 3 — Permission Analyzer** (B-11); lihat [retrospektif MVP](mvp-retrospective.md), [spesifikasi modul](../modules/permission-analyzer.md), dan [ADR-004](../decisions/ADR-004-automation-api-readonly.md) (`Proposed`).
+**MVP Fase 0–2 selesai (`v0.2.0`)** dan masuk `main` lewat [PR #23](https://github.com/irfanadwifangga/bc-tools/pull/23). **Fase 3 — Permission Analyzer** (B-11) aktif: Slice 1 (`bc_sdk` Automation API) ter-merge di [PR #26](https://github.com/irfanadwifangga/bc-tools/pull/26), Slice 2 (backend + UI) di [PR #27](https://github.com/irfanadwifangga/bc-tools/pull/27) dengan tab **User & Aplikasi** terverifikasi live di Sandbox `DEMO COMPANY`; lihat [spesifikasi modul](../modules/permission-analyzer.md) dan [ADR-004](../decisions/ADR-004-automation-api-readonly.md) (`Accepted`).
 
 ## Selesai
 - Scaffold repo, `AGENTS.md`, dokumen inti, standar, spesifikasi modul, draft ADR-001/002/003 (disusun Claude sebagai analis)
@@ -58,7 +58,9 @@ _Terakhir diperbarui: 2026-11-26_
 
 - Halaman **Ringkasan** (`#ringkasan`) diperbarui menjadi Workspace Hub (`OverviewPage`) yang memuat status backend lokal (`/api/v1/health`), jumlah endpoint Standar & Custom, total Customer & Item `DEMO COMPANY`, tombol aksi cepat ke **API Explorer**, serta tombol **Periksa ulang**, dengan unit test mock dan SSR. Irfan memverifikasi tampilan live di browser (`Backend lokal: Aktif`, `150 endpoint` Standar, `7 endpoint` Custom, `12` Customer, `51` Item).
 
-- **Fase 3 Slice 1 (Permission Analyzer SDK):** [ADR-004](../decisions/ADR-004-automation-api-readonly.md) disetujui (`Accepted`), `bc.automation` ditambahkan di `bc_sdk` dengan allowlist GET-only `microsoft/automation/v2.0` dan diuji dengan HTTP mock (`test_automation.py`). Integration test Sandbox (`test_sandbox_automation_integration.py`) lulus oleh Irfan: 25 entity Automation terdeteksi (`permissionSets` mengembalikan `id`, `appId`, `displayName`, `extensionName`, `scope`). Cetak skema field entity izin untuk Slice 2 menunggu langkah berikutnya.
+- **Fase 3 Slice 1 (Permission Analyzer SDK):** [ADR-004](../decisions/ADR-004-automation-api-readonly.md) disetujui (`Accepted`), `bc.automation` ditambahkan di `bc_sdk` dengan allowlist GET-only `microsoft/automation/v2.0` dan diuji dengan HTTP mock (`test_automation.py`). Integration test Sandbox (`test_sandbox_automation_integration.py`) lulus oleh Irfan pada 2026-11-26: 25 entity Automation terdeteksi beserta skema field `$metadata` untuk `users`, `usersPermissions`, `permissionSets`, `userPermissionSets`, `expandedPermissionSets`, `accessControls`, dan `userPermissions`.
+
+- **Fase 3 Slice 2 (Permission Analyzer Backend & UI):** Ekstrak helper bersama `backend/app/core/bc.py`, tambah endpoint read-only `/api/v1/permission-analyzer/{users,objects,diff}` (`backend/app/modules/permission_analyzer/`), regenerasi `frontend/src/api/schema.d.ts`, tambah halaman `#permission-analyzer` (tab **User & Aplikasi**, **Cari Akses Objek**, dan **Bandingkan (Diff)**) dengan lebar kolom sub-tabel sama rata, `showTotal` pada pagination, serta penyelarasan kotak loading skeleton penuh bersama API Explorer. Seluruh unit test mock Python & frontend lulus; Irfan memverifikasi tab **User & Aplikasi** live di browser (`16` akun dari `DEMO COMPANY`) serta probe integration test Sandbox (`objectId eq 18` 58 baris `0.53s`, `contains(objectName,'Customer')` `1.35s`, dan filter gabungan `or` gagal sehingga disederhanakan menjadi filter tunggal). Uji live browser untuk tab **Cari Akses Objek** (pasca-fix `$filter`) dan **Bandingkan (Diff)** masih menunggu verifikasi Irfan.
 
 ## Blocker dan pertanyaan terbuka
 | # | Pertanyaan | Pemilik | Dibutuhkan sebelum |
@@ -67,4 +69,4 @@ _Terakhir diperbarui: 2026-11-26_
 | Q5 | Pemberitahuan ke atasan (sebelum dibagikan/di luar sandbox) | Irfan | Sebelum pengguna kedua |
 
 ## Keputusan terkini
-Lihat `docs/decisions/`. ADR-001 **Accepted** untuk autentikasi app-only via MSAL. ADR-002 tetap **Proposed** dengan keputusan `uv` workspace dan SDK async sudah disetujui. ADR-003 **Accepted** (Documentation Generator keluar dari MVP; builder tetap terpisah).
+Lihat `docs/decisions/`. ADR-001 **Accepted** (MSAL app-only), ADR-002 **Proposed** (`uv` workspace & SDK async disetujui), ADR-003 **Accepted** (Documentation Generator keluar dari MVP), ADR-004 **Accepted** (`microsoft/automation/v2.0` read-only via `bc_sdk` dengan `D365 AUTOMATION`).
