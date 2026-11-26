@@ -10,6 +10,14 @@
   margin-block-end: 16px;
 }
 
+.pa-object-controls {
+  display: grid;
+  grid-template-columns: minmax(200px, 1.5fr) repeat(3, minmax(130px, 0.8fr)) auto;
+  gap: 12px;
+  align-items: end;
+  margin-block-end: 16px;
+}
+
 .pa-filter-field {
   display: flex;
   flex-direction: column;
@@ -57,6 +65,18 @@
   text-align: center;
 }
 
+.pa-state-spinner {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: var(--workspace-muted);
+}
+
+.permission-analyzer .ant-pagination {
+  gap: 6px;
+}
+
 .pa-diff-controls {
   display: grid;
   grid-template-columns: minmax(170px, 0.8fr) repeat(2, minmax(220px, 1fr)) auto;
@@ -77,9 +97,14 @@
 }
 
 .pa-perms-strip {
-  display: inline-flex;
+  display: flex;
   flex-wrap: wrap;
   gap: 4px;
+}
+
+.pa-role-cell {
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .pa-holders-list {
@@ -90,6 +115,7 @@
 
 @media (max-width: 900px) {
   .pa-filter-bar,
+  .pa-object-controls,
   .pa-diff-controls {
     grid-template-columns: 1fr 1fr;
   }
@@ -97,6 +123,7 @@
 
 @media (max-width: 560px) {
   .pa-filter-bar,
+  .pa-object-controls,
   .pa-diff-controls {
     grid-template-columns: 1fr;
   }

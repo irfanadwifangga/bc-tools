@@ -79,10 +79,22 @@ def test_sandbox_automation_permission_discovery() -> None:
                     "roleId eq 'D365 READ'",
                 ),
                 (
-                    "expanded objectId=18 top=20",
+                    "expanded objectId=18 full",
                     "expandedPermissionSets",
-                    20,
+                    None,
                     "objectId eq 18",
+                ),
+                (
+                    "expanded contains(objectName,Customer) top=5",
+                    "expandedPermissionSets",
+                    5,
+                    "contains(objectName,'Customer')",
+                ),
+                (
+                    "expanded contains(18) or objectId=18",
+                    "expandedPermissionSets",
+                    None,
+                    "(contains(objectName,'18') or contains(alObjectName,'18') or objectId eq 18)",
                 ),
             ):
                 started = time.perf_counter()

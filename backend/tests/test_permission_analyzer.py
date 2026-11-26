@@ -332,8 +332,8 @@ def test_objects_search_filters_company_access_and_sensitivity(
 
     assert super_search.status_code == 200
     assert super_search.json()["matches"][0]["isSensitive"] is True
-    assert "objectId eq 18" in (seen_filters[0] or "")
-    assert "and objectType eq 'TableData'" in (seen_filters[1] or "")
+    assert seen_filters[0] == "objectId eq 18"
+    assert seen_filters[1] == "contains(objectName,'Customer')"
 
 
 def test_objects_search_caps_results_at_200(sandbox_config: None) -> None:
@@ -352,11 +352,7 @@ def test_objects_search_caps_results_at_200(sandbox_config: None) -> None:
         entity: str, *, company_scoped: bool = True, filter_expr: str | None = None
     ) -> list[dict[str, object]]:
         if entity == "expandedPermissionSets":
-            assert (
-                filter_expr
-                == "contains(objectName,'Table') or contains(alObjectName,'Table')"
-                or filter_expr is not None
-            )
+            assert filter_expr == "contains(objectName,'Table')"
             return expanded
         return []
 

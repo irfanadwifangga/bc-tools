@@ -381,17 +381,10 @@ def _odata_quote(value: str) -> str:
 
 
 def _object_filter_expr(query: ObjectSearchQuery) -> str:
-    quoted = _odata_quote(query.query)
-    clauses = [
-        f"contains(objectName,{quoted})",
-        f"contains(alObjectName,{quoted})",
-    ]
+    # BC Automation API rejects combined OR filters on expandedPermissionSets.
     if query.query.isdigit():
-        clauses.append(f"objectId eq {int(query.query)}")
-    expr = "(" + " or ".join(clauses) + ")"
-    if query.object_type is not None:
-        expr = f"{expr} and objectType eq {_odata_quote(query.object_type)}"
-    return expr
+        return f"objectId eq {int(query.query)}"
+    return f"contains(objectName,{_odata_quote(query.query)})"
 
 
 async def _fetch_expanded_for_roles(

@@ -1,4 +1,4 @@
-import { Alert, Button, Empty, Input, Modal, Skeleton, Spin, Tabs } from "antd";
+import { Alert, Button, Empty, Input, Modal, Skeleton, Spin, Tabs, theme } from "antd";
 import { ApiOutlined, AppstoreOutlined, BarsOutlined, CodeOutlined, DatabaseOutlined, ReloadOutlined, RightOutlined, SearchOutlined } from "@ant-design/icons";
 import { useEffect, useState } from "react";
 import { PageHeader } from "../../components/PageHeader";
@@ -181,6 +181,7 @@ function useCatalog(load: typeof loadCatalog, fallback: string) {
 }
 
 export function CatalogPage() {
+  const { token } = theme.useToken();
   const standard = useCatalog(loadCatalog, "Katalog standar gagal dimuat. Periksa backend lokal.");
   const custom = useCatalog(loadCustomCatalog, "Katalog custom gagal dimuat. Periksa backend lokal.");
   const [search, setSearch] = useState("");
@@ -202,7 +203,16 @@ export function CatalogPage() {
         titleId="catalog-title"
       />
       {loading && (
-        <div className={entities.length === 0 ? "catalog-state-box" : "catalog-state-banner"} role="status" aria-live="polite">
+        <div
+          className={entities.length === 0 ? "catalog-state-box" : "catalog-state-banner"}
+          role="status"
+          aria-live="polite"
+          style={
+            entities.length === 0
+              ? { background: token.colorBgContainer, borderColor: token.colorBorderSecondary }
+              : undefined
+          }
+        >
           <div className="catalog-state-spinner">
             <Spin size={entities.length === 0 ? "default" : "small"} />
             <span>Memuat katalog endpoint…</span>
@@ -227,7 +237,11 @@ export function CatalogPage() {
           </div>
         ))}
       {allReady && entities.length === 0 && (
-        <div className="catalog-state-box" role="status">
+        <div
+          className="catalog-state-box"
+          role="status"
+          style={{ background: token.colorBgContainer, borderColor: token.colorBorderSecondary }}
+        >
           <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="Katalog sandbox kosong." />
         </div>
       )}

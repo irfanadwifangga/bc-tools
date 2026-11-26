@@ -91,8 +91,10 @@ export function PermissionAnalyzerPage({
           aria-live="polite"
           style={{ background: token.colorBgContainer, borderColor: token.colorBorderSecondary }}
         >
-          <Spin />
-          <div>Memuat data user dan permission set Sandbox…</div>
+          <div className="pa-state-spinner">
+            <Spin />
+            <span>Memuat data user dan permission set Sandbox…</span>
+          </div>
           <Skeleton active title={false} paragraph={{ rows: 4 }} />
         </div>
       )}

@@ -1,4 +1,4 @@
-import { Alert, Button, Empty, Form, Input, Select, Spin, Table, Tag, Typography, theme } from "antd";
+import { Alert, Button, Empty, Form, Input, Select, Skeleton, Spin, Table, Tag, Typography, theme } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { SearchOutlined } from "@ant-design/icons";
 import { useEffect, useId, useRef, useState } from "react";
@@ -175,7 +175,7 @@ export function ObjectSearchTab({
         onFinish={() => void runSearch()}
         aria-label="Form pencarian akses objek"
       >
-        <div className="pa-filter-bar">
+        <div className="pa-object-controls">
           <div className="pa-filter-field">
             <label htmlFor={`${baseId}-obj-query`}>Nama atau ID objek</label>
             <Input
@@ -218,8 +218,6 @@ export function ObjectSearchTab({
               options={companyOptions}
             />
           </div>
-        </div>
-        <div className="pa-summary-row">
           <Button
             type="primary"
             htmlType="submit"
@@ -228,13 +226,15 @@ export function ObjectSearchTab({
           >
             Cari Akses
           </Button>
-          {state.status === "ready" && (
-            <span role="status">
+        </div>
+        {state.status === "ready" && (
+          <div className="pa-summary-row" role="status">
+            <span>
               {state.data.totalMatches} hasil ditemukan
               {state.data.truncated ? " (dibatasi maksimal 200 baris)" : ""}
             </span>
-          )}
-        </div>
+          </div>
+        )}
       </Form>
 
       {validationError && (
@@ -259,9 +259,17 @@ export function ObjectSearchTab({
       )}
 
       {state.status === "loading" && (
-        <div className="pa-state-box" role="status">
-          <Spin />
-          <div>Mencari akses objek di Sandbox…</div>
+        <div
+          className="pa-state-box"
+          role="status"
+          aria-live="polite"
+          style={{ background: token.colorBgContainer, borderColor: token.colorBorderSecondary }}
+        >
+          <div className="pa-state-spinner">
+            <Spin />
+            <span>Mencari akses objek di Sandbox…</span>
+          </div>
+          <Skeleton active title={false} paragraph={{ rows: 4 }} />
         </div>
       )}
 
@@ -296,8 +304,8 @@ export function ObjectSearchTab({
           columns={columns}
           dataSource={state.data.matches}
           size="middle"
-          scroll={{ x: "max-content" }}
-          pagination={{ pageSize: 20, showSizeChanger: true, hideOnSinglePage: true }}
+          scroll={{ x: 720 }}
+          pagination={{ defaultPageSize: 20, showSizeChanger: true }}
         />
       )}
     </div>

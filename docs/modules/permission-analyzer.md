@@ -1,6 +1,6 @@
 # Modul: Permission Analyzer (B-11)
 
-- **Fase:** 3 (Pasca-MVP) · **Status:** Slice 1 (SDK) & Slice 2 (Backend & UI) terimplementasi (verifikasi live Sandbox menunggu uji manual)
+- **Fase:** 3 (Pasca-MVP) · **Status:** Slice 1 (SDK) & Slice 2 (Backend & UI) selesai; tab **User & Aplikasi** terverifikasi live Sandbox (`DEMO COMPANY`, 16 akun), tab **Cari Akses Objek** (pasca-fix `$filter`) & **Bandingkan (Diff)** menunggu uji live browser
 - **Lokasi target (saat implementasi):** `backend/app/modules/permission_analyzer/` + `frontend/src/features/permission-analyzer/` + ekstensi read-only di `packages/bc_sdk/`
 
 ## Tujuan
@@ -30,11 +30,11 @@ Irfan memverifikasi melalui integration test Sandbox (`DEMO COMPANY`, `D365 AUTO
 - `usersPermissions`: `id`, `userSecurityId`, `userName`, `fullName`, `state`, `expiryDate`, `windowsSecurityID`, `changePassword`, `licenseType`, `authenticationEmail`, `contactEmail`, `exchangeIdentifier`, `applicationId` (`Edm.Guid` — dipakai membedakan User BC vs Aplikasi Entra).
 - `permissionSets`: `scope`, `appId`, `id`, `displayName`, `extensionName`.
 - `accessControls`: `id`, `userSecurityId`, `roleId`, `roleName`, `company`, `userName`, `fullName`, `userLicenseType`, `scope`, `appId`, `appName` — dipakai sebagai sumber assignment role per user & company karena lolos query langsung (`company_scoped=True`).
-- `expandedPermissionSets`: `id`, `appId`, `appName`, `roleId`, `roleName`, `objectType`, `objectId` (`Edm.Int32`), `objectName`, `readPermission`, `insertPermission`, `modifyPermission`, `deletePermission`, `executePermission`, `alObjectName`, `scope`. Uji Sandbox menunjukkan query berfilter `$filter` per role (`D365 READ`) mengembalikan `2.986` baris dalam `6.92s` dan query `objectId eq 18` (`top=20`) selesai dalam `0.38s`, sehingga rute `/objects` dan `/diff` memakai `timeout=45.0` detik dan batch `5` role.
+- `expandedPermissionSets`: `id`, `appId`, `appName`, `roleId`, `roleName`, `objectType`, `objectId` (`Edm.Int32`), `objectName`, `readPermission`, `insertPermission`, `modifyPermission`, `deletePermission`, `executePermission`, `alObjectName`, `scope`. Uji Sandbox menunjukkan query berfilter `$filter` per role (`D365 READ`) mengembalikan `2.986` baris dalam `6.38s`–`6.92s`, `objectId eq 18` penuh mengembalikan `58` baris dalam `0.53s`, dan `contains(objectName,'Customer')` (`top=5`) selesai dalam `1.35s`, sedangkan filter gabungan `(contains(objectName,...) or contains(alObjectName,...) or objectId eq ...)` ditolak BC (`BCServerError`). Karena itu `_object_filter_expr()` memakai filter tunggal (`objectId eq N` untuk angka atau `contains(objectName,'...')` untuk teks) dan filter `objectType` dijalankan di backend Python, dengan `timeout=45.0` detik dan batch `5` role.
 - `aggregatePermissionSets`: `id`, `appId`, `appName`, `name`, `roleId`, `scope` (terverifikasi `ok` dalam `0.25s`).
 - `userPermissionSets` & `userPermissions`: tersedia di `$metadata`, tetapi hasil uji Sandbox menunjukkan HTTP `400` jika diakses langsung pada `companies({id})/...` tanpa parent navigation, dan HTTP `404` di root tenant.
 
-[PERLU VERIFIKASI: tampilan & interaksi langsung 3 tab UI Permission Analyzer di browser terhadap backend lokal (`uvicorn` terbaru) pada Sandbox `DEMO COMPANY`.]
+[PERLU VERIFIKASI: hasil live tab **Cari Akses Objek** (pasca-penyederhanaan `$filter`) dan **Bandingkan (Diff)** di browser terhadap Sandbox `DEMO COMPANY`.]
 
 ## Kontrak Endpoint Backend (`/api/v1/permission-analyzer`)
 
@@ -60,7 +60,7 @@ Irfan memverifikasi melalui integration test Sandbox (`DEMO COMPANY`, `D365 AUTO
 - [x] `bc_sdk` mendukung pembacaan GET-only endpoint Automation API yang disetujui di ADR-004 dengan HTTP mock test
 - [x] Backend menyediakan endpoint read-only untuk ringkasan izin user, pencarian akses objek (Read/Write/Delete/`SUPER`), dan diff dua user/permission set
 - [x] UI menampilkan filter user/objek/akses berisiko serta tampilan diff berdampingan
-- [ ] `ruff`, `mypy`, `pytest`, `bun test`, `tsc`, dan `vite build` lulus (lulus dengan mock); verifikasi manual Sandbox terdokumentasi di `STATUS.md`
+- [x] `ruff`, `mypy`, `pytest`, `bun test`, `tsc`, dan `vite build` lulus (dengan HTTP/client mock); tab **User & Aplikasi** + probe Sandbox terdokumentasi di `STATUS.md` (tab `/objects` & `/diff` menunggu verifikasi live pasca-fix `$filter`)
 
 ## Definition of Done
 Irfan dapat memeriksa siapa yang memiliki akses baca/tulis/hapus ke suatu objek dan membandingkan dua user atau permission set di Sandbox secara lokal tanpa menelusuri layar BC satu per satu.

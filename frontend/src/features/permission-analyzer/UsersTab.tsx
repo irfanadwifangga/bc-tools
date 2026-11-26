@@ -16,46 +16,56 @@ interface UsersTabProps {
   defaultExpandAll?: boolean;
 }
 
-const assignmentColumns: ColumnsType<UserRoleAssignment> = [
-  {
-    title: "Role ID",
-    dataIndex: "roleId",
-    key: "roleId",
-    render: (value: string, row) => (
-      <span>
-        <span className="pa-mono">{value}</span>
-        {row.roleName && row.roleName !== value && (
-          <Typography.Text type="secondary"> · {row.roleName}</Typography.Text>
-        )}
-      </span>
-    ),
-  },
-  {
-    title: "Company",
-    dataIndex: "company",
-    key: "company",
-    render: (value?: string | null) => value?.trim() || "Semua Company",
-  },
-  {
-    title: "Scope",
-    dataIndex: "scope",
-    key: "scope",
-    render: (value?: string | null) => value || "—",
-  },
-  {
-    title: "Type",
-    dataIndex: "type",
-    key: "type",
-    render: (value?: string | null) => value || "—",
-  },
-  {
-    title: "Security Group",
-    dataIndex: "securityGroupCode",
-    key: "securityGroupCode",
-    render: (value?: string | null) =>
-      value?.trim() ? <span className="pa-mono">{value}</span> : "—",
-  },
-];
+function buildAssignmentColumns(rows: UserRoleAssignment[]): ColumnsType<UserRoleAssignment> {
+  const hasType = rows.some(item => Boolean(item.type?.trim()));
+  const hasSecurityGroup = rows.some(item => Boolean(item.securityGroupCode?.trim()));
+  const cols: ColumnsType<UserRoleAssignment> = [
+    {
+      title: "Role ID",
+      dataIndex: "roleId",
+      key: "roleId",
+      render: (value: string, row) => (
+        <div className="pa-role-cell">
+          <span className="pa-mono">{value}</span>
+          {row.roleName && row.roleName !== value && (
+            <Typography.Text type="secondary"> · {row.roleName}</Typography.Text>
+          )}
+        </div>
+      ),
+    },
+    {
+      title: "Company",
+      dataIndex: "company",
+      key: "company",
+      render: (value?: string | null) => value?.trim() || "Semua Company",
+    },
+    {
+      title: "Scope",
+      dataIndex: "scope",
+      key: "scope",
+      render: (value?: string | null) => value || "—",
+    },
+  ];
+  if (hasType) {
+    cols.push({
+      title: "Type",
+      dataIndex: "type",
+      key: "type",
+      render: (value?: string | null) => value || "—",
+    });
+  }
+  if (hasSecurityGroup) {
+    cols.push({
+      title: "Security Group",
+      dataIndex: "securityGroupCode",
+      key: "securityGroupCode",
+      render: (value?: string | null) =>
+        value?.trim() ? <span className="pa-mono">{value}</span> : "—",
+    });
+  }
+  const width = `${(100 / cols.length).toFixed(2)}%`;
+  return cols.map(col => ({ ...col, width }));
+}
 
 export function UsersTab({ users, companies, defaultExpandAll = false }: UsersTabProps) {
   const { token } = theme.useToken();
@@ -199,11 +209,13 @@ export function UsersTab({ users, companies, defaultExpandAll = false }: UsersTa
         </div>
       </div>
 
-      <div className="pa-summary-row" role="status">
-        <span>
-          Menampilkan {filtered.length} dari {users.length} akun
-        </span>
-        {hasFilters && (
+      {hasFilters && (
+        <div className="pa-summary-row" role="status">
+          <span>
+            {filtered.length === 0
+              ? `Menampilkan 0 dari ${users.length} akun`
+              : `${filtered.length} dari ${users.length} akun cocok`}
+          </span>
           <Button
             size="small"
             onClick={() => {
@@ -215,8 +227,8 @@ export function UsersTab({ users, companies, defaultExpandAll = false }: UsersTa
           >
             Reset filter
           </Button>
-        )}
-      </div>
+        </div>
+      )}
 
       {filtered.length === 0 ? (
         <div
@@ -238,8 +250,12 @@ export function UsersTab({ users, companies, defaultExpandAll = false }: UsersTa
           columns={columns}
           dataSource={filtered}
           size="middle"
-          scroll={{ x: "max-content" }}
-          pagination={{ pageSize: 15, showSizeChanger: true, hideOnSinglePage: true }}
+          scroll={{ x: 720 }}
+          pagination={{
+            defaultPageSize: 15,
+            showSizeChanger: true,
+            showTotal: total => `Menampilkan ${total} dari ${users.length} akun`,
+          }}
           expandable={{
             defaultExpandAllRows: defaultExpandAll,
             rowExpandable: record => record.assignments.length > 0,
@@ -248,11 +264,11 @@ export function UsersTab({ users, companies, defaultExpandAll = false }: UsersTa
                 rowKey={item =>
                   `${item.roleId}|${item.company ?? ""}|${item.scope ?? ""}|${item.type ?? ""}|${item.securityGroupCode ?? ""}`
                 }
-                columns={assignmentColumns}
+                columns={buildAssignmentColumns(record.assignments)}
                 dataSource={record.assignments}
                 size="small"
                 pagination={false}
-                scroll={{ x: "max-content" }}
+                scroll={{ x: 560 }}
               />
             ),
           }}

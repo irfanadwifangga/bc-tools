@@ -1,4 +1,4 @@
-import { Alert, Button, Empty, Select, Spin, Table, Tabs, Tag, Typography, theme } from "antd";
+import { Alert, Button, Empty, Select, Skeleton, Spin, Table, Tabs, Tag, Typography, theme } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { SwapOutlined } from "@ant-design/icons";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
@@ -28,46 +28,56 @@ export type DiffState =
   | { status: "ready"; data: PermissionDiffResponse }
   | { status: "error"; message: string };
 
-const roleDiffColumns: ColumnsType<DiffRoleItem> = [
-  {
-    title: "Role ID",
-    dataIndex: "roleId",
-    key: "roleId",
-    render: (value: string, row) => (
-      <span>
-        <span className="pa-mono">{value}</span>
-        {row.roleName && row.roleName !== value && (
-          <Typography.Text type="secondary"> · {row.roleName}</Typography.Text>
-        )}
-      </span>
-    ),
-  },
-  {
-    title: "Company",
-    dataIndex: "company",
-    key: "company",
-    render: (value?: string | null) => value?.trim() || "Semua Company",
-  },
-  {
-    title: "Scope",
-    dataIndex: "scope",
-    key: "scope",
-    render: (value?: string | null) => value || "—",
-  },
-  {
-    title: "Type",
-    dataIndex: "type",
-    key: "type",
-    render: (value?: string | null) => value || "—",
-  },
-  {
-    title: "Security Group",
-    dataIndex: "securityGroupCode",
-    key: "securityGroupCode",
-    render: (value?: string | null) =>
-      value?.trim() ? <span className="pa-mono">{value}</span> : "—",
-  },
-];
+function buildRoleDiffColumns(rows: DiffRoleItem[]): ColumnsType<DiffRoleItem> {
+  const hasType = rows.some(item => Boolean(item.type?.trim()));
+  const hasSecurityGroup = rows.some(item => Boolean(item.securityGroupCode?.trim()));
+  const cols: ColumnsType<DiffRoleItem> = [
+    {
+      title: "Role ID",
+      dataIndex: "roleId",
+      key: "roleId",
+      render: (value: string, row) => (
+        <div className="pa-role-cell">
+          <span className="pa-mono">{value}</span>
+          {row.roleName && row.roleName !== value && (
+            <Typography.Text type="secondary"> · {row.roleName}</Typography.Text>
+          )}
+        </div>
+      ),
+    },
+    {
+      title: "Company",
+      dataIndex: "company",
+      key: "company",
+      render: (value?: string | null) => value?.trim() || "Semua Company",
+    },
+    {
+      title: "Scope",
+      dataIndex: "scope",
+      key: "scope",
+      render: (value?: string | null) => value || "—",
+    },
+  ];
+  if (hasType) {
+    cols.push({
+      title: "Type",
+      dataIndex: "type",
+      key: "type",
+      render: (value?: string | null) => value || "—",
+    });
+  }
+  if (hasSecurityGroup) {
+    cols.push({
+      title: "Security Group",
+      dataIndex: "securityGroupCode",
+      key: "securityGroupCode",
+      render: (value?: string | null) =>
+        value?.trim() ? <span className="pa-mono">{value}</span> : "—",
+    });
+  }
+  const width = `${(100 / cols.length).toFixed(2)}%`;
+  return cols.map(col => ({ ...col, width }));
+}
 
 const objectDiffColumns: ColumnsType<DiffObjectItem> = [
   {
@@ -127,11 +137,11 @@ function DiffBucketPanel({
               rowKey={item =>
                 `${item.roleId}|${item.company ?? ""}|${item.scope ?? ""}|${item.type ?? ""}|${item.securityGroupCode ?? ""}`
               }
-              columns={roleDiffColumns}
+              columns={buildRoleDiffColumns(roles)}
               dataSource={roles}
               size="small"
-              scroll={{ x: "max-content" }}
-              pagination={{ pageSize: 10, hideOnSinglePage: true }}
+              scroll={{ x: 640 }}
+              pagination={{ defaultPageSize: 10, hideOnSinglePage: true }}
             />
           )}
         </section>
@@ -148,8 +158,8 @@ function DiffBucketPanel({
             columns={objectDiffColumns}
             dataSource={objects}
             size="small"
-            scroll={{ x: "max-content" }}
-            pagination={{ pageSize: 15, showSizeChanger: true, hideOnSinglePage: true }}
+            scroll={{ x: 680 }}
+            pagination={{ defaultPageSize: 15, showSizeChanger: true }}
           />
         )}
       </section>
@@ -307,9 +317,17 @@ export function DiffTab({
       )}
 
       {state.status === "loading" && (
-        <div className="pa-state-box" role="status">
-          <Spin />
-          <div>Menghitung perbedaan izin…</div>
+        <div
+          className="pa-state-box"
+          role="status"
+          aria-live="polite"
+          style={{ background: token.colorBgContainer, borderColor: token.colorBorderSecondary }}
+        >
+          <div className="pa-state-spinner">
+            <Spin />
+            <span>Menghitung perbedaan izin…</span>
+          </div>
+          <Skeleton active title={false} paragraph={{ rows: 4 }} />
         </div>
       )}
 
