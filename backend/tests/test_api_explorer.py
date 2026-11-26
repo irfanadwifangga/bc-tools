@@ -126,7 +126,9 @@ def test_customer_preview_contract(preview_config: None, count: int) -> None:
         )
         response = http.get(_PREVIEW)
         assert factory.call_args.args[0].company_id == _COMPANY
-        client.customers.list.assert_awaited_once_with(top=5, order_by=None)
+        client.customers.list.assert_awaited_once_with(
+            top=5, order_by=None, number=None
+        )
         client.__aexit__.assert_awaited_once()
     assert response.status_code == 200
     assert response.json() == rows[:5]
@@ -194,6 +196,12 @@ def test_preview_rejects_parameters_and_writes_before_sdk_creation(
             {"order": "number asc,id desc"},
             {"$orderby": "number asc"},
             [("order", "number asc"), ("order", "number desc")],
+            {"number": ""},
+            {"number": " "},
+            {"number": "X" * 101},
+            {"number": "A\nB"},
+            {"$filter": "number eq 'A'"},
+            [("number", "A"), ("number", "B")],
         ):
             response = http.get(url, params=params)
             assert response.status_code == 422
@@ -215,7 +223,7 @@ def test_item_preview_contract(preview_config: None, count: int) -> None:
         )
         response = http.get("/api/v1/api-explorer/items/preview")
         assert factory.call_args.args[0].company_id == _COMPANY
-        client.items.list.assert_awaited_once_with(top=5, order_by=None)
+        client.items.list.assert_awaited_once_with(top=5, order_by=None, number=None)
     assert response.status_code == 200
     assert response.json() == rows[:5]
 
@@ -239,7 +247,7 @@ def test_preview_applies_selected_limit(
         response = http.get(
             f"/api/v1/api-explorer/{endpoint}/preview", params={"limit": limit}
         )
-        resource.list.assert_awaited_once_with(top=limit, order_by=None)
+        resource.list.assert_awaited_once_with(top=limit, order_by=None, number=None)
     assert response.status_code == 200
     assert response.json() == rows[:limit]
 
@@ -254,4 +262,28 @@ def test_preview_forwards_order_with_limit(
         resource.list = AsyncMock(return_value=[])
         url = f"/api/v1/api-explorer/{endpoint}/preview"
         assert http.get(url, params={"limit": 2, "order": order.value}).json() == []
-        resource.list.assert_awaited_once_with(top=2, order_by=order)
+        resource.list.assert_awaited_once_with(top=2, order_by=order, number=None)
+
+
+@pytest.mark.parametrize(
+    ("endpoint", "model"), [("customers", Customer), ("items", Item)]
+)
+@pytest.mark.parametrize("match", [True, False])
+def test_preview_filters_by_number(
+    preview_config: None, endpoint: str, model: type[Customer] | type[Item], match: bool
+) -> None:
+    number = "00'A & B"
+    row = {"id": str(UUID(int=1)), "number": number, "displayName": "Demo"}
+    with patch(_FACTORY) as factory, TestClient(app) as http:
+        resource = getattr(factory.return_value, endpoint)
+        rows = [model.model_validate(row)] if match else []
+        resource.list = AsyncMock(return_value=rows)
+        response = http.get(
+            f"/api/v1/api-explorer/{endpoint}/preview",
+            params={"number": number, "limit": 2, "order": "number asc"},
+        )
+        resource.list.assert_awaited_once_with(
+            top=2, order_by=RecordOrder.NUMBER_ASC, number=number
+        )
+    assert response.status_code == 200
+    assert response.json() == ([row] if match else [])

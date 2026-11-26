@@ -46,6 +46,8 @@ _Terakhir diperbarui: 2026-11-25_
 
 - Preview dan contoh GET `customers` dan `items` mendukung urutan nomor atau nama, naik atau turun. Pengiriman `$orderby` diuji dengan HTTP mock. Uji Sandbox menunggu verifikasi Irfan.
 
+- Preview dan contoh GET `customers` dan `items` menyediakan filter nomor. Tes mock mencakup hasil cocok, hasil kosong, dan pengodean karakter khusus. Uji Sandbox menunggu verifikasi Irfan.
+
 ## Blocker dan pertanyaan terbuka
 | # | Pertanyaan | Pemilik | Dibutuhkan sebelum |
 |---|---|---|---|

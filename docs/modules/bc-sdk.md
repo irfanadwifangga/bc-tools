@@ -33,6 +33,8 @@ API publik dan transport menggunakan async sesuai ADR-002. Setiap `list()` menge
 
 Resource `customers` dan `items` menerima `order_by` opsional dari enum `RecordOrder` (nomor atau nama, naik atau turun) untuk mengirim `$orderby` bersama `$top`.
 
+Resource `customers` dan `items` juga menerima `number` opsional untuk kecocokan persis. SDK membatasi nomor ke 100 karakter cetak dan menangani apostrof sebagai bagian dari nilai literal.
+
 ## Katalog metadata (Fase 2)
 
 `bc.metadata.list_entities()` membaca `GET /api/v2.0/$metadata` di sandbox terkonfigurasi. Setiap hasil berisi nama entity set, nama lengkap entity type, serta nama dan tipe field struktural termasuk field warisan. Dua entity set yang memakai tipe sama tetap muncul sebagai dua endpoint. Katalog ini mencakup API standar dan dapat dibaca tanpa ID company.
