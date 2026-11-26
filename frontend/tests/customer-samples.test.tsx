@@ -1,7 +1,8 @@
 import { expect, test } from "bun:test";
 import { renderToStaticMarkup } from "react-dom/server";
 import { SampleCode } from "../src/features/api-explorer/SampleCode";
-import { EndpointRow } from "../src/features/api-explorer/CatalogPage";
+import { EndpointDetail } from "../src/features/api-explorer/CatalogPage";
+import { PageHeader } from "../src/components/PageHeader";
 import { getCodeSample } from "../src/features/api-explorer/customerSamples";
 
 test("number filter preserves leading zeros and escapes content in both languages", () => {
@@ -63,24 +64,42 @@ for (const language of ["Python", "C#"] as const) {
 }
 
 test("only customers and items offer copyable examples without loading previews", () => {
-  const row = (name: string) => renderToStaticMarkup(<EndpointRow
-    entity={{ name, entity_type: name, fields: [] }} open query="" onSelect={() => {}} />);
+  const detail = (name: string) => renderToStaticMarkup(<EndpointDetail
+    entity={{ name, entity_type: name, fields: [] }} query="" />);
   for (const endpoint of ["customers", "items"]) {
-    const html = row(endpoint);
-    expect(html).toContain("Contoh kode GET");
+    const html = detail(endpoint);
+    expect(html).toContain("Struktur field");
+    expect(html).toContain("Preview Data");
+    expect(html).toContain("Contoh Kode GET");
     expect(html).toContain(">Salin kode</span>");
     expect(html).toContain("Lihat contoh data");
+    expect(html).toContain("Jumlah baris");
+    expect(html).toContain("Urutkan");
+    expect(html).toContain("Nomor");
+    expect(html).toContain("anticon-ordered-list");
+    expect(html).toContain("anticon-sort-ascending");
+    expect(html).toContain("anticon-filter");
     expect(html).toContain("/" + endpoint);
   }
-  expect(row("vendors")).not.toContain("Contoh kode GET");
+  const vendorHtml = detail("vendors");
+  expect(vendorHtml).toContain("Struktur field");
+  expect(vendorHtml).not.toContain("Preview Data");
+  expect(vendorHtml).not.toContain("Contoh Kode GET");
 });
 
-test("custom customers shows its source and fields without standard preview controls", () => {
-  const html = renderToStaticMarkup(<EndpointRow
+test("PageHeader renders centered heading and optional description", () => {
+  const html = renderToStaticMarkup(<PageHeader title="API Explorer" description="Ringkas" titleId="t" />);
+  expect(html).toContain("page-header--center");
+  expect(html).toContain("API Explorer");
+  expect(html).toContain("Ringkas");
+});
+
+test("custom customers shows its fields without standard preview controls", () => {
+  const html = renderToStaticMarkup(<EndpointDetail
     entity={{ name: "customers", entity_type: "Demo.Customer", source: "custom",
       fields: [{ name: "customNumber", type: "Edm.String" }] }}
-    open query="" onSelect={() => {}} />);
-  expect(html).toContain(">Custom</span>");
+    query="" />);
+  expect(html).toContain("Demo.Customer");
   expect(html).toContain("customNumber");
   expect(html).not.toContain("Lihat contoh data");
   expect(html).not.toContain("Contoh kode GET");

@@ -31,11 +31,13 @@ export function CustomerPreviewData({ rows, format, resource = "customer" }: {
   if (rows.length === 0) return null;
 
   return (
-    <table aria-label={`Contoh data ${resource}`}>
-      <thead><tr><th scope="col">id</th><th scope="col">number</th><th scope="col">displayName</th></tr></thead>
-      <tbody>{rows.map(row => (
-        <tr key={row.id}><td>{row.id}</td><td>{row.number}</td><td>{row.displayName}</td></tr>
-      ))}</tbody>
-    </table>
+    <div className="preview-table-scroll">
+      <table aria-label={`Contoh data ${resource}`}>
+        <thead><tr><th scope="col">id</th><th scope="col">number</th><th scope="col">displayName</th></tr></thead>
+        <tbody>{rows.map(row => (
+          <tr key={row.id}><td>{row.id}</td><td>{row.number}</td><td>{row.displayName}</td></tr>
+        ))}</tbody>
+      </table>
+    </div>
   );
 }

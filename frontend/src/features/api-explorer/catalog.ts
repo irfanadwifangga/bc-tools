@@ -45,11 +45,14 @@ export async function loadItemPreview(signal: AbortSignal, query: PreviewQuery =
   return data;
 }
 
-export function filterEndpoints(entities: CatalogEntity[], search: string) {
+export type SourceFilter = "all" | "standard" | "custom";
+
+export function filterEndpoints(entities: CatalogEntity[], search: string, source: SourceFilter = "all") {
   const query = search.trim().toLowerCase();
-  return entities.filter(({ name, fields }) =>
-    name.toLowerCase().includes(query) ||
-    fields.some(field => field.name.toLowerCase().includes(query)),
+  return entities.filter(entity =>
+    (source === "all" || (entity.source ?? "standard") === source) &&
+    (entity.name.toLowerCase().includes(query) ||
+      entity.fields.some(field => field.name.toLowerCase().includes(query))),
   );
 }
 

@@ -1,4 +1,5 @@
-import { Button, Input } from "antd";
+import { Button, Input, Select } from "antd";
+import { FilterOutlined, OrderedListOutlined, SortAscendingOutlined } from "@ant-design/icons";
 import { useEffect, useId, useRef, useState } from "react";
 import { CustomerPreviewData, type PreviewFormat } from "./CustomerPreviewData";
 import { loadCustomerPreview, loadItemPreview, type PreviewCustomer, type PreviewOrder, type PreviewQuery } from "./catalog";
@@ -61,25 +62,27 @@ export function CustomerPreview({ resource, query, onQueryChange }: {
   return (
     <div className="customer-preview">
       <div className="preview-controls">
-        <label htmlFor={resultId + "-limit"}>Jumlah baris</label>
-        <select id={resultId + "-limit"} value={query.limit}
-          disabled={settingsLocked}
-          onChange={event => onQueryChange({ ...query, limit: Number(event.target.value) })}>
-          {[1, 2, 3, 4, 5].map(value => <option key={value} value={value}>{value}</option>)}
-        </select>
-        <label htmlFor={resultId + "-order"}>Urutkan</label>
-        <select id={resultId + "-order"} value={query.order ?? ""} disabled={settingsLocked}
-          onChange={event => {
-            const value = event.target.value;
-            onQueryChange({ ...query, order: orderOptions.find(option => option.value === value)?.value });
-          }}>
-          <option value="">Urutan BC</option>
-          {orderOptions.map(option => <option key={option.value} value={option.value}>{option.label}</option>)}
-        </select>
-        <label htmlFor={resultId + "-number"}>Nomor</label>
-        <Input id={resultId + "-number"} className="preview-number" placeholder="Opsional"
-          value={query.number ?? ""} maxLength={100} disabled={settingsLocked}
-          onChange={event => onQueryChange({ ...query, number: event.target.value })} />
+        <div className="preview-field">
+          <label htmlFor={resultId + "-limit"}><OrderedListOutlined aria-hidden="true" /><span>Jumlah baris</span></label>
+          <Select<number> id={resultId + "-limit"} className="preview-limit" value={query.limit}
+            disabled={settingsLocked}
+            onChange={limit => onQueryChange({ ...query, limit })}
+            options={[1, 2, 3, 4, 5].map(value => ({ value, label: String(value) }))} />
+        </div>
+        <div className="preview-field">
+          <label htmlFor={resultId + "-order"}><SortAscendingOutlined aria-hidden="true" /><span>Urutkan</span></label>
+          <Select<PreviewOrder | ""> id={resultId + "-order"} className="preview-order" value={query.order ?? ""}
+            disabled={settingsLocked}
+            onChange={value => onQueryChange({ ...query, order: value || undefined })}
+            options={[{ value: "", label: "Urutan BC" }, ...orderOptions]} />
+        </div>
+        <div className="preview-field">
+          <label htmlFor={resultId + "-number"}><FilterOutlined aria-hidden="true" /><span>Nomor</span></label>
+          <Input id={resultId + "-number"} className="preview-number" placeholder="Opsional" allowClear
+            prefix={<FilterOutlined aria-hidden="true" />}
+            value={query.number ?? ""} maxLength={100} disabled={settingsLocked}
+            onChange={event => onQueryChange({ ...query, number: event.target.value })} />
+        </div>
         <Button onClick={togglePreview} aria-controls={resultId}
           aria-expanded={preview.status !== "idle"} aria-disabled={preview.status === "loading"}>
           {label}
