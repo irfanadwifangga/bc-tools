@@ -29,16 +29,16 @@ Irfan memverifikasi melalui integration test Sandbox (`DEMO COMPANY`, `D365 AUTO
 - `users`: `userSecurityId` (`Edm.Guid`), `userName` (`Edm.String`), `displayName` (`Edm.String`), `state` (`Edm.String`), `expiryDate` (`Edm.DateTimeOffset`), `contactEmail` (`Edm.String`).
 - `usersPermissions`: `id`, `userSecurityId`, `userName`, `fullName`, `state`, `expiryDate`, `windowsSecurityID`, `changePassword`, `licenseType`, `authenticationEmail`, `contactEmail`, `exchangeIdentifier`, `applicationId` (`Edm.Guid` — dipakai membedakan User BC vs Aplikasi Entra).
 - `permissionSets`: `scope`, `appId`, `id`, `displayName`, `extensionName`.
-- `userPermissionSets`: `id`, `userSecurityId`, `type`, `roleId`, `roleName`, `securityGroupCode`, `company`, `scope`, `appId`, `appName`.
+- `accessControls`: `id`, `userSecurityId`, `roleId`, `roleName`, `company`, `userName`, `fullName`, `userLicenseType`, `scope`, `appId`, `appName` — dipakai sebagai sumber assignment role per user & company karena lolos query langsung (`company_scoped=True`).
 - `expandedPermissionSets`: `id`, `appId`, `appName`, `roleId`, `roleName`, `objectType`, `objectId` (`Edm.Int32`), `objectName`, `readPermission`, `insertPermission`, `modifyPermission`, `deletePermission`, `executePermission`, `alObjectName`, `scope`.
-- `accessControls` & `userPermissions`: tersedia sebagai entity pelengkap apabila diperlukan di iterasi berikutnya.
+- `userPermissionSets` & `userPermissions`: tersedia di `$metadata`, tetapi hasil uji Sandbox menunjukkan HTTP `400` jika diakses langsung pada `companies({id})/...` tanpa parent navigation, dan HTTP `404` di root tenant.
 
-[PERLU VERIFIKASI: ukuran payload dan performa query live `expandedPermissionSets` & `userPermissionSets` saat dipanggil dari UI pada Sandbox `DEMO COMPANY`.]
+[PERLU VERIFIKASI: ukuran payload dan performa query live `expandedPermissionSets` & `accessControls` saat dipanggil dari UI pada Sandbox `DEMO COMPANY`.]
 
 ## Kontrak Endpoint Backend (`/api/v1/permission-analyzer`)
 
-- `GET /api/v1/permission-analyzer/users`: mengembalikan daftar user/aplikasi Entra (`usersPermissions`), assignment role per company/security group (`userPermissionSets`), flag `isSuper`, serta daftar `permissionSets` dan `companies`.
-- `GET /api/v1/permission-analyzer/objects?query=...&object_type=...&access=...&company=...`: pencarian terbalik objek dari `expandedPermissionSets` yang digabungkan ke pemegang izin (`userPermissionSets` + `usersPermissions`) dengan penanda sensitif.
+- `GET /api/v1/permission-analyzer/users`: mengembalikan daftar user/aplikasi Entra (`usersPermissions`), assignment role per company (`accessControls`), flag `isSuper`, serta daftar `permissionSets` dan `companies`.
+- `GET /api/v1/permission-analyzer/objects?query=...&object_type=...&access=...&company=...`: pencarian terbalik objek dari `expandedPermissionSets` yang digabungkan ke pemegang izin (`accessControls` + `usersPermissions`) dengan penanda sensitif.
 - `GET /api/v1/permission-analyzer/diff?kind=user|role&left=...&right=...`: membandingkan 2 user (`userSecurityId`) atau 2 permission set (`roleId`) untuk menghasilkan `roleDiff` dan `objectDiff` (`same`, `onlyLeft`, `onlyRight`).
 
 ## Batasan keamanan & arsitektur

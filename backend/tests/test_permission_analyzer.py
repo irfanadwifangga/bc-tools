@@ -202,7 +202,7 @@ def test_users_endpoint_joins_normalizes_and_detects_super(
         assert company_scoped is True
         mapping = {
             "usersPermissions": _sample_users_permissions(),
-            "userPermissionSets": _sample_user_permission_sets(),
+            "accessControls": _sample_user_permission_sets(),
             "permissionSets": _sample_permission_sets(),
         }
         return mapping[entity]
@@ -276,7 +276,7 @@ def test_objects_search_filters_company_access_and_sensitivity(
         assert company_scoped is True
         mapping = {
             "expandedPermissionSets": _sample_expanded_permission_sets(),
-            "userPermissionSets": _sample_user_permission_sets(),
+            "accessControls": _sample_user_permission_sets(),
             "usersPermissions": _sample_users_permissions(),
         }
         return mapping[entity]
@@ -378,7 +378,7 @@ def test_diff_user_aggregates_roles_and_objects(sandbox_config: None) -> None:
     ) -> list[dict[str, object]]:
         mapping = {
             "usersPermissions": _sample_users_permissions(),
-            "userPermissionSets": extra_user_sets,
+            "accessControls": extra_user_sets,
             "expandedPermissionSets": _sample_expanded_permission_sets(),
         }
         return mapping[entity]

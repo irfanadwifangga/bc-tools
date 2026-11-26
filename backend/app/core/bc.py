@@ -1,5 +1,6 @@
 """Shared Business Central client factory and error mapping helpers."""
 
+import logging
 import os
 from collections.abc import Awaitable, Callable
 
@@ -13,6 +14,8 @@ from bc_sdk.errors import (
 )
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field, ValidationError
+
+_logger = logging.getLogger(__name__)
 
 
 class ErrorDetail(BaseModel):
@@ -85,7 +88,13 @@ async def read_bc[T](
         )
     except BCRateLimitError:
         return bc_error(429, "BC_RATE_LIMITED", "Batas permintaan sandbox tercapai.")
-    except BCError:
+    except BCError as exc:
+        _logger.warning(
+            "BC upstream error reading %s (%s): %s",
+            label,
+            type(exc).__name__,
+            exc,
+        )
         return bc_error(
             502, "BC_UPSTREAM_ERROR", f"{label.capitalize()} sandbox gagal dibaca."
         )

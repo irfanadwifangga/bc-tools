@@ -380,7 +380,7 @@ async def get_permission_users(client: BCClient) -> PermissionUsersResponse:
     """Fetch users, role assignments, and permission sets concurrently from BC."""
     users_rows, user_sets_rows, perm_sets_rows = await asyncio.gather(
         client.automation.list_records("usersPermissions", company_scoped=True),
-        client.automation.list_records("userPermissionSets", company_scoped=True),
+        client.automation.list_records("accessControls", company_scoped=True),
         client.automation.list_records("permissionSets", company_scoped=True),
     )
     users, companies = _build_users(users_rows, user_sets_rows)
@@ -395,10 +395,10 @@ async def get_permission_users(client: BCClient) -> PermissionUsersResponse:
 async def search_object_access(
     client: BCClient, query: ObjectSearchQuery
 ) -> ObjectAccessSearchResponse:
-    """Search expandedPermissionSets joined with userPermissionSets and usersPermissions."""
+    """Search expandedPermissionSets joined with accessControls and usersPermissions."""
     expanded_rows, user_sets_rows, users_rows = await asyncio.gather(
         client.automation.list_records("expandedPermissionSets", company_scoped=True),
-        client.automation.list_records("userPermissionSets", company_scoped=True),
+        client.automation.list_records("accessControls", company_scoped=True),
         client.automation.list_records("usersPermissions", company_scoped=True),
     )
 
@@ -740,7 +740,7 @@ async def get_permission_diff(
     if query.kind == "user":
         users_rows, user_sets_rows, expanded_rows = await asyncio.gather(
             client.automation.list_records("usersPermissions", company_scoped=True),
-            client.automation.list_records("userPermissionSets", company_scoped=True),
+            client.automation.list_records("accessControls", company_scoped=True),
             client.automation.list_records(
                 "expandedPermissionSets", company_scoped=True
             ),

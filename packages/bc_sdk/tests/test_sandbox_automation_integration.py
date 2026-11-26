@@ -54,6 +54,10 @@ def test_sandbox_automation_permission_discovery() -> None:
                     print(f"Schema {entity.name}:", fields)
             if sets:
                 print("Sample permissionSet keys:", sorted(sets[0].keys()))
+            controls = await client.automation.list_records("accessControls", top=1)
+            assert isinstance(controls, list)
+            if controls:
+                print("Sample accessControl keys:", sorted(controls[0].keys()))
 
     try:
         asyncio.run(check())
