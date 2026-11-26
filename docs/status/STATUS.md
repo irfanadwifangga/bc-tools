@@ -42,6 +42,8 @@ _Terakhir diperbarui: 2026-11-25_
 
 - Preview `customers` dan `items` menerima pilihan 1–5 baris. Batas diteruskan ke SDK dan diuji dengan mock.
 
+- Contoh GET Python dan C# untuk `customers` dan `items` memakai pilihan jumlah baris yang sama dengan preview.
+
 ## Blocker dan pertanyaan terbuka
 | # | Pertanyaan | Pemilik | Dibutuhkan sebelum |
 |---|---|---|---|

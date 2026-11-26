@@ -20,8 +20,15 @@ for (const language of ["Python", "C#"] as const) {
 }
 
 for (const language of ["Python", "C#"] as const) {
+  test(`${language} uses the selected limit for both endpoints`, () => {
+    const expected = language === "Python" ? '"$top": 2' : "$top=2";
+    for (const endpoint of ["customers", "items"] as const) {
+      expect(getCodeSample(endpoint, language, 2)).toContain(expected);
+    }
+  });
+
   test(`highlighted ${language} preserves the full copyable source`, () => {
-    const text = getCodeSample("items", language);
+    const text = getCodeSample("items", language, 2);
     const html = renderToStaticMarkup(<SampleCode text={text} language={language} />);
     expect(html.replace(/<span class="sample-\w+">|<\/span>/g, ""))
       .toBe(renderToStaticMarkup(<code>{text}</code>));
