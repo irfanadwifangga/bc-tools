@@ -3,6 +3,8 @@
 .catalog input[type="search"] { min-height: 34px; }
 .catalog-count, .catalog-type { color: var(--workspace-muted); }
 .catalog-count { margin-block: 20px 8px; }
+.catalog-group + .catalog-group { margin-block-start: 24px; }
+.catalog-letter { margin: 0; padding: 8px 12px; font-size: 1rem; color: var(--workspace-accent); }
 .catalog-results { list-style: none; padding: 0; margin: 0; }
 .catalog-row { border-block-start: 1px solid var(--workspace-line); }
 .catalog-endpoint {
@@ -37,6 +39,9 @@
 :root[data-theme="dark"] .catalog-row mark { background: #705321; color: #fff1cc; }
 .catalog-detail { padding: 0 12px 20px; }
 .catalog-type { margin-block: 16px; }
+.customer-samples { margin-block: 16px 24px; }
+.customer-samples summary { cursor: pointer; font-weight: 600; }
+.customer-samples pre { overflow-x: auto; white-space: pre; }
 .customer-preview { margin-block: 16px 24px; }
 .customer-preview [role="status"]:not(:empty) { margin-block: 12px 4px; }
 .preview-panel {
@@ -104,6 +109,28 @@
 .preview-json .json-key { color: var(--json-key); }
 .preview-json .json-string { color: var(--json-string); }
 .preview-json .json-literal { color: var(--json-literal); }
+.customer-samples .preview-json {
+  --sample-base: #202124;
+  --sample-keyword: #143DA8;
+  --sample-string: #076438;
+  --sample-call: #A0340A;
+  --sample-literal: #7425A1;
+  --sample-comment: #505C68;
+  color: var(--sample-base);
+}
+:root[data-theme="dark"] .customer-samples .preview-json {
+  --sample-base: #F6F4F0;
+  --sample-keyword: #61DAFF;
+  --sample-string: #FFDE75;
+  --sample-call: #BCAAFF;
+  --sample-literal: #FF92BC;
+  --sample-comment: #A8B8C8;
+}
+.customer-samples .sample-keyword { color: var(--sample-keyword); font-weight: 600; }
+.customer-samples .sample-string { color: var(--sample-string); }
+.customer-samples .sample-call { color: var(--sample-call); }
+.customer-samples .sample-literal { color: var(--sample-literal); }
+.customer-samples .sample-comment { color: var(--sample-comment); font-style: italic; }
 .preview-json code { font: 14px/1.5 var(--workspace-record-font); }
 .customer-preview th, .customer-preview td { overflow-wrap: anywhere; }
 .customer-preview th:first-child { width: 42%; }

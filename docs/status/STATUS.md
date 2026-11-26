@@ -22,7 +22,7 @@ _Terakhir diperbarui: 2026-11-25_
 - Backend menyediakan `GET /api/v1/api-explorer/entities` untuk katalog standar. Kontrak respons dan pemetaan error diuji dengan SDK mock.
 - Irfan menguji route katalog lokal melalui Postman. Respons `200 OK` memuat `entityDefinitions.entityName` bertipe `Edm.String`.
 
-- Frontend API Explorer menyediakan pencarian berdasarkan nama endpoint atau nama field. Hasil menyorot teks yang cocok dan menampilkan contoh nama field pada endpoint tertutup. Detail menampilkan daftar nama serta tipe field.
+- API Explorer mengurutkan endpoint A–Z per huruf awal. Pencarian berdasarkan nama endpoint atau field menampilkan grup yang memiliki hasil. Hasil menyorot teks yang cocok dan menampilkan contoh nama field pada endpoint tertutup. Detail menampilkan daftar nama serta tipe field.
 - Tangkapan layar Irfan menunjukkan pencarian `user` menghasilkan 9 endpoint. Saat detail tertutup, bagian nama endpoint dan field yang cocok tersorot di tema terang dan gelap.
 - Pada katalog uji lokal, detail `approvalUserSetups` diperiksa melalui browser di kedua tema. Pencarian `user` menyorot bagian yang cocok pada `userId` dan `assignedUserId`. Field `city` tetap terlihat tanpa sorotan.
 - Irfan menguji API Explorer melalui frontend lokal. Pencarian `customers` menampilkan endpoint `customers` dengan entity type `Microsoft.NAV.customer` dan field `id` bertipe `Edm.Guid`.
@@ -35,6 +35,8 @@ _Terakhir diperbarui: 2026-11-25_
 - Preview `customers` menyediakan pilihan **Tabel** dan **JSON** dari satu respons backend. Irfan memeriksa preview `customers` melalui UI API Explorer. Tampilan JSON memuat lima objek dengan field dan nilai yang sama seperti tampilan Tabel.
 
 - Tampilan JSON preview `customers` membedakan nama field dan nilai string dengan warna pada tema terang dan gelap serta menyediakan tombol **Salin JSON**. Irfan memeriksa kedua tema dan mengonfirmasi hasil tempel di editor lokal sesuai dengan JSON yang ditampilkan.
+
+- Detail `customers` menyediakan contoh GET Python dan C# dengan pewarnaan sintaks dan tombol salin. Kedua template memiliki snapshot test. Eksekusi terhadap sandbox menunggu uji manual Irfan.
 
 ## Blocker dan pertanyaan terbuka
 | # | Pertanyaan | Pemilik | Dibutuhkan sebelum |

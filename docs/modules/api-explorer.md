@@ -36,6 +36,8 @@ Skema respons tersedia di OpenAPI. Kredensial atau konfigurasi yang tidak valid 
 
 ### Tampilan katalog
 
+Endpoint dikelompokkan menurut huruf awal nama dan diurutkan A–Z tanpa membedakan huruf besar dan kecil. Grup `#` menampung nama dengan karakter awal di luar A–Z. Saat mencari nama endpoint atau field, hanya grup yang memiliki hasil yang tampil.
+
 Jalankan backend dengan perintah di atas, lalu jalankan `bun run dev` dari `frontend/`. Pilih **API Explorer** di navigasi. Pencarian mencocokkan sebagian nama endpoint atau nama field dari katalog yang sudah dimuat. Misalnya, `postalCode` menampilkan setiap endpoint yang memiliki field dengan nama tersebut. Teks yang cocok disorot. Saat endpoint tertutup, nama field pertama yang cocok tampil di samping nama endpoint. Buka endpoint untuk melihat semua field yang cocok dalam daftar lengkap. Pilih endpoint untuk melihat entity type, nama field, dan tipe field. Tombol **Coba lagi** memuat ulang katalog setelah terjadi kesalahan.
 
 Vite meneruskan request katalog dan preview customer ke backend lokal pada port 8000. Jika skema backend berubah, jalankan `bun run api:types` dari frontend saat backend aktif, lalu periksa perubahan tipe dengan `bun run typecheck`.
@@ -47,6 +49,12 @@ Buka endpoint **customers**, lalu pilih **Lihat contoh data**. Tampilan awal **T
 `GET /api/v1/api-explorer/customers/preview` mengembalikan array berisi nol sampai lima customer dari demo company yang dipilih melalui `BC_COMPANY_ID`. Setiap baris memuat `id` (UUID), `number`, dan `displayName`. Jika company belum memiliki customer, hasilnya `200 []`.
 
 Backend memanggil `bc.customers.list(top=5)`. ID company yang kosong atau tidak valid menghasilkan `502 BC_CONFIG_ERROR`. Parameter query menghasilkan `422 INVALID_QUERY`. Error dari BC dipetakan mengikuti standar API backend.
+
+## Contoh kode GET untuk customers
+
+Buka detail **customers**, pilih **Contoh kode GET**, lalu **Python** atau **C#**. Kata kunci, string, literal angka atau boolean, dan komentar dibedakan secara visual di tema terang dan gelap. **Salin kode** menyalin contoh dalam bahasa yang sedang ditampilkan. Membuka atau menyalin kode dilakukan lokal. Saat dijalankan, contoh mengambil token aplikasi, memeriksa nama company, lalu membaca maksimal lima customer dengan field `id`, `number`, dan `displayName`. Kedua contoh menampilkan array JSON, termasuk `[]` untuk hasil kosong.
+
+Python memerlukan `msal` untuk token dan `httpx` untuk GET. Simpan sebagai `customers.py`, lalu jalankan `uv run --with msal --with httpx --env-file .env python customers.py` dari folder dengan konfigurasi sandbox. Untuk C#, salin ke `Program.cs` pada proyek console .NET, jalankan `dotnet add package Microsoft.Identity.Client` di proyek contoh untuk autentikasi MSAL.NET, lalu `dotnet run` dengan environment proses yang sudah dikonfigurasi. Kedua contoh membaca `BC_TENANT_ID`, `BC_CLIENT_ID`, `BC_CLIENT_SECRET`, dan `BC_COMPANY_ID`. Jika diberikan, `BC_ENVIRONMENT` harus bernilai `Sandbox` (kapitalisasi bebas).
 
 ## Aturan keamanan
 Hanya GET; path allowlist; tanpa URL penuh dari klien; `$top` dibatasi. Lihat `docs/standards/api.md`.
