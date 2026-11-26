@@ -1,9 +1,28 @@
 import { expect, test } from "bun:test";
-import { filterEndpoints, groupEndpoints, type CatalogEntity } from "../src/features/api-explorer/catalog";
+import createClient from "openapi-fetch";
+import type { paths } from "../src/api/schema";
+import { endpointKey, filterEndpoints, groupEndpoints, loadCustomCatalog, type CatalogEntity } from "../src/features/api-explorer/catalog";
 
 const entities: CatalogEntity[] = ["customers", "customerPayments", "items"].map(name => ({
   name, entity_type: `Demo.${name}`, fields: [],
 }));
+
+test("a custom endpoint receives a distinct identity even when its name matches a standard endpoint", async () => {
+  const standard = entities[0];
+  const custom = { ...standard, fields: [{ name: "customNumber", type: "Edm.String" }] };
+  const client = createClient<paths>({
+    baseUrl: "http://localhost",
+    fetch: async request => {
+      expect(request.method).toBe("GET");
+      expect(new URL(request.url).pathname).toBe("/api/v1/api-explorer/custom-entities");
+      return Response.json([custom]);
+    },
+  });
+  const [entry] = await loadCustomCatalog(new AbortController().signal, client);
+  expect(entry.source).toBe("custom");
+  expect(endpointKey(entry)).not.toBe(endpointKey(standard));
+  expect(filterEndpoints([standard, entry], "customNumber")).toEqual([entry]);
+});
 
 test("search finds endpoints by field name once per endpoint", () => {
   const field = (name: string) => ({ name, type: "Edm.String" });

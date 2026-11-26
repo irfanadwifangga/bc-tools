@@ -74,3 +74,14 @@ test("only customers and items offer copyable examples without loading previews"
   }
   expect(row("vendors")).not.toContain("Contoh kode GET");
 });
+
+test("custom customers shows its source and fields without standard preview controls", () => {
+  const html = renderToStaticMarkup(<EndpointRow
+    entity={{ name: "customers", entity_type: "Demo.Customer", source: "custom",
+      fields: [{ name: "customNumber", type: "Edm.String" }] }}
+    open query="" onSelect={() => {}} />);
+  expect(html).toContain(">Custom</span>");
+  expect(html).toContain("customNumber");
+  expect(html).not.toContain("Lihat contoh data");
+  expect(html).not.toContain("Contoh kode GET");
+});

@@ -1,6 +1,6 @@
 # STATUS
 
-_Terakhir diperbarui: 2026-11-25_
+_Terakhir diperbarui: 2026-11-26_
 
 ## Status fase
 **Fase 2 — katalog endpoint dan field untuk API Explorer.** Fase 0 sudah masuk `main` lewat [PR #1](https://github.com/irfanadwifangga/bc-tools/pull/1).
@@ -47,6 +47,8 @@ _Terakhir diperbarui: 2026-11-25_
 - Preview dan contoh GET `customers` dan `items` mendukung urutan nomor atau nama, naik atau turun. Pengiriman `$orderby` diuji dengan HTTP mock. Uji Sandbox menunggu verifikasi Irfan.
 
 - Preview dan contoh GET `customers` dan `items` menyediakan filter nomor. Tes mock mencakup hasil cocok, hasil kosong, dan pengodean karakter khusus. Uji Sandbox menunggu verifikasi Irfan.
+
+- API Explorer dapat menampilkan katalog satu custom API yang dikonfigurasi, dengan penanda sumber dan daftar field. Pengambilan metadata custom diuji dengan mock, 4 skenario browser simulasi lulus, dan Irfan mengonfirmasi `customers` Custom beserta field custom tampil dari Sandbox (`ptmis/demo/v1.0`).
 
 ## Blocker dan pertanyaan terbuka
 | # | Pertanyaan | Pemilik | Dibutuhkan sebelum |

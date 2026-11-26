@@ -30,6 +30,8 @@
 .catalog-endpoint[aria-expanded="true"] svg { transform: rotate(90deg); }
 .catalog-result-name { min-width: 0; overflow-wrap: anywhere; }
 .catalog-field-hint { color: var(--workspace-muted); }
+.catalog-source { margin-inline-start: 8px; color: var(--workspace-muted); font-size: 0.8rem; }
+.catalog-source-error { margin-block-end: 16px; }
 .catalog-row mark {
   background: #ffe5a3;
   color: #402900;

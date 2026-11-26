@@ -16,6 +16,7 @@ from fastapi.testclient import TestClient
 from backend.app.main import app
 
 _PATH = "/api/v1/api-explorer/entities"
+_CUSTOM_PATH = "/api/v1/api-explorer/custom-entities"
 _FACTORY = "backend.app.modules.api_explorer.router.BCClient.from_settings"
 
 
@@ -95,13 +96,54 @@ def test_missing_config_is_sanitized(
     assert "fixture" not in response.text
 
 
-def test_catalog_rejects_query_and_write_before_sdk_creation() -> None:
+@pytest.mark.parametrize("path", [_PATH, _CUSTOM_PATH])
+def test_catalog_rejects_query_and_write_before_sdk_creation(path: str) -> None:
     with patch(_FACTORY) as factory, TestClient(app) as http:
-        response = http.get(_PATH, params={"url": "https://example.invalid"})
+        response = http.get(path, params={"url": "https://example.invalid"})
         assert response.status_code == 422
         assert response.json()["error"]["code"] == "INVALID_QUERY"
-        assert http.post(_PATH).status_code == 405
+        assert http.post(path).status_code == 405
         factory.assert_not_called()
+
+
+def test_custom_catalog_is_optional(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delenv("BC_CUSTOM_API_ROUTE", raising=False)
+    with patch(_FACTORY) as factory, TestClient(app) as http:
+        response = http.get(_CUSTOM_PATH)
+        factory.assert_not_called()
+    assert response.status_code == 200
+    assert response.json() == []
+
+
+def test_custom_catalog_uses_only_local_route(
+    sandbox_config: None, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    route = "demoPublisher/demoGroup/v1.0"
+    monkeypatch.setenv("BC_CUSTOM_API_ROUTE", route)
+    entity = MetadataEntity(name="customers", entity_type="Demo.Customer", fields=[])
+    with patch(_FACTORY) as factory, TestClient(app) as http:
+        sdk = factory.return_value
+        sdk.custom_metadata.list_entities = AsyncMock(return_value=[entity])
+        sdk.metadata.list_entities = AsyncMock(return_value=[])
+        response = http.get(_CUSTOM_PATH)
+        assert factory.call_args.args[0].custom_api_route == route
+        sdk.custom_metadata.list_entities.assert_awaited_once_with()
+        sdk.metadata.list_entities.assert_not_awaited()
+        assert http.get(_PATH).json() == []
+        assert factory.call_args.args[0].custom_api_route is None
+    assert response.status_code == 200
+    assert response.json() == [entity.model_dump()]
+
+
+def test_invalid_custom_route_returns_config_error(
+    sandbox_config: None, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv("BC_CUSTOM_API_ROUTE", "https://example.invalid")
+    with patch("bc_sdk.client.MsalTokenProvider") as auth, TestClient(app) as http:
+        response = http.get(_CUSTOM_PATH)
+        auth.return_value.get_token.assert_not_called()
+    assert response.status_code == 502
+    assert response.json()["error"]["code"] == "BC_CONFIG_ERROR"
 
 
 _PREVIEW = "/api/v1/api-explorer/customers/preview"

@@ -1,4 +1,4 @@
-"""Catalog of entity sets in the standard Sandbox service document metadata."""
+"""Catalog of entity sets in Sandbox service metadata."""
 
 from collections.abc import Awaitable, Callable
 from xml.etree import ElementTree as ET

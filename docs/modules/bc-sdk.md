@@ -37,6 +37,8 @@ Resource `customers` dan `items` juga menerima `number` opsional untuk kecocokan
 
 ## Katalog metadata (Fase 2)
 
+Jika `BCSettings.custom_api_route` terisi, `bc.custom_metadata.list_entities()` membaca `$metadata` dari satu kombinasi publisher, group, dan version pada host Business Central Sandbox yang dikonfigurasi. SDK membatasi permintaan custom ke path metadata tersebut.
+
 `bc.metadata.list_entities()` membaca `GET /api/v2.0/$metadata` di sandbox terkonfigurasi. Setiap hasil berisi nama entity set, nama lengkap entity type, serta nama dan tipe field struktural termasuk field warisan. Dua entity set yang memakai tipe sama tetap muncul sebagai dua endpoint. Katalog ini mencakup API standar dan dapat dibaca tanpa ID company.
 
 Irfan menjalankan pemeriksaan manual di sandbox pada 24 November 2026 dan mengonfirmasi bahwa katalog metadata mengembalikan `customers.id` dengan tipe `Edm.Guid`.
