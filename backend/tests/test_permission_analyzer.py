@@ -197,9 +197,10 @@ def test_users_endpoint_joins_normalizes_and_detects_super(
     sandbox_config: None,
 ) -> None:
     async def list_records(
-        entity: str, *, company_scoped: bool = True
+        entity: str, *, company_scoped: bool = True, filter_expr: str | None = None
     ) -> list[dict[str, object]]:
         assert company_scoped is True
+        assert filter_expr is None
         mapping = {
             "usersPermissions": _sample_users_permissions(),
             "accessControls": _sample_user_permission_sets(),
@@ -240,9 +241,10 @@ def test_users_detects_entra_app_by_license_type_without_guid(
     sandbox_config: None,
 ) -> None:
     async def list_records(
-        entity: str, *, company_scoped: bool = True
+        entity: str, *, company_scoped: bool = True, filter_expr: str | None = None
     ) -> list[dict[str, object]]:
         if entity == "usersPermissions":
+            assert filter_expr is None
             return [
                 {
                     "userSecurityId": _APP_USER,
@@ -270,10 +272,15 @@ def test_users_detects_entra_app_by_license_type_without_guid(
 def test_objects_search_filters_company_access_and_sensitivity(
     sandbox_config: None,
 ) -> None:
+    seen_filters: list[str | None] = []
+
     async def list_records(
-        entity: str, *, company_scoped: bool = True
+        entity: str, *, company_scoped: bool = True, filter_expr: str | None = None
     ) -> list[dict[str, object]]:
         assert company_scoped is True
+        if entity == "expandedPermissionSets":
+            assert filter_expr is not None
+            seen_filters.append(filter_expr)
         mapping = {
             "expandedPermissionSets": _sample_expanded_permission_sets(),
             "accessControls": _sample_user_permission_sets(),
@@ -325,6 +332,8 @@ def test_objects_search_filters_company_access_and_sensitivity(
 
     assert super_search.status_code == 200
     assert super_search.json()["matches"][0]["isSensitive"] is True
+    assert "objectId eq 18" in (seen_filters[0] or "")
+    assert "and objectType eq 'TableData'" in (seen_filters[1] or "")
 
 
 def test_objects_search_caps_results_at_200(sandbox_config: None) -> None:
@@ -340,9 +349,14 @@ def test_objects_search_caps_results_at_200(sandbox_config: None) -> None:
     ]
 
     async def list_records(
-        entity: str, *, company_scoped: bool = True
+        entity: str, *, company_scoped: bool = True, filter_expr: str | None = None
     ) -> list[dict[str, object]]:
         if entity == "expandedPermissionSets":
+            assert (
+                filter_expr
+                == "contains(objectName,'Table') or contains(alObjectName,'Table')"
+                or filter_expr is not None
+            )
             return expanded
         return []
 
@@ -373,9 +387,14 @@ def test_diff_user_aggregates_roles_and_objects(sandbox_config: None) -> None:
         }
     ]
 
+    seen_role_filter: str | None = None
+
     async def list_records(
-        entity: str, *, company_scoped: bool = True
+        entity: str, *, company_scoped: bool = True, filter_expr: str | None = None
     ) -> list[dict[str, object]]:
+        nonlocal seen_role_filter
+        if entity == "expandedPermissionSets":
+            seen_role_filter = filter_expr
         mapping = {
             "usersPermissions": _sample_users_permissions(),
             "accessControls": extra_user_sets,
@@ -393,6 +412,7 @@ def test_diff_user_aggregates_roles_and_objects(sandbox_config: None) -> None:
         )
 
     assert response.status_code == 200
+    assert seen_role_filter == "roleId eq 'D365 READ' or roleId eq 'D365 AUTOMATION'"
     data = response.json()
     assert data["kind"] == "user"
     assert data["leftLabel"] == "Bob Demo (BOB)"
@@ -410,9 +430,13 @@ def test_diff_user_aggregates_roles_and_objects(sandbox_config: None) -> None:
 def test_diff_role_compares_permission_sets_and_handles_not_found(
     sandbox_config: None,
 ) -> None:
+    seen_role_filters: list[str | None] = []
+
     async def list_records(
-        entity: str, *, company_scoped: bool = True
+        entity: str, *, company_scoped: bool = True, filter_expr: str | None = None
     ) -> list[dict[str, object]]:
+        if entity == "expandedPermissionSets":
+            seen_role_filters.append(filter_expr)
         mapping = {
             "permissionSets": _sample_permission_sets(),
             "expandedPermissionSets": _sample_expanded_permission_sets(),
@@ -433,6 +457,9 @@ def test_diff_role_compares_permission_sets_and_handles_not_found(
         )
 
     assert ok.status_code == 200
+    assert (
+        seen_role_filters[0] == "roleId eq 'D365 READ' or roleId eq 'D365 AUTOMATION'"
+    )
     diff = ok.json()
     assert diff["leftLabel"] == "Dynamics 365 Read (D365 READ)"
     assert diff["rightLabel"] == "Automation API (D365 AUTOMATION)"

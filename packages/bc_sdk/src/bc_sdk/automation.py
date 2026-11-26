@@ -47,6 +47,7 @@ class AutomationAPI:
         *,
         company_scoped: bool = True,
         top: int | None = None,
+        filter_expr: str | None = None,
     ) -> list[dict[str, object]]:
         """Read allowlisted Automation API records (GET-only)."""
         if entity not in AUTOMATION_ENTITIES:
@@ -57,6 +58,13 @@ class AutomationAPI:
             isinstance(top, bool) or not isinstance(top, int) or top < 1
         ):
             raise BCRequestError("The top option must be a positive integer.")
+        cleaned_filter: str | None = None
+        if filter_expr is not None:
+            cleaned_filter = filter_expr.strip()
+            if not cleaned_filter or not all(ch.isprintable() for ch in cleaned_filter):
+                raise BCRequestError(
+                    "The filter expression must be a non-empty printable string."
+                )
 
         if company_scoped:
             if self._company_id is None:
@@ -67,7 +75,12 @@ class AutomationAPI:
         else:
             path = entity
 
-        params = httpx.QueryParams({"$top": top}) if top is not None else None
+        query_items: dict[str, str | int] = {}
+        if top is not None:
+            query_items["$top"] = top
+        if cleaned_filter is not None:
+            query_items["$filter"] = cleaned_filter
+        params = httpx.QueryParams(query_items) if query_items else None
         results: list[dict[str, object]] = []
         async for row in self._iter_records(path, params):
             results.append(row)

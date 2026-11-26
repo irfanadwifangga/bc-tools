@@ -33,7 +33,7 @@ Irfan memverifikasi melalui integration test Sandbox (`DEMO COMPANY`, `D365 AUTO
 - `expandedPermissionSets`: `id`, `appId`, `appName`, `roleId`, `roleName`, `objectType`, `objectId` (`Edm.Int32`), `objectName`, `readPermission`, `insertPermission`, `modifyPermission`, `deletePermission`, `executePermission`, `alObjectName`, `scope`.
 - `userPermissionSets` & `userPermissions`: tersedia di `$metadata`, tetapi hasil uji Sandbox menunjukkan HTTP `400` jika diakses langsung pada `companies({id})/...` tanpa parent navigation, dan HTTP `404` di root tenant.
 
-[PERLU VERIFIKASI: ukuran payload dan performa query live `expandedPermissionSets` & `accessControls` saat dipanggil dari UI pada Sandbox `DEMO COMPANY`.]
+[PERLU VERIFIKASI: performa query berfilter `$filter` pada `expandedPermissionSets` saat dipanggil dari UI pada Sandbox `DEMO COMPANY` (uji `Full-read` tanpa `$filter` mencatat `usersPermissions=16`, `accessControls=56`, `permissionSets=195`, sementara `expandedPermissionSets` tanpa `$filter` memicu timeout `BCServerError`).]
 
 ## Kontrak Endpoint Backend (`/api/v1/permission-analyzer`)
 

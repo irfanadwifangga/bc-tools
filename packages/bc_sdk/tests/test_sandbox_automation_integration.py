@@ -58,6 +58,31 @@ def test_sandbox_automation_permission_discovery() -> None:
             assert isinstance(controls, list)
             if controls:
                 print("Sample accessControl keys:", sorted(controls[0].keys()))
+            for entity_name in (
+                "usersPermissions",
+                "accessControls",
+                "permissionSets",
+            ):
+                rows = await client.automation.list_records(
+                    entity_name, company_scoped=True
+                )
+                print(f"Full-read {entity_name}: ok, count={len(rows)}")
+            filtered_role = await client.automation.list_records(
+                "expandedPermissionSets",
+                company_scoped=True,
+                filter_expr="roleId eq 'D365 READ'",
+            )
+            print(
+                f"Filtered expandedPermissionSets (D365 READ): ok, count={len(filtered_role)}"
+            )
+            filtered_obj = await client.automation.list_records(
+                "expandedPermissionSets",
+                company_scoped=True,
+                filter_expr="objectId eq 18",
+            )
+            print(
+                f"Filtered expandedPermissionSets (objectId eq 18): ok, count={len(filtered_obj)}"
+            )
 
     try:
         asyncio.run(check())

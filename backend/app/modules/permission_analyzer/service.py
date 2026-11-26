@@ -1,6 +1,5 @@
 """Deterministic join, sensitivity classification, search, and diff for BC permissions."""
 
-import asyncio
 from dataclasses import dataclass
 from typing import Literal
 
@@ -10,6 +9,7 @@ from pydantic.alias_generators import to_camel
 
 MAX_OBJECT_QUERY_LENGTH = 80
 MAX_OBJECT_MATCHES = 200
+_ROLE_FILTER_BATCH_SIZE = 15
 OBJECT_TYPES = ("TableData", "Table", "Page", "Report", "Codeunit")
 ACCESS_FILTERS = ("any", "write", "read", "insert", "modify", "delete", "execute")
 DIFF_KINDS = ("user", "role")
@@ -376,12 +376,50 @@ def _build_permission_sets(
     )
 
 
+def _odata_quote(value: str) -> str:
+    return "'" + value.replace("'", "''") + "'"
+
+
+def _object_filter_expr(query: ObjectSearchQuery) -> str:
+    quoted = _odata_quote(query.query)
+    clauses = [
+        f"contains(objectName,{quoted})",
+        f"contains(alObjectName,{quoted})",
+    ]
+    if query.query.isdigit():
+        clauses.append(f"objectId eq {int(query.query)}")
+    expr = "(" + " or ".join(clauses) + ")"
+    if query.object_type is not None:
+        expr = f"{expr} and objectType eq {_odata_quote(query.object_type)}"
+    return expr
+
+
+async def _fetch_expanded_for_roles(
+    client: BCClient, role_ids: list[str]
+) -> list[dict[str, object]]:
+    unique_roles = list(dict.fromkeys(role_id for role_id in role_ids if role_id))
+    rows: list[dict[str, object]] = []
+    for start in range(0, len(unique_roles), _ROLE_FILTER_BATCH_SIZE):
+        batch = unique_roles[start : start + _ROLE_FILTER_BATCH_SIZE]
+        expr = " or ".join(f"roleId eq {_odata_quote(role_id)}" for role_id in batch)
+        rows.extend(
+            await client.automation.list_records(
+                "expandedPermissionSets", company_scoped=True, filter_expr=expr
+            )
+        )
+    return rows
+
+
 async def get_permission_users(client: BCClient) -> PermissionUsersResponse:
-    """Fetch users, role assignments, and permission sets concurrently from BC."""
-    users_rows, user_sets_rows, perm_sets_rows = await asyncio.gather(
-        client.automation.list_records("usersPermissions", company_scoped=True),
-        client.automation.list_records("accessControls", company_scoped=True),
-        client.automation.list_records("permissionSets", company_scoped=True),
+    """Fetch users, role assignments, and permission sets sequentially from BC."""
+    users_rows = await client.automation.list_records(
+        "usersPermissions", company_scoped=True
+    )
+    user_sets_rows = await client.automation.list_records(
+        "accessControls", company_scoped=True
+    )
+    perm_sets_rows = await client.automation.list_records(
+        "permissionSets", company_scoped=True
     )
     users, companies = _build_users(users_rows, user_sets_rows)
     permission_sets = _build_permission_sets(perm_sets_rows)
@@ -396,10 +434,16 @@ async def search_object_access(
     client: BCClient, query: ObjectSearchQuery
 ) -> ObjectAccessSearchResponse:
     """Search expandedPermissionSets joined with accessControls and usersPermissions."""
-    expanded_rows, user_sets_rows, users_rows = await asyncio.gather(
-        client.automation.list_records("expandedPermissionSets", company_scoped=True),
-        client.automation.list_records("accessControls", company_scoped=True),
-        client.automation.list_records("usersPermissions", company_scoped=True),
+    expanded_rows = await client.automation.list_records(
+        "expandedPermissionSets",
+        company_scoped=True,
+        filter_expr=_object_filter_expr(query),
+    )
+    user_sets_rows = await client.automation.list_records(
+        "accessControls", company_scoped=True
+    )
+    users_rows = await client.automation.list_records(
+        "usersPermissions", company_scoped=True
     )
 
     users, _ = _build_users(users_rows, [])
@@ -738,12 +782,11 @@ async def get_permission_diff(
 ) -> PermissionDiffResponse:
     """Compare two users (userSecurityId) or two permission sets (roleId)."""
     if query.kind == "user":
-        users_rows, user_sets_rows, expanded_rows = await asyncio.gather(
-            client.automation.list_records("usersPermissions", company_scoped=True),
-            client.automation.list_records("accessControls", company_scoped=True),
-            client.automation.list_records(
-                "expandedPermissionSets", company_scoped=True
-            ),
+        users_rows = await client.automation.list_records(
+            "usersPermissions", company_scoped=True
+        )
+        user_sets_rows = await client.automation.list_records(
+            "accessControls", company_scoped=True
         )
         users, _ = _build_users(users_rows, user_sets_rows)
         users_by_id = {user.user_security_id.casefold(): user for user in users}
@@ -760,6 +803,13 @@ async def get_permission_diff(
         right_refs = [
             (item.role_id, item.scope, item.app_id) for item in right_user.assignments
         ]
+        expanded_rows = await _fetch_expanded_for_roles(
+            client,
+            [
+                *(item.role_id for item in left_user.assignments),
+                *(item.role_id for item in right_user.assignments),
+            ],
+        )
         return PermissionDiffResponse(
             kind="user",
             left_label=_user_label(left_user),
@@ -771,10 +821,10 @@ async def get_permission_diff(
             ),
         )
 
-    perm_sets_rows, expanded_rows = await asyncio.gather(
-        client.automation.list_records("permissionSets", company_scoped=True),
-        client.automation.list_records("expandedPermissionSets", company_scoped=True),
+    perm_sets_rows = await client.automation.list_records(
+        "permissionSets", company_scoped=True
     )
+    expanded_rows = await _fetch_expanded_for_roles(client, [query.left, query.right])
     permission_sets = _build_permission_sets(perm_sets_rows)
     roles_by_id: dict[str, list[PermissionSetSummary]] = {}
     for role in permission_sets:
