@@ -12,6 +12,7 @@ from bc_sdk.errors import (
     BCRequestError,
 )
 from bc_sdk.metadata import MetadataEntity
+from bc_sdk.resources import MAX_RECORD_NUMBER_LENGTH, is_valid_record_number
 from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field, ValidationError
@@ -57,6 +58,16 @@ _PREVIEW_QUERY_SCHEMA = {
             "schema": {
                 "type": "string",
                 "enum": [order.value for order in RecordOrder],
+            },
+        },
+        {
+            "name": "number",
+            "in": "query",
+            "required": False,
+            "schema": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": MAX_RECORD_NUMBER_LENGTH,
             },
         },
     ]
@@ -134,24 +145,31 @@ async def list_entities(request: Request) -> list[MetadataEntity] | JSONResponse
     return await _read(lambda client: client.metadata.list_entities(), "metadata")
 
 
-def _preview_query(request: Request) -> tuple[int, RecordOrder | None] | None:
+def _preview_query(
+    request: Request,
+) -> tuple[int, RecordOrder | None, str | None] | None:
     params = request.query_params
-    if set(params) - {"limit", "order"} or len(params.multi_items()) != len(params):
+    if set(params) - {"limit", "order", "number"} or len(params.multi_items()) != len(
+        params
+    ):
         return None
     limit = params.get("limit", str(_PREVIEW_LIMIT))
     if limit not in _PREVIEW_LIMIT_VALUES:
         return None
     order = params.get("order")
+    number = params.get("number")
+    if number is not None and not is_valid_record_number(number):
+        return None
     try:
-        return int(limit), RecordOrder(order) if order is not None else None
+        return int(limit), RecordOrder(order) if order is not None else None, number
     except ValueError:
         return None
 
 
 async def _sample_customers(
-    client: BCClient, limit: int, order: RecordOrder | None
+    client: BCClient, limit: int, order: RecordOrder | None, number: str | None
 ) -> list[CustomerPreview]:
-    records = await client.customers.list(top=limit, order_by=order)
+    records = await client.customers.list(top=limit, order_by=order, number=number)
     return [
         CustomerPreview(id=row.id, number=row.number, display_name=row.display_name)
         for row in records[:limit]
@@ -169,7 +187,9 @@ async def preview_customers(request: Request) -> list[CustomerPreview] | JSONRes
     query = _preview_query(request)
     if query is None:
         return _error(
-            422, "INVALID_QUERY", "Gunakan limit 1–5 dan pilihan urutan yang tersedia."
+            422,
+            "INVALID_QUERY",
+            "Periksa jumlah baris, urutan, atau nomor yang dimasukkan.",
         )
     return await _read(
         lambda client: _sample_customers(client, *query),
@@ -179,9 +199,9 @@ async def preview_customers(request: Request) -> list[CustomerPreview] | JSONRes
 
 
 async def _sample_items(
-    client: BCClient, limit: int, order: RecordOrder | None
+    client: BCClient, limit: int, order: RecordOrder | None, number: str | None
 ) -> list[ItemPreview]:
-    records = await client.items.list(top=limit, order_by=order)
+    records = await client.items.list(top=limit, order_by=order, number=number)
     return [
         ItemPreview(id=row.id, number=row.number, display_name=row.display_name)
         for row in records[:limit]
@@ -199,7 +219,9 @@ async def preview_items(request: Request) -> list[ItemPreview] | JSONResponse:
     query = _preview_query(request)
     if query is None:
         return _error(
-            422, "INVALID_QUERY", "Gunakan limit 1–5 dan pilihan urutan yang tersedia."
+            422,
+            "INVALID_QUERY",
+            "Periksa jumlah baris, urutan, atau nomor yang dimasukkan.",
         )
     return await _read(
         lambda client: _sample_items(client, *query), "data item", require_company=True

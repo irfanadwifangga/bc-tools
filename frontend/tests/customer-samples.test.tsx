@@ -4,6 +4,18 @@ import { SampleCode } from "../src/features/api-explorer/SampleCode";
 import { EndpointRow } from "../src/features/api-explorer/CatalogPage";
 import { getCodeSample } from "../src/features/api-explorer/customerSamples";
 
+test("number filter preserves leading zeros and escapes content in both languages", () => {
+  const number = "00'A & B+#" + String.fromCharCode(34, 92);
+  const filter = "number eq '00''A & B+#" + String.fromCharCode(34, 92) + "'";
+  for (const endpoint of ["customers", "items"] as const) {
+    const python = getCodeSample(endpoint, "Python", 2, "number asc", number);
+    expect(python).toContain('"$filter": ' + JSON.stringify(filter));
+    const csharp = getCodeSample(endpoint, "C#", 2, "number asc", number);
+    expect(decodeURIComponent(csharp.split("&$filter=")[1].split('"')[0])).toBe(filter);
+    expect(getCodeSample(endpoint, "Python", 2, undefined, " ")).not.toContain("$filter");
+  }
+});
+
 for (const language of ["Python", "C#"] as const) {
   test(`${language} includes the selected order and leaves it out by default`, () => {
     const expected = language === "Python" ? '"$orderby": "displayName desc"' : "$orderby=displayName%20desc";

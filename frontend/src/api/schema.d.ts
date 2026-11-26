@@ -219,6 +219,7 @@ export interface operations {
             query?: {
                 limit?: number;
                 order?: "number asc" | "number desc" | "displayName asc" | "displayName desc";
+                number?: string;
             };
             header?: never;
             path?: never;
@@ -278,6 +279,7 @@ export interface operations {
             query?: {
                 limit?: number;
                 order?: "number asc" | "number desc" | "displayName asc" | "displayName desc";
+                number?: string;
             };
             header?: never;
             path?: never;

@@ -1,7 +1,7 @@
 import { Button, Input } from "antd";
 import { RightOutlined, SearchOutlined } from "@ant-design/icons";
 import { useEffect, useId, useState } from "react";
-import { filterEndpoints, groupEndpoints, loadCatalog, type CatalogEntity, type PreviewOrder } from "./catalog";
+import { filterEndpoints, groupEndpoints, loadCatalog, type CatalogEntity, type PreviewQuery } from "./catalog";
 import { EndpointCodeSamples } from "./CustomerCodeSamples";
 import { CustomerPreview } from "./CustomerPreview";
 import { DEFAULT_PREVIEW_LIMIT, type SampleEndpoint } from "./customerSamples";
@@ -25,13 +25,12 @@ function highlightMatch(text: string, query: string) {
 }
 
 function EndpointExamples({ endpoint }: { endpoint: SampleEndpoint }) {
-  const [limit, setLimit] = useState(DEFAULT_PREVIEW_LIMIT);
-  const [order, setOrder] = useState<PreviewOrder>();
+  const [query, setQuery] = useState<PreviewQuery>({ limit: DEFAULT_PREVIEW_LIMIT });
   return (
     <>
       <CustomerPreview resource={endpoint === "items" ? "item" : "customer"}
-        limit={limit} onLimitChange={setLimit} order={order} onOrderChange={setOrder} />
-      <EndpointCodeSamples endpoint={endpoint} limit={limit} order={order} />
+        query={query} onQueryChange={setQuery} />
+      <EndpointCodeSamples endpoint={endpoint} query={query} />
     </>
   );
 }

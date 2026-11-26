@@ -44,6 +44,7 @@
 .customer-samples pre { overflow-x: auto; white-space: pre; }
 .customer-preview { margin-block: 16px 24px; }
 .preview-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.preview-controls .preview-number { width: 9rem; }
 .catalog .preview-controls label { margin-block-end: 0; }
 .preview-controls select {
   min-height: 32px;

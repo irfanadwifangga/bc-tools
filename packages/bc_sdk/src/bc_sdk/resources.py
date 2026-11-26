@@ -12,6 +12,17 @@ type _RecordReader = Callable[
     [str, httpx.QueryParams | None], AsyncIterator[dict[str, object]]
 ]
 
+MAX_RECORD_NUMBER_LENGTH = 100
+
+
+def is_valid_record_number(number: str) -> bool:
+    return (
+        isinstance(number, str)
+        and len(number) <= MAX_RECORD_NUMBER_LENGTH
+        and bool(number.strip())
+        and number.isprintable()
+    )
+
 
 class RecordOrder(StrEnum):
     NUMBER_ASC = "number asc"
@@ -27,6 +38,7 @@ async def _list_records[Record: BaseModel](
     fields: str,
     top: int | None,
     order_by: RecordOrder | None = None,
+    number: str | None = None,
 ) -> list[Record]:
     query: dict[str, str | int] = {"$select": fields}
     if top is not None:
@@ -37,6 +49,11 @@ async def _list_records[Record: BaseModel](
         if not isinstance(order_by, RecordOrder):
             raise BCRequestError("Unsupported record order.")
         query["$orderby"] = order_by.value
+    if number is not None:
+        if not is_valid_record_number(number):
+            raise BCRequestError("Invalid record number.")
+        escaped = number.replace("'", "''")
+        query["$filter"] = f"number eq '{escaped}'"
 
     results: list[Record] = []
     async for row in reader(path, httpx.QueryParams(query)):
@@ -84,6 +101,7 @@ class CompanyResource[Record: BaseModel]:
         company_id: UUID | str | None = None,
         top: int | None = None,
         order_by: RecordOrder | None = None,
+        number: str | None = None,
     ) -> list[Record]:
         if self._company_id is None:
             raise BCRequestError(
@@ -101,5 +119,11 @@ class CompanyResource[Record: BaseModel]:
 
         path = f"companies({self._company_id})/{self._entity}"
         return await _list_records(
-            self._reader, path, self._model, "id,number,displayName", top, order_by
+            self._reader,
+            path,
+            self._model,
+            "id,number,displayName",
+            top,
+            order_by,
+            number,
         )

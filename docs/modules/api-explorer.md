@@ -58,6 +58,8 @@ Buka endpoint **items**, lalu pilih **Lihat contoh data**. Gunakan **Tabel** ata
 
 Kedua preview menyediakan **Jumlah baris** dari 1 sampai 5 sebelum **Lihat contoh data**. Route GET menerima parameter opsional `limit` dengan default 5 dan meneruskannya sebagai `top` ke resource SDK. Nilai yang tidak valid, parameter ganda, atau parameter lain menghasilkan `422 INVALID_QUERY`. Untuk mengganti batas hasil yang sedang ditampilkan, pilih **Sembunyikan contoh data** terlebih dahulu.
 
+Isi **Nomor** untuk meminta kecocokan pada field `number`. Nomor dapat berisi hingga 100 karakter cetak. Jika kolom dikosongkan, preview memuat hasil tanpa filter. Nomor yang tidak ditemukan menghasilkan `200 []`. API menerima parameter `number` dan SDK membentuk ekspresi OData `number eq`. Contoh Python dan C# mengikuti nomor yang dimasukkan.
+
 ## Contoh kode GET untuk customers dan items
 
 Pilih **Urutkan** sebelum memuat preview. Opsi **Urutan BC** memakai urutan bawaan. Pilihan nomor atau nama diteruskan sebagai `order` ke route preview, lalu sebagai `$orderby` ke BC bersama `$top`. Nilai yang diizinkan adalah `number asc`, `number desc`, `displayName asc`, dan `displayName desc`. Contoh Python dan C# mengikuti pilihan itu.

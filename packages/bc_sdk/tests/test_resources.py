@@ -37,6 +37,7 @@ def test_lists_typed_standard_resources_with_selected_fields() -> None:
     def handle(request: httpx.Request) -> httpx.Response:
         assert request.method == "GET"
         assert "$orderby" not in request.url.params
+        assert "$filter" not in request.url.params
         path = request.url.path
         if path.endswith("/companies"):
             assert request.url.params["$select"] == "id,name,displayName"
@@ -107,6 +108,31 @@ def test_top_caps_total_records_without_reading_an_extra_page() -> None:
     assert len(requests) == 2
 
 
+def test_number_filter_is_encoded_as_one_odata_literal() -> None:
+    value = "00'A & B+#"
+
+    def handle(request: httpx.Request) -> httpx.Response:
+        assert request.method == "GET"
+        assert dict(request.url.params) == {
+            "$select": "id,number,displayName",
+            "$top": "2",
+            "$orderby": "number asc",
+            "$filter": "number eq '00''A & B+#'",
+        }
+        return httpx.Response(200, json={"value": []})
+
+    async def run() -> None:
+        async with _client(handle) as client:
+            await client.customers.list(
+                top=2, order_by=RecordOrder.NUMBER_ASC, number=value
+            )
+            await client.items.list(
+                top=2, order_by=RecordOrder.NUMBER_ASC, number=value
+            )
+
+    asyncio.run(run())
+
+
 def test_rejects_invalid_scope_and_top_before_sending_a_request() -> None:
     def handle(_request: httpx.Request) -> httpx.Response:
         pytest.fail("Unexpected request")
@@ -121,6 +147,8 @@ def test_rejects_invalid_scope_and_top_before_sending_a_request() -> None:
                 await client.companies.list(top=0)
             with pytest.raises(BCRequestError, match="Unsupported record order"):
                 await client.items.list(order_by="number asc,id desc")  # type: ignore[arg-type]
+            with pytest.raises(BCRequestError, match="Invalid record number"):
+                await client.items.list(number="X" * 101)
         async with _client(handle, company_id=None) as client:
             with pytest.raises(BCRequestError, match="Configure the demo company"):
                 await client.items.list(company_id=_COMPANY)
