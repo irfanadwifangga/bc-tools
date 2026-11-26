@@ -3,16 +3,29 @@ import createClient from "openapi-fetch";
 import type { paths } from "../src/api/schema";
 import { loadCustomerPreview, loadItemPreview } from "../src/features/api-explorer/catalog";
 
-function clientReturning(body: unknown, status = 200, endpoint = "customers", limit: string | null = null, order: string | null = null, number: string | null = null) {
+function clientReturning(
+  body: unknown,
+  status = 200,
+  endpoint = "customers",
+  limit: string | null = null,
+  order: string | null = null,
+  number: string | null = null,
+  name: string | null = null,
+  count: string | null = null,
+  headers?: HeadersInit,
+) {
   return createClient<paths>({
     baseUrl: "http://localhost",
     fetch: async request => {
+      const url = new URL(request.url);
       expect(request.method).toBe("GET");
-      expect(new URL(request.url).searchParams.get("limit")).toBe(limit);
-      expect(new URL(request.url).searchParams.get("order")).toBe(order);
-      expect(new URL(request.url).searchParams.get("number")).toBe(number);
-      expect(new URL(request.url).pathname).toBe(`/api/v1/api-explorer/${endpoint}/preview`);
-      return Response.json(body, { status });
+      expect(url.searchParams.get("limit")).toBe(limit);
+      expect(url.searchParams.get("order")).toBe(order);
+      expect(url.searchParams.get("number")).toBe(number);
+      expect(url.searchParams.get("name")).toBe(name);
+      expect(url.searchParams.get("count")).toBe(count);
+      expect(url.pathname).toBe(`/api/v1/api-explorer/${endpoint}/preview`);
+      return Response.json(body, { status, headers });
     },
   });
 }
@@ -37,4 +50,26 @@ test("loads item preview from its dedicated GET route", async () => {
   expect(await loadItemPreview(new AbortController().signal, { limit: 1, order: "displayName desc", number },
     clientReturning(rows, 200, "items", "1", "displayName desc", number)))
     .toEqual(rows);
+});
+
+test("passes name and count params and reads X-Total-Count header when present", async () => {
+  const rows = [{ id: "00000000-0000-4000-8000-000000000001", number: "C01", displayName: "Adatum" }];
+  let totalCount: number | null = null;
+  const result = await loadCustomerPreview(
+    new AbortController().signal,
+    { limit: 5, name: "Adatum", count: true },
+    clientReturning(rows, 200, "customers", "5", null, null, "Adatum", "true", { "X-Total-Count": "42" }),
+    total => { totalCount = total; },
+  );
+  expect(result).toEqual(rows);
+  expect(totalCount).toBe(42);
+
+  let absentCount: number | null = 99;
+  await loadItemPreview(
+    new AbortController().signal,
+    { limit: 2 },
+    clientReturning(rows, 200, "items", "2"),
+    total => { absentCount = total; },
+  );
+  expect(absentCount).toBeNull();
 });

@@ -37,6 +37,8 @@ Resource `customers` dan `items` juga menerima `number` opsional untuk kecocokan
 
 Resource `customers` dan `items` juga menerima `fields` opsional dari enum `RecordField` (`id`, `number`, `displayName`, minimal satu field unik) untuk mengirim `$select` sesuai pilihan tanpa field asing.
 
+Resource `customers` dan `items` juga menerima `name` opsional (1–100 karakter cetak, non-spasi) untuk menyusun `$filter=contains(displayName,'...')` (digabung `and` jika dipakai bersama `number`), serta `list_page(..., include_count=True)` untuk mengirim `$count=true` dan membaca `@odata.count`.
+
 ## Katalog metadata (Fase 2)
 
 Jika `BCSettings.custom_api_route` terisi, `bc.custom_metadata.list_entities()` membaca `$metadata` dari satu kombinasi publisher, group, dan version pada host Business Central Sandbox yang dikonfigurasi. SDK membatasi permintaan custom ke path metadata tersebut.

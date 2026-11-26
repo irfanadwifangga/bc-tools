@@ -244,6 +244,17 @@ def test_preview_rejects_parameters_and_writes_before_sdk_creation(
             {"number": "A\nB"},
             {"$filter": "number eq 'A'"},
             [("number", "A"), ("number", "B")],
+            {"name": ""},
+            {"name": " "},
+            {"name": "X" * 101},
+            {"name": "A\nB"},
+            [("name", "A"), ("name", "B")],
+            {"count": ""},
+            {"count": "1"},
+            {"count": "True"},
+            {"count": "yes"},
+            {"$count": "true"},
+            [("count", "true"), ("count", "false")],
             {"fields": ""},
             {"fields": "id,"},
             {"fields": "id,city"},
@@ -359,3 +370,58 @@ def test_preview_selects_requested_fields(
         )
     assert response.status_code == 200
     assert response.json() == [row]
+
+
+@pytest.mark.parametrize(
+    ("endpoint", "model"), [("customers", Customer), ("items", Item)]
+)
+def test_preview_filters_by_name(
+    preview_config: None, endpoint: str, model: type[Customer] | type[Item]
+) -> None:
+    row = {"id": str(UUID(int=1)), "number": "N1", "displayName": "Ada's Store"}
+    with patch(_FACTORY) as factory, TestClient(app) as http:
+        resource = getattr(factory.return_value, endpoint)
+        resource.list = AsyncMock(return_value=[model.model_validate(row)])
+        response = http.get(
+            f"/api/v1/api-explorer/{endpoint}/preview",
+            params={"number": "N1", "name": "Ada's", "count": "false"},
+        )
+        resource.list.assert_awaited_once_with(
+            top=5, order_by=None, number="N1", name="Ada's"
+        )
+    assert response.status_code == 200
+    assert "X-Total-Count" not in response.headers
+    assert response.json() == [row]
+
+
+@pytest.mark.parametrize(
+    ("endpoint", "model", "total"),
+    [("customers", Customer, 18), ("items", Item, 0)],
+)
+def test_preview_returns_total_count_header_when_count_true(
+    preview_config: None,
+    endpoint: str,
+    model: type[Customer] | type[Item],
+    total: int,
+) -> None:
+    rows = [{"number": "D1", "displayName": "Demo 1"}] if total else []
+    with patch(_FACTORY) as factory, TestClient(app) as http:
+        resource = getattr(factory.return_value, endpoint)
+        resource.list_page = AsyncMock(
+            return_value=([model.model_validate(row) for row in rows], total)
+        )
+        response = http.get(
+            f"/api/v1/api-explorer/{endpoint}/preview",
+            params={"count": "true", "fields": "number,displayName"},
+        )
+        resource.list_page.assert_awaited_once_with(
+            top=5,
+            order_by=None,
+            number=None,
+            name=None,
+            fields=(RecordField.NUMBER, RecordField.DISPLAY_NAME),
+            include_count=True,
+        )
+    assert response.status_code == 200
+    assert response.headers["X-Total-Count"] == str(total)
+    assert response.json() == rows

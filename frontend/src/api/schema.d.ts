@@ -290,7 +290,9 @@ export interface operations {
                 limit?: number;
                 order?: "number asc" | "number desc" | "displayName asc" | "displayName desc";
                 number?: string;
+                name?: string;
                 fields?: string;
+                count?: boolean;
             };
             header?: never;
             path?: never;
@@ -351,7 +353,9 @@ export interface operations {
                 limit?: number;
                 order?: "number asc" | "number desc" | "displayName asc" | "displayName desc";
                 number?: string;
+                name?: string;
                 fields?: string;
+                count?: boolean;
             };
             header?: never;
             path?: never;

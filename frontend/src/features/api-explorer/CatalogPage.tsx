@@ -8,7 +8,7 @@ import {
 } from "./catalog";
 import { EndpointCodeSamples } from "./CustomerCodeSamples";
 import { CustomerPreview } from "./CustomerPreview";
-import { DEFAULT_PREVIEW_LIMIT, type SampleEndpoint } from "./customerSamples";
+import { DEFAULT_PREVIEW_LIMIT } from "./customerSamples";
 import "./catalog.css";
 
 type CatalogState =
@@ -28,7 +28,7 @@ function highlightMatch(text: string, query: string) {
   return parts.length ? [...parts, text.slice(start)] : text;
 }
 
-function EndpointExamples({ endpoint }: { endpoint: SampleEndpoint }) {
+function EndpointExamples({ entity }: { entity: CatalogEntity }) {
   const [query, setQuery] = useState<PreviewQuery>({ limit: DEFAULT_PREVIEW_LIMIT });
   return (
     <Tabs
@@ -41,7 +41,7 @@ function EndpointExamples({ endpoint }: { endpoint: SampleEndpoint }) {
           forceRender: true,
           children: (
             <CustomerPreview
-              resource={endpoint === "items" ? "item" : "customer"}
+              resource={entity.name === "items" ? "item" : "customer"}
               query={query}
               onQueryChange={setQuery}
             />
@@ -51,7 +51,7 @@ function EndpointExamples({ endpoint }: { endpoint: SampleEndpoint }) {
           key: "samples",
           label: "Contoh Kode GET",
           forceRender: true,
-          children: <EndpointCodeSamples endpoint={endpoint} query={query} />,
+          children: <EndpointCodeSamples entity={entity} query={query} />,
         },
       ]}
     />
@@ -65,14 +65,12 @@ export function EndpointDetail({ entity, query }: { entity: CatalogEntity; query
   const visibleFields = localQuery
     ? entity.fields.filter(field => field.name.toLowerCase().includes(localQuery))
     : entity.fields;
-  const examplesEndpoint: SampleEndpoint | null =
-    entity.source !== "custom" && (entity.name === "customers" || entity.name === "items")
-      ? entity.name
-      : null;
+  const supportsPreview =
+    entity.source !== "custom" && (entity.name === "customers" || entity.name === "items");
   return (
     <div className="catalog-detail">
       <p className="catalog-type">Entity type <code>{entity.entity_type}</code> · {entity.fields.length} field</p>
-      <div className={examplesEndpoint ? "catalog-detail-split" : "catalog-detail-single"}>
+      <div className="catalog-detail-split">
         <section className="catalog-detail-pane catalog-detail-fields" aria-label="Struktur field">
           <div className="catalog-pane-header">
             <h3 className="catalog-pane-title">Struktur field</h3>
@@ -110,11 +108,21 @@ export function EndpointDetail({ entity, query }: { entity: CatalogEntity; query
             </div>
           )}
         </section>
-        {examplesEndpoint && (
-          <section className="catalog-detail-pane catalog-detail-sandbox" aria-label="Preview dan contoh kode">
-            <EndpointExamples endpoint={examplesEndpoint} />
-          </section>
-        )}
+        <section
+          className="catalog-detail-pane catalog-detail-sandbox"
+          aria-label={supportsPreview ? "Preview dan contoh kode" : "Contoh Kode GET"}
+        >
+          {supportsPreview ? (
+            <EndpointExamples entity={entity} />
+          ) : (
+            <>
+              <div className="catalog-pane-header">
+                <h3 className="catalog-pane-title">Contoh Kode GET</h3>
+              </div>
+              <EndpointCodeSamples entity={entity} />
+            </>
+          )}
+        </section>
       </div>
     </div>
   );
@@ -186,8 +194,6 @@ export function CatalogPage() {
   const allReady = standard.catalog.status === "ready" && custom.catalog.status === "ready";
   const results = filterEndpoints(entities, search, sourceFilter);
   const selectedEntity = selected ? entities.find(entity => endpointKey(entity) === selected) ?? null : null;
-  const selectedHasExamples = selectedEntity !== null && selectedEntity.source !== "custom" &&
-    (selectedEntity.name === "customers" || selectedEntity.name === "items");
   return (
     <section className={viewMode === "grid" ? "workspace-sheet catalog catalog--grid" : "workspace-sheet catalog"} aria-labelledby="catalog-title">
       <PageHeader
@@ -293,7 +299,7 @@ export function CatalogPage() {
               open={selectedEntity !== null}
               onCancel={() => setSelected(null)}
               footer={null}
-              width={selectedHasExamples ? 1200 : 720}
+              width={1200}
               style={{ maxWidth: "94vw" }}
               centered
               destroyOnHidden

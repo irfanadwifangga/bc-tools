@@ -11,8 +11,13 @@ from .models import Company
 type _RecordReader = Callable[
     [str, httpx.QueryParams | None], AsyncIterator[dict[str, object]]
 ]
+type _PageReader = Callable[
+    [str, httpx.QueryParams | None],
+    AsyncIterator[tuple[list[dict[str, object]], int | None]],
+]
 
 MAX_RECORD_NUMBER_LENGTH = 100
+MAX_RECORD_NAME_LENGTH = MAX_RECORD_NUMBER_LENGTH
 
 
 def is_valid_record_number(number: str) -> bool:
@@ -22,6 +27,9 @@ def is_valid_record_number(number: str) -> bool:
         and bool(number.strip())
         and number.isprintable()
     )
+
+
+is_valid_record_name = is_valid_record_number
 
 
 class RecordOrder(StrEnum):
@@ -52,15 +60,18 @@ def parse_record_fields(raw: str) -> tuple[RecordField, ...]:
 
 
 async def _list_records[Record: BaseModel](
-    reader: _RecordReader,
+    reader: _RecordReader | None,
+    page_reader: _PageReader | None,
     path: str,
     model: type[Record],
     fields: str,
     top: int | None,
     order_by: RecordOrder | None = None,
     number: str | None = None,
+    name: str | None = None,
     required_fields: tuple[str, ...] = (),
-) -> list[Record]:
+    include_count: bool = False,
+) -> tuple[list[Record], int | None]:
     query: dict[str, str | int] = {"$select": fields}
     if top is not None:
         if isinstance(top, bool) or not isinstance(top, int) or top < 1:
@@ -70,27 +81,56 @@ async def _list_records[Record: BaseModel](
         if not isinstance(order_by, RecordOrder):
             raise BCRequestError("Unsupported record order.")
         query["$orderby"] = order_by.value
+    filters: list[str] = []
     if number is not None:
         if not is_valid_record_number(number):
             raise BCRequestError("Invalid record number.")
-        escaped = number.replace("'", "''")
-        query["$filter"] = f"number eq '{escaped}'"
+        filters.append(f"number eq '{number.replace("'", "''")}'")
+    if name is not None:
+        if not is_valid_record_name(name):
+            raise BCRequestError("Invalid record name.")
+        filters.append(f"contains(displayName,'{name.replace("'", "''")}')")
+    if filters:
+        query["$filter"] = " and ".join(filters)
+    if not isinstance(include_count, bool):
+        raise BCRequestError("Invalid include_count option.")
+    if include_count:
+        query["$count"] = "true"
 
+    params = httpx.QueryParams(query)
+    total_count: int | None = None
     results: list[Record] = []
-    async for row in reader(path, httpx.QueryParams(query)):
+
+    def _validate_row(row: dict[str, object]) -> Record:
         if any(row.get(key) is None for key in required_fields):
             raise BCRequestError(
                 "Business Central returned an invalid resource record."
             )
         try:
-            results.append(model.model_validate(row))
+            return model.model_validate(row)
         except ValidationError:
             raise BCRequestError(
                 "Business Central returned an invalid resource record."
             ) from None
+
+    if page_reader is not None:
+        async for page_rows, page_count in page_reader(path, params):
+            if include_count and total_count is None and page_count is not None:
+                total_count = page_count
+            for row in page_rows:
+                results.append(_validate_row(row))
+                if top is not None and len(results) == top:
+                    return results, total_count
+        return results, total_count
+
+    if include_count or reader is None:
+        raise BCRequestError("Page reader is required to read count.")
+
+    async for row in reader(path, params):
+        results.append(_validate_row(row))
         if top is not None and len(results) == top:
             break
-    return results
+    return results, None
 
 
 class Companies:
@@ -100,9 +140,10 @@ class Companies:
         self._reader = reader
 
     async def list(self, *, top: int | None = None) -> list[Company]:
-        return await _list_records(
-            self._reader, "companies", Company, "id,name,displayName", top
+        records, _ = await _list_records(
+            self._reader, None, "companies", Company, "id,name,displayName", top
         )
+        return records
 
 
 class CompanyResource[Record: BaseModel]:
@@ -114,21 +155,26 @@ class CompanyResource[Record: BaseModel]:
         company_id: UUID | None,
         entity: str,
         model: type[Record],
+        page_reader: _PageReader | None = None,
     ) -> None:
         self._reader = reader
         self._company_id = company_id
         self._entity = entity
         self._model = model
+        self._page_reader = page_reader
 
-    async def list(
+    async def list_page(
         self,
         *,
         company_id: UUID | str | None = None,
         top: int | None = None,
         order_by: RecordOrder | None = None,
         number: str | None = None,
+        name: str | None = None,
         fields: Sequence[RecordField] | None = None,
-    ) -> list[Record]:
+        include_count: bool = False,
+    ) -> tuple[list[Record], int | None]:
+        """List records along with an optional @odata.count total."""
         if self._company_id is None:
             raise BCRequestError(
                 "Configure the demo company ID before reading company data."
@@ -154,11 +200,35 @@ class CompanyResource[Record: BaseModel]:
         path = f"companies({self._company_id})/{self._entity}"
         return await _list_records(
             self._reader,
+            self._page_reader,
             path,
             self._model,
             ",".join(field.value for field in selected),
             top,
             order_by,
             number,
+            name,
             tuple(field.value for field in selected),
+            include_count,
         )
+
+    async def list(
+        self,
+        *,
+        company_id: UUID | str | None = None,
+        top: int | None = None,
+        order_by: RecordOrder | None = None,
+        number: str | None = None,
+        name: str | None = None,
+        fields: Sequence[RecordField] | None = None,
+    ) -> list[Record]:
+        records, _ = await self.list_page(
+            company_id=company_id,
+            top=top,
+            order_by=order_by,
+            number=number,
+            name=name,
+            fields=fields,
+            include_count=False,
+        )
+        return records
