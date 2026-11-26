@@ -17,9 +17,10 @@ Rancangan memakai tiga bagian dengan ritme berbeda. Judul **Business Central San
 | Header | Nama **BC Tools**, breadcrumb ruang kerja, dan satu tombol ikon tema. Menu menawarkan **Sistem / Terang / Gelap** dengan tanda centang pada pilihan aktif. |
 | Sidebar | Rail 56 px pada desktop. Tujuan **Ringkasan** dan **API Explorer** berbagi rail dengan penanda pada halaman aktif. Ikon punya nama aksesibel, tooltip, dan penanda aktif berbentuk garis. |
 | Konteks | **Sandbox**, **DEMO COMPANY**, dan **Read-only** bersumber dari cakupan MVP. Label dan nilai dibaca sebagai pasangan. |
-| Indeks SDK | **Companies**, **Customers**, dan **Items**, masing-masing dengan satu deskripsi fungsi. Baris bersifat informatif. |
+| Status & Akses Cepat | Tombol **Buka API Explorer** (`#api-explorer`), tombol **Periksa ulang**, serta kartu status langsung untuk backend lokal (`/api/v1/health`), katalog Standar & Custom, dan total Customer/Item di `DEMO COMPANY`. |
+| Indeks SDK | **Companies**, **Customers**, **Items**, **Metadata**, dan **Custom Metadata**, masing-masing dengan satu deskripsi fungsi. |
 
-Ringkasan menampilkan cakupan workspace. Indikator koneksi, jumlah record, dan hasil request baru relevan saat ada sumber data yang sesuai. Pertanyaan prioritas API Explorer tetap mengikuti [STATUS](status/STATUS.md).
+Ringkasan menampilkan cakupan workspace sekaligus status koneksi nyata, jumlah endpoint/record, dan akses cepat ke API Explorer. Pertanyaan prioritas modul berikutnya tetap mengikuti [STATUS](status/STATUS.md).
 
 ## Palet
 

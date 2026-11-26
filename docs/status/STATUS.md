@@ -56,6 +56,8 @@ _Terakhir diperbarui: 2026-11-26_
 
 - Preview dan contoh GET `customers` & `items` ditambah filter `name` (`contains(displayName,'...')`) dan opsi `$count` (`X-Total-Count`), panel **Contoh Kode GET** diperluas ke seluruh endpoint standar dan custom API, `.env.example` diperbarui dengan `# BC_CUSTOM_API_ROUTE=`, modal layar sempit dirapikan, dan bundle frontend di-split di `vite.config.ts`. Irfan memverifikasi `$count` (`5 ditampilkan dari 12 total`) pada `customers` dan generator kode `countriesRegions` di Sandbox; uji Sandbox filter `name` dan eksekusi script generik tetap menunggu verifikasi.
 
+- Halaman **Ringkasan** (`#ringkasan`) diperbarui menjadi Workspace Hub (`OverviewPage`) yang memuat status backend lokal (`/api/v1/health`), jumlah endpoint Standar & Custom, total Customer & Item `DEMO COMPANY`, tombol aksi cepat ke **API Explorer**, serta tombol **Periksa ulang**, dengan unit test mock dan SSR. Irfan memverifikasi tampilan live di browser (`Backend lokal: Aktif`, `150 endpoint` Standar, `7 endpoint` Custom, `12` Customer, `51` Item).
+
 ## Blocker dan pertanyaan terbuka
 | # | Pertanyaan | Pemilik | Dibutuhkan sebelum |
 |---|---|---|---|

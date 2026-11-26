@@ -22,8 +22,8 @@ export function selectedPreviewFields(fields?: string): PreviewField[] {
 
 const api = createClient<paths>();
 
-export async function loadCatalog(signal: AbortSignal): Promise<CatalogEntity[]> {
-  const { data, error } = await api.GET("/api/v1/api-explorer/entities", { signal });
+export async function loadCatalog(signal: AbortSignal, client = api): Promise<CatalogEntity[]> {
+  const { data, error } = await client.GET("/api/v1/api-explorer/entities", { signal });
   if (!Array.isArray(data)) {
     throw new Error(error?.error?.message || "Katalog gagal dimuat. Periksa backend lokal.");
   }

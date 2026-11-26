@@ -11,8 +11,8 @@ import {
 import { Breadcrumb, Button, Dropdown, Layout, Tooltip, theme } from "antd";
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { recordFont } from "../theme/tokens";
-import { PageHeader } from "../components/PageHeader";
 import { CatalogPage } from "../features/api-explorer/CatalogPage";
+import { OverviewPage } from "../features/overview/OverviewPage";
 
 const pages = [
   { id: "ringkasan", title: "Ringkasan", icon: UnorderedListOutlined },
@@ -30,12 +30,6 @@ const themeOptions = {
   light: { label: "Terang", icon: SunOutlined },
   dark: { label: "Gelap", icon: MoonOutlined },
 };
-
-const resources = [
-  { name: "Companies", description: "Daftar company di sandbox" },
-  { name: "Customers", description: "Pelanggan demo company" },
-  { name: "Items", description: "Katalog item demo company" },
-];
 
 interface WorkspaceLayoutProps {
   choice: ThemeChoice;
@@ -192,37 +186,9 @@ export function WorkspaceLayout({ choice, onThemeChange }: WorkspaceLayoutProps)
           <div className="workspace-scrim" aria-hidden="true" onClick={closeMenu} />
         )}
         <Layout.Content className="workspace-content" id={page.id} inert={mobileMenuOpen}>
-          {page.id === "api-explorer" ? <CatalogPage /> : <Overview />}
+          {page.id === "api-explorer" ? <CatalogPage /> : <OverviewPage />}
         </Layout.Content>
       </Layout>
     </Layout>
-  );
-}
-
-function Overview() {
-  return (
-    <section className="workspace-sheet" aria-labelledby="workspace-title">
-      <PageHeader
-        title="Business Central Sandbox"
-        description="Lingkup kerja lokal dan resource standar SDK."
-        titleId="workspace-title"
-      />
-      <dl className="workspace-scope">
-        <div><dt>Environment</dt><dd>Sandbox</dd></div>
-        <div><dt>Company</dt><dd>DEMO COMPANY</dd></div>
-        <div><dt>Akses</dt><dd>Read-only</dd></div>
-      </dl>
-      <section className="workspace-index" aria-labelledby="workspace-resources">
-        <h2 id="workspace-resources">Resource SDK</h2>
-        <ul>
-          {resources.map(({ name, description }) => (
-            <li key={name}>
-              <span>{name}</span>
-              <span>{description}</span>
-            </li>
-          ))}
-        </ul>
-      </section>
-    </section>
   );
 }
