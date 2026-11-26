@@ -60,6 +60,8 @@ Kedua preview menyediakan **Jumlah baris** dari 1 sampai 5 sebelum **Lihat conto
 
 ## Contoh kode GET untuk customers dan items
 
+Pilih **Urutkan** sebelum memuat preview. Opsi **Urutan BC** memakai urutan bawaan. Pilihan nomor atau nama diteruskan sebagai `order` ke route preview, lalu sebagai `$orderby` ke BC bersama `$top`. Nilai yang diizinkan adalah `number asc`, `number desc`, `displayName asc`, dan `displayName desc`. Contoh Python dan C# mengikuti pilihan itu.
+
 Nilai `$top` pada contoh Python dan C# mengikuti pilihan **Jumlah baris**. Tombol **Salin kode** menyalin contoh dengan nilai yang sedang ditampilkan.
 
 Buka detail **customers** atau **items**, pilih **Contoh kode GET**, lalu **Python** atau **C#**. Kata kunci, string, literal angka atau boolean, dan komentar dibedakan secara visual di tema terang dan gelap. **Salin kode** menyalin contoh dalam bahasa yang sedang ditampilkan. Membuka atau menyalin kode dilakukan lokal. Saat dijalankan, contoh mengambil token aplikasi, memeriksa nama company, lalu membaca maksimal lima baris dari endpoint yang dipilih dengan field `id`, `number`, dan `displayName`. Kedua bahasa menampilkan array JSON, termasuk `[]` untuk hasil kosong.

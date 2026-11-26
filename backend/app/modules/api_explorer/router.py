@@ -3,7 +3,7 @@ from collections.abc import Awaitable, Callable
 from typing import Annotated
 from uuid import UUID
 
-from bc_sdk import BCClient, BCSettings
+from bc_sdk import BCClient, BCSettings, RecordOrder
 from bc_sdk.errors import (
     BCAuthError,
     BCError,
@@ -49,7 +49,16 @@ _PREVIEW_QUERY_SCHEMA = {
                 "maximum": _PREVIEW_LIMIT,
                 "default": _PREVIEW_LIMIT,
             },
-        }
+        },
+        {
+            "name": "order",
+            "in": "query",
+            "required": False,
+            "schema": {
+                "type": "string",
+                "enum": [order.value for order in RecordOrder],
+            },
+        },
     ]
 }
 CustomerPreviewList = Annotated[list[CustomerPreview], Field(max_length=_PREVIEW_LIMIT)]
@@ -125,18 +134,24 @@ async def list_entities(request: Request) -> list[MetadataEntity] | JSONResponse
     return await _read(lambda client: client.metadata.list_entities(), "metadata")
 
 
-def _preview_limit(request: Request) -> int | None:
+def _preview_query(request: Request) -> tuple[int, RecordOrder | None] | None:
     params = request.query_params
-    if not params:
-        return _PREVIEW_LIMIT
-    value = params.get("limit", "")
-    if len(params.multi_items()) != 1 or value not in _PREVIEW_LIMIT_VALUES:
+    if set(params) - {"limit", "order"} or len(params.multi_items()) != len(params):
         return None
-    return int(value)
+    limit = params.get("limit", str(_PREVIEW_LIMIT))
+    if limit not in _PREVIEW_LIMIT_VALUES:
+        return None
+    order = params.get("order")
+    try:
+        return int(limit), RecordOrder(order) if order is not None else None
+    except ValueError:
+        return None
 
 
-async def _sample_customers(client: BCClient, limit: int) -> list[CustomerPreview]:
-    records = await client.customers.list(top=limit)
+async def _sample_customers(
+    client: BCClient, limit: int, order: RecordOrder | None
+) -> list[CustomerPreview]:
+    records = await client.customers.list(top=limit, order_by=order)
     return [
         CustomerPreview(id=row.id, number=row.number, display_name=row.display_name)
         for row in records[:limit]
@@ -151,20 +166,22 @@ async def _sample_customers(client: BCClient, limit: int) -> list[CustomerPrevie
 )
 async def preview_customers(request: Request) -> list[CustomerPreview] | JSONResponse:
     """Read up to five customers from the configured demo company."""
-    limit = _preview_limit(request)
-    if limit is None:
+    query = _preview_query(request)
+    if query is None:
         return _error(
-            422, "INVALID_QUERY", "Gunakan limit antara 1 dan 5, maksimal satu kali."
+            422, "INVALID_QUERY", "Gunakan limit 1–5 dan pilihan urutan yang tersedia."
         )
     return await _read(
-        lambda client: _sample_customers(client, limit),
+        lambda client: _sample_customers(client, *query),
         "data customer",
         require_company=True,
     )
 
 
-async def _sample_items(client: BCClient, limit: int) -> list[ItemPreview]:
-    records = await client.items.list(top=limit)
+async def _sample_items(
+    client: BCClient, limit: int, order: RecordOrder | None
+) -> list[ItemPreview]:
+    records = await client.items.list(top=limit, order_by=order)
     return [
         ItemPreview(id=row.id, number=row.number, display_name=row.display_name)
         for row in records[:limit]
@@ -179,11 +196,11 @@ async def _sample_items(client: BCClient, limit: int) -> list[ItemPreview]:
 )
 async def preview_items(request: Request) -> list[ItemPreview] | JSONResponse:
     """Read up to five items from the configured demo company."""
-    limit = _preview_limit(request)
-    if limit is None:
+    query = _preview_query(request)
+    if query is None:
         return _error(
-            422, "INVALID_QUERY", "Gunakan limit antara 1 dan 5, maksimal satu kali."
+            422, "INVALID_QUERY", "Gunakan limit 1–5 dan pilihan urutan yang tersedia."
         )
     return await _read(
-        lambda client: _sample_items(client, limit), "data item", require_company=True
+        lambda client: _sample_items(client, *query), "data item", require_company=True
     )

@@ -218,6 +218,7 @@ export interface operations {
         parameters: {
             query?: {
                 limit?: number;
+                order?: "number asc" | "number desc" | "displayName asc" | "displayName desc";
             };
             header?: never;
             path?: never;
@@ -276,6 +277,7 @@ export interface operations {
         parameters: {
             query?: {
                 limit?: number;
+                order?: "number asc" | "number desc" | "displayName asc" | "displayName desc";
             };
             header?: never;
             path?: never;

@@ -2,10 +2,15 @@ import { useState } from "react";
 import { SampleCode } from "./SampleCode";
 import { CopyTextButton } from "./CopyTextButton";
 import { getCodeSample, type SampleEndpoint, type SampleLanguage } from "./customerSamples";
+import type { PreviewOrder } from "./catalog";
 
-export function EndpointCodeSamples({ endpoint, limit }: { endpoint: SampleEndpoint; limit: number }) {
+export function EndpointCodeSamples({ endpoint, limit, order }: {
+  endpoint: SampleEndpoint;
+  limit: number;
+  order?: PreviewOrder;
+}) {
   const [language, setLanguage] = useState<SampleLanguage>("Python");
-  const text = getCodeSample(endpoint, language, limit);
+  const text = getCodeSample(endpoint, language, limit, order);
   return (
     <details className="customer-samples">
       <summary>Contoh kode GET</summary>
@@ -16,7 +21,7 @@ export function EndpointCodeSamples({ endpoint, limit }: { endpoint: SampleEndpo
               onClick={() => setLanguage(option)}>{option}</button>
           ))}
         </div>
-        <CopyTextButton key={language + limit} text={text} label="Salin kode" />
+        <CopyTextButton key={`${language}:${limit}:${order ?? ""}`} text={text} label="Salin kode" />
         <pre className="preview-json" tabIndex={0} aria-label={`Contoh kode ${language}`}><SampleCode language={language} text={text} /></pre>
       </div>
     </details>

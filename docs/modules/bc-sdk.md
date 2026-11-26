@@ -31,6 +31,8 @@ async with BCClient.from_settings(settings) as bc:
 ```
 API publik dan transport menggunakan async sesuai ADR-002. Setiap `list()` mengembalikan model Pydantic bertipe. `top` membatasi jumlah hasil lintas halaman. Argumen `company_id` pada `customers` dan `items`, jika diberikan, harus cocok dengan ID demo company di konfigurasi.
 
+Resource `customers` dan `items` menerima `order_by` opsional dari enum `RecordOrder` (nomor atau nama, naik atau turun) untuk mengirim `$orderby` bersama `$top`.
+
 ## Katalog metadata (Fase 2)
 
 `bc.metadata.list_entities()` membaca `GET /api/v2.0/$metadata` di sandbox terkonfigurasi. Setiap hasil berisi nama entity set, nama lengkap entity type, serta nama dan tipe field struktural termasuk field warisan. Dua entity set yang memakai tipe sama tetap muncul sebagai dua endpoint. Katalog ini mencakup API standar dan dapat dibaca tanpa ID company.
