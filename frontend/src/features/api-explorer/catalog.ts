@@ -23,6 +23,14 @@ export async function loadCustomerPreview(signal: AbortSignal, client = api): Pr
   return data;
 }
 
+export async function loadItemPreview(signal: AbortSignal, client = api) {
+  const { data, error } = await client.GET("/api/v1/api-explorer/items/preview", { signal });
+  if (!Array.isArray(data)) {
+    throw new Error(error?.error?.message || "Contoh data gagal dimuat.");
+  }
+  return data;
+}
+
 export function filterEndpoints(entities: CatalogEntity[], search: string) {
   const query = search.trim().toLowerCase();
   return entities.filter(({ name, fields }) =>

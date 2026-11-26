@@ -9,6 +9,7 @@ export default defineConfig({
     proxy: {
       "/api/v1/api-explorer/entities": "http://127.0.0.1:8000",
       "/api/v1/api-explorer/customers/preview": "http://127.0.0.1:8000",
+      "/api/v1/api-explorer/items/preview": "http://127.0.0.1:8000",
     },
   },
 });

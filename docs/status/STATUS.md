@@ -38,6 +38,8 @@ _Terakhir diperbarui: 2026-11-25_
 
 - Detail `customers` menyediakan contoh GET Python dan C# dengan pewarnaan sintaks dan tombol salin. Kedua template memiliki snapshot test. Eksekusi terhadap sandbox menunggu uji manual Irfan.
 
+- API Explorer menyediakan preview maksimal lima item dalam Tabel dan JSON. Uji sandbox menunggu verifikasi Irfan.
+
 ## Blocker dan pertanyaan terbuka
 | # | Pertanyaan | Pemilik | Dibutuhkan sebelum |
 |---|---|---|---|

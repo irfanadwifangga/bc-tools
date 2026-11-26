@@ -1,14 +1,16 @@
 import { Button } from "antd";
 import { useEffect, useId, useRef, useState } from "react";
 import { CustomerPreviewData, type PreviewFormat } from "./CustomerPreviewData";
-import { loadCustomerPreview, type PreviewCustomer } from "./catalog";
+import { loadCustomerPreview, loadItemPreview, type PreviewCustomer } from "./catalog";
+
+const loaders = { customer: loadCustomerPreview, item: loadItemPreview };
 
 type PreviewState =
   | { status: "idle" | "loading" }
   | { status: "ready"; rows: PreviewCustomer[] }
   | { status: "error"; message: string };
 
-export function CustomerPreview() {
+export function CustomerPreview({ resource = "customer" }: { resource?: keyof typeof loaders }) {
   const [preview, setPreview] = useState<PreviewState>({ status: "idle" });
   const [format, setFormat] = useState<PreviewFormat>("Tabel");
   const request = useRef<AbortController | null>(null);
@@ -26,7 +28,7 @@ export function CustomerPreview() {
     request.current = controller;
     setPreview({ status: "loading" });
     try {
-      const rows = await loadCustomerPreview(controller.signal);
+      const rows = await loaders[resource](controller.signal);
       if (!controller.signal.aborted) setPreview({ status: "ready", rows });
     } catch (reason) {
       if (!controller.signal.aborted) {
@@ -51,7 +53,7 @@ export function CustomerPreview() {
         <div role="status">
           {preview.status === "loading" && "Memuat contoh data…"}
           {preview.status === "ready" && (preview.rows.length
-            ? `${preview.rows.length} customer ditampilkan.` : "Demo company ini belum memiliki customer.")}
+            ? `${preview.rows.length} ${resource} ditampilkan.` : `Demo company ini belum memiliki ${resource}.`)}
         </div>
         {preview.status === "error" && <p role="alert">{preview.message}</p>}
         {preview.status === "ready" && (
@@ -62,7 +64,7 @@ export function CustomerPreview() {
                   onClick={() => setFormat(option)}>{option}</button>
               ))}
             </div>
-            <CustomerPreviewData rows={preview.rows} format={format} />
+            <CustomerPreviewData rows={preview.rows} format={format} resource={resource} />
           </div>
         )}
       </div>

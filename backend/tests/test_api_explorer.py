@@ -2,7 +2,7 @@ from unittest.mock import AsyncMock, patch
 from uuid import UUID
 
 import pytest
-from bc_sdk import Customer
+from bc_sdk import Customer, Item
 from bc_sdk.errors import (
     BCAuthError,
     BCNotFoundError,
@@ -172,15 +172,37 @@ def test_customer_preview_handles_sdk_failure(
     assert "private-fixture-detail" not in response.text
 
 
-def test_preview_rejects_parameters_and_writes_before_sdk_creation() -> None:
+@pytest.mark.parametrize("endpoint", ["customers", "items"])
+def test_preview_rejects_parameters_and_writes_before_sdk_creation(
+    endpoint: str,
+) -> None:
+    url = f"/api/v1/api-explorer/{endpoint}/preview"
     with patch(_FACTORY) as factory, TestClient(app) as http:
         for params in (
             {"$top": 6},
             {"company_id": "other"},
             {"url": "https://example.invalid"},
         ):
-            response = http.get(_PREVIEW, params=params)
+            response = http.get(url, params=params)
             assert response.status_code == 422
             assert response.json()["error"]["code"] == "INVALID_QUERY"
-        assert http.post(_PREVIEW).status_code == 405
+        assert http.post(url).status_code == 405
         factory.assert_not_called()
+
+
+@pytest.mark.parametrize("count", [0, 2, 6])
+def test_item_preview_contract(preview_config: None, count: int) -> None:
+    rows = [
+        {"id": str(UUID(int=i + 1)), "number": f"I{i}", "displayName": f"Item {i}"}
+        for i in range(count)
+    ]
+    with patch(_FACTORY) as factory, TestClient(app) as http:
+        client = factory.return_value
+        client.items.list = AsyncMock(
+            return_value=[Item.model_validate(row) for row in rows]
+        )
+        response = http.get("/api/v1/api-explorer/items/preview")
+        assert factory.call_args.args[0].company_id == _COMPANY
+        client.items.list.assert_awaited_once_with(top=5)
+    assert response.status_code == 200
+    assert response.json() == rows[:5]

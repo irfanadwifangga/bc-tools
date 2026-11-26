@@ -33,5 +33,6 @@ test("only customers offers copyable examples without loading its data preview",
   expect(customers).toContain("Contoh kode GET");
   expect(customers).toContain(">Salin kode</span>");
   expect(customers).toContain("Lihat contoh data");
+  expect(row("items")).toContain("Lihat contoh data");
   expect(row("items")).not.toContain("Contoh kode GET");
 });
