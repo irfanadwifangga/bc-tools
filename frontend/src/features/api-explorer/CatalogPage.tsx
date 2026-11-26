@@ -4,6 +4,7 @@ import { useEffect, useId, useState } from "react";
 import { filterEndpoints, groupEndpoints, loadCatalog, type CatalogEntity } from "./catalog";
 import { EndpointCodeSamples } from "./CustomerCodeSamples";
 import { CustomerPreview } from "./CustomerPreview";
+import { DEFAULT_PREVIEW_LIMIT, type SampleEndpoint } from "./customerSamples";
 import "./catalog.css";
 
 type CatalogState =
@@ -21,6 +22,17 @@ function highlightMatch(text: string, query: string) {
     start = index + query.length;
   }
   return parts.length ? [...parts, text.slice(start)] : text;
+}
+
+function EndpointExamples({ endpoint }: { endpoint: SampleEndpoint }) {
+  const [limit, setLimit] = useState(DEFAULT_PREVIEW_LIMIT);
+  return (
+    <>
+      <CustomerPreview resource={endpoint === "items" ? "item" : "customer"}
+        limit={limit} onLimitChange={setLimit} />
+      <EndpointCodeSamples endpoint={endpoint} limit={limit} />
+    </>
+  );
 }
 
 export function EndpointRow({ entity, open, query, onSelect }: {
@@ -46,10 +58,8 @@ export function EndpointRow({ entity, open, query, onSelect }: {
       <div id={panelId} hidden={!open} className="catalog-detail">
         {open && <>
           <p className="catalog-type">Entity type <code>{entity.entity_type}</code></p>
-          {entity.name === "customers" && <CustomerPreview />}
-          {entity.name === "items" && <CustomerPreview resource="item" />}
           {(entity.name === "customers" || entity.name === "items") &&
-            <EndpointCodeSamples endpoint={entity.name} />}
+            <EndpointExamples endpoint={entity.name} />}
           {entity.fields.length ? (
             <table aria-label={`Field ${entity.name}`}>
               <thead><tr><th scope="col">Field</th><th scope="col">Tipe</th></tr></thead>

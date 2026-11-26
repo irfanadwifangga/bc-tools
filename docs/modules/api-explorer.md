@@ -60,6 +60,8 @@ Kedua preview menyediakan **Jumlah baris** dari 1 sampai 5 sebelum **Lihat conto
 
 ## Contoh kode GET untuk customers dan items
 
+Nilai `$top` pada contoh Python dan C# mengikuti pilihan **Jumlah baris**. Tombol **Salin kode** menyalin contoh dengan nilai yang sedang ditampilkan.
+
 Buka detail **customers** atau **items**, pilih **Contoh kode GET**, lalu **Python** atau **C#**. Kata kunci, string, literal angka atau boolean, dan komentar dibedakan secara visual di tema terang dan gelap. **Salin kode** menyalin contoh dalam bahasa yang sedang ditampilkan. Membuka atau menyalin kode dilakukan lokal. Saat dijalankan, contoh mengambil token aplikasi, memeriksa nama company, lalu membaca maksimal lima baris dari endpoint yang dipilih dengan field `id`, `number`, dan `displayName`. Kedua bahasa menampilkan array JSON, termasuk `[]` untuk hasil kosong.
 
 Python memerlukan `msal` untuk token dan `httpx` untuk GET. Simpan sebagai `customers.py`, lalu jalankan `uv run --with msal --with httpx --env-file .env python customers.py` dari folder dengan konfigurasi sandbox. Untuk C#, salin ke `Program.cs` pada proyek console .NET, jalankan `dotnet add package Microsoft.Identity.Client` di proyek contoh untuk autentikasi MSAL.NET, lalu `dotnet run` dengan environment proses yang sudah dikonfigurasi. Kedua contoh membaca `BC_TENANT_ID`, `BC_CLIENT_ID`, `BC_CLIENT_SECRET`, dan `BC_COMPANY_ID`. Jika diberikan, `BC_ENVIRONMENT` harus bernilai `Sandbox` (kapitalisasi bebas).

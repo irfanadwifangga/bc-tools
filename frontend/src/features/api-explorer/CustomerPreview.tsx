@@ -10,10 +10,13 @@ type PreviewState =
   | { status: "ready"; rows: PreviewCustomer[] }
   | { status: "error"; message: string };
 
-export function CustomerPreview({ resource = "customer" }: { resource?: keyof typeof loaders }) {
+export function CustomerPreview({ resource, limit, onLimitChange }: {
+  resource: keyof typeof loaders;
+  limit: number;
+  onLimitChange: (limit: number) => void;
+}) {
   const [preview, setPreview] = useState<PreviewState>({ status: "idle" });
   const [format, setFormat] = useState<PreviewFormat>("Tabel");
-  const [limit, setLimit] = useState(5);
   const request = useRef<AbortController | null>(null);
   const resultId = useId();
   useEffect(() => () => request.current?.abort(), []);
@@ -50,7 +53,7 @@ export function CustomerPreview({ resource = "customer" }: { resource?: keyof ty
         <label htmlFor={resultId + "-limit"}>Jumlah baris</label>
         <select id={resultId + "-limit"} value={limit}
           disabled={preview.status === "loading" || preview.status === "ready"}
-          onChange={event => setLimit(Number(event.target.value))}>
+          onChange={event => onLimitChange(Number(event.target.value))}>
           {[1, 2, 3, 4, 5].map(value => <option key={value} value={value}>{value}</option>)}
         </select>
         <Button onClick={togglePreview} aria-controls={resultId}

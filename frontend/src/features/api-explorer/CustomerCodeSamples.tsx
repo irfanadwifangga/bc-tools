@@ -3,9 +3,9 @@ import { SampleCode } from "./SampleCode";
 import { CopyTextButton } from "./CopyTextButton";
 import { getCodeSample, type SampleEndpoint, type SampleLanguage } from "./customerSamples";
 
-export function EndpointCodeSamples({ endpoint }: { endpoint: SampleEndpoint }) {
+export function EndpointCodeSamples({ endpoint, limit }: { endpoint: SampleEndpoint; limit: number }) {
   const [language, setLanguage] = useState<SampleLanguage>("Python");
-  const text = getCodeSample(endpoint, language);
+  const text = getCodeSample(endpoint, language, limit);
   return (
     <details className="customer-samples">
       <summary>Contoh kode GET</summary>
@@ -16,7 +16,7 @@ export function EndpointCodeSamples({ endpoint }: { endpoint: SampleEndpoint }) 
               onClick={() => setLanguage(option)}>{option}</button>
           ))}
         </div>
-        <CopyTextButton key={language} text={text} label="Salin kode" />
+        <CopyTextButton key={language + limit} text={text} label="Salin kode" />
         <pre className="preview-json" tabIndex={0} aria-label={`Contoh kode ${language}`}><SampleCode language={language} text={text} /></pre>
       </div>
     </details>
