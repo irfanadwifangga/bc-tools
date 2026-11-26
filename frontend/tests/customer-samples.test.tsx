@@ -2,17 +2,26 @@ import { expect, test } from "bun:test";
 import { renderToStaticMarkup } from "react-dom/server";
 import { SampleCode } from "../src/features/api-explorer/SampleCode";
 import { EndpointRow } from "../src/features/api-explorer/CatalogPage";
-import { customerSamples } from "../src/features/api-explorer/customerSamples";
+import { getCodeSample } from "../src/features/api-explorer/customerSamples";
 
 for (const language of ["Python", "C#"] as const) {
   test(`customer GET sample for ${language}`, () => {
-    expect(customerSamples[language]).toMatchSnapshot();
+    expect(getCodeSample("customers", language)).toMatchSnapshot();
+  });
+
+  test(`item GET sample for ${language} changes only the resource path`, () => {
+    const customerSample = getCodeSample("customers", language);
+    const itemSample = getCodeSample("items", language);
+    expect(customerSample).toContain("/customers");
+    expect(itemSample).toContain("/items");
+    expect(itemSample).not.toContain("/customers");
+    expect(itemSample.replace("/items", "/customers")).toBe(customerSample);
   });
 }
 
 for (const language of ["Python", "C#"] as const) {
   test(`highlighted ${language} preserves the full copyable source`, () => {
-    const text = customerSamples[language];
+    const text = getCodeSample("items", language);
     const html = renderToStaticMarkup(<SampleCode text={text} language={language} />);
     expect(html.replace(/<span class="sample-\w+">|<\/span>/g, ""))
       .toBe(renderToStaticMarkup(<code>{text}</code>));
@@ -26,13 +35,15 @@ for (const language of ["Python", "C#"] as const) {
   });
 }
 
-test("only customers offers copyable examples without loading its data preview", () => {
+test("only customers and items offer copyable examples without loading previews", () => {
   const row = (name: string) => renderToStaticMarkup(<EndpointRow
     entity={{ name, entity_type: name, fields: [] }} open query="" onSelect={() => {}} />);
-  const customers = row("customers");
-  expect(customers).toContain("Contoh kode GET");
-  expect(customers).toContain(">Salin kode</span>");
-  expect(customers).toContain("Lihat contoh data");
-  expect(row("items")).toContain("Lihat contoh data");
-  expect(row("items")).not.toContain("Contoh kode GET");
+  for (const endpoint of ["customers", "items"]) {
+    const html = row(endpoint);
+    expect(html).toContain("Contoh kode GET");
+    expect(html).toContain(">Salin kode</span>");
+    expect(html).toContain("Lihat contoh data");
+    expect(html).toContain("/" + endpoint);
+  }
+  expect(row("vendors")).not.toContain("Contoh kode GET");
 });

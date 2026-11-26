@@ -56,9 +56,9 @@ Buka endpoint **items**, lalu pilih **Lihat contoh data**. Gunakan **Tabel** ata
 
 `GET /api/v1/api-explorer/items/preview` membaca maksimal lima item dari demo company yang dikonfigurasi melalui `BC_COMPANY_ID`. Setiap baris memuat `id`, `number`, dan `displayName`. Hasil kosong mengembalikan `200 []`. Route hanya menerima GET tanpa parameter query.
 
-## Contoh kode GET untuk customers
+## Contoh kode GET untuk customers dan items
 
-Buka detail **customers**, pilih **Contoh kode GET**, lalu **Python** atau **C#**. Kata kunci, string, literal angka atau boolean, dan komentar dibedakan secara visual di tema terang dan gelap. **Salin kode** menyalin contoh dalam bahasa yang sedang ditampilkan. Membuka atau menyalin kode dilakukan lokal. Saat dijalankan, contoh mengambil token aplikasi, memeriksa nama company, lalu membaca maksimal lima customer dengan field `id`, `number`, dan `displayName`. Kedua contoh menampilkan array JSON, termasuk `[]` untuk hasil kosong.
+Buka detail **customers** atau **items**, pilih **Contoh kode GET**, lalu **Python** atau **C#**. Kata kunci, string, literal angka atau boolean, dan komentar dibedakan secara visual di tema terang dan gelap. **Salin kode** menyalin contoh dalam bahasa yang sedang ditampilkan. Membuka atau menyalin kode dilakukan lokal. Saat dijalankan, contoh mengambil token aplikasi, memeriksa nama company, lalu membaca maksimal lima baris dari endpoint yang dipilih dengan field `id`, `number`, dan `displayName`. Kedua bahasa menampilkan array JSON, termasuk `[]` untuk hasil kosong.
 
 Python memerlukan `msal` untuk token dan `httpx` untuk GET. Simpan sebagai `customers.py`, lalu jalankan `uv run --with msal --with httpx --env-file .env python customers.py` dari folder dengan konfigurasi sandbox. Untuk C#, salin ke `Program.cs` pada proyek console .NET, jalankan `dotnet add package Microsoft.Identity.Client` di proyek contoh untuk autentikasi MSAL.NET, lalu `dotnet run` dengan environment proses yang sudah dikonfigurasi. Kedua contoh membaca `BC_TENANT_ID`, `BC_CLIENT_ID`, `BC_CLIENT_SECRET`, dan `BC_COMPANY_ID`. Jika diberikan, `BC_ENVIRONMENT` harus bernilai `Sandbox` (kapitalisasi bebas).
 
