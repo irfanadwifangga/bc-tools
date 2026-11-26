@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import type { customerSamples } from "./customerSamples";
+import type { SampleLanguage } from "./customerSamples";
 
 // Lexical forms used by the two read-only GET examples.
 const patterns = {
@@ -7,7 +7,7 @@ const patterns = {
   "C#": /(?<comment>\/\/[^\r\n]*|\/\*[\s\S]*?\*\/)|(?<string>\$?"(?:\\.|[^"\\\r\n])*"|'(?:\\.|[^'\\\r\n])*')|(?<keyword>\b(?:using|static|string|var|if|throw|new|const|await)\b)|(?<literal>\b(?:true|false|null|\d+(?:\.\d+)?)\b)|(?<call>\b[A-Za-z_][A-Za-z0-9_]*(?=[ \t]*\())/g,
 };
 
-export function SampleCode({ text, language }: { text: string; language: keyof typeof customerSamples }) {
+export function SampleCode({ text, language }: { text: string; language: SampleLanguage }) {
   const parts: ReactNode[] = [];
   let start = 0;
   for (const match of text.matchAll(patterns[language])) {

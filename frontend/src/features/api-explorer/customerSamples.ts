@@ -1,5 +1,12 @@
-export const customerSamples = {
-  Python: `# Atur variabel BC_* untuk DEMO COMPANY sebelum menjalankan contoh.
+export type SampleEndpoint = "customers" | "items";
+export type SampleLanguage = "Python" | "C#";
+
+export function getCodeSample(endpoint: SampleEndpoint, language: SampleLanguage): string {
+  return samples[language](endpoint);
+}
+
+const samples = {
+  Python: (endpoint: SampleEndpoint) => `# Atur variabel BC_* untuk DEMO COMPANY sebelum menjalankan contoh.
 import json
 import os
 from uuid import UUID
@@ -31,11 +38,11 @@ with httpx.Client(headers=headers, timeout=10.0, follow_redirects=False) as clie
         raise SystemExit("BC_COMPANY_ID harus menunjuk ke DEMO COMPANY.")
 
     fields = ("id", "number", "displayName")
-    response = client.get(f"{url}/customers", params={"$top": 5, "$select": ",".join(fields)})
+    response = client.get(f"{url}/${endpoint}", params={"$top": 5, "$select": ",".join(fields)})
     response.raise_for_status()
     rows = [{field: row[field] for field in fields} for row in response.json()["value"]]
     print(json.dumps(rows, indent=2, ensure_ascii=False))`,
-  "C#": `// Atur variabel BC_* untuk DEMO COMPANY sebelum menjalankan contoh.
+  "C#": (endpoint: SampleEndpoint) => `// Atur variabel BC_* untuk DEMO COMPANY sebelum menjalankan contoh.
 using System;
 using System.Linq;
 using System.Net.Http;
@@ -69,7 +76,7 @@ using var info = JsonDocument.Parse(await client.GetStringAsync(url + "?$select=
 if (!string.Equals(info.RootElement.GetProperty("name").GetString(), "DEMO COMPANY", StringComparison.OrdinalIgnoreCase))
     throw new InvalidOperationException("BC_COMPANY_ID harus menunjuk ke DEMO COMPANY.");
 
-using var data = JsonDocument.Parse(await client.GetStringAsync(url + "/customers?$top=5&$select=id,number,displayName"));
+using var data = JsonDocument.Parse(await client.GetStringAsync(url + "/${endpoint}?$top=5&$select=id,number,displayName"));
 var rows = data.RootElement.GetProperty("value").EnumerateArray().Select(row => new
 {
     id = row.GetProperty("id").GetString(),

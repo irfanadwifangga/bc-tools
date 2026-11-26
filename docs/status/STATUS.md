@@ -36,7 +36,7 @@ _Terakhir diperbarui: 2026-11-25_
 
 - Tampilan JSON preview `customers` membedakan nama field dan nilai string dengan warna pada tema terang dan gelap serta menyediakan tombol **Salin JSON**. Irfan memeriksa kedua tema dan mengonfirmasi hasil tempel di editor lokal sesuai dengan JSON yang ditampilkan.
 
-- Detail `customers` menyediakan contoh GET Python dan C# dengan pewarnaan sintaks dan tombol salin. Kedua template memiliki snapshot test. Eksekusi terhadap sandbox menunggu uji manual Irfan.
+- Detail `customers` dan `items` menyediakan contoh GET Python dan C# dengan pewarnaan sintaks dan tombol salin. Tes memeriksa konsistensi template dan path untuk kedua endpoint. Eksekusi terhadap sandbox menunggu uji manual Irfan.
 
 - API Explorer menyediakan preview maksimal lima item dalam Tabel dan JSON. Uji sandbox menunggu verifikasi Irfan.
 

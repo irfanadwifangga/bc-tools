@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { SampleCode } from "./SampleCode";
 import { CopyTextButton } from "./CopyTextButton";
-import { customerSamples } from "./customerSamples";
+import { getCodeSample, type SampleEndpoint, type SampleLanguage } from "./customerSamples";
 
-export function CustomerCodeSamples() {
-  const [language, setLanguage] = useState<keyof typeof customerSamples>("Python");
-  const text = customerSamples[language];
+export function EndpointCodeSamples({ endpoint }: { endpoint: SampleEndpoint }) {
+  const [language, setLanguage] = useState<SampleLanguage>("Python");
+  const text = getCodeSample(endpoint, language);
   return (
     <details className="customer-samples">
       <summary>Contoh kode GET</summary>
