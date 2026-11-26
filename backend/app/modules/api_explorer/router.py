@@ -36,6 +36,22 @@ class CustomerPreview(BaseModel):
 
 
 _PREVIEW_LIMIT = 5
+_PREVIEW_LIMIT_VALUES = {str(value) for value in range(1, _PREVIEW_LIMIT + 1)}
+_PREVIEW_QUERY_SCHEMA = {
+    "parameters": [
+        {
+            "name": "limit",
+            "in": "query",
+            "required": False,
+            "schema": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": _PREVIEW_LIMIT,
+                "default": _PREVIEW_LIMIT,
+            },
+        }
+    ]
+}
 CustomerPreviewList = Annotated[list[CustomerPreview], Field(max_length=_PREVIEW_LIMIT)]
 
 
@@ -109,41 +125,65 @@ async def list_entities(request: Request) -> list[MetadataEntity] | JSONResponse
     return await _read(lambda client: client.metadata.list_entities(), "metadata")
 
 
-async def _sample_customers(client: BCClient) -> list[CustomerPreview]:
-    records = await client.customers.list(top=_PREVIEW_LIMIT)
+def _preview_limit(request: Request) -> int | None:
+    params = request.query_params
+    if not params:
+        return _PREVIEW_LIMIT
+    value = params.get("limit", "")
+    if len(params.multi_items()) != 1 or value not in _PREVIEW_LIMIT_VALUES:
+        return None
+    return int(value)
+
+
+async def _sample_customers(client: BCClient, limit: int) -> list[CustomerPreview]:
+    records = await client.customers.list(top=limit)
     return [
         CustomerPreview(id=row.id, number=row.number, display_name=row.display_name)
-        for row in records[:_PREVIEW_LIMIT]
+        for row in records[:limit]
     ]
 
 
 @router.get(
-    "/customers/preview", response_model=CustomerPreviewList, responses=_ERROR_RESPONSES
+    "/customers/preview",
+    response_model=CustomerPreviewList,
+    responses=_ERROR_RESPONSES,
+    openapi_extra=_PREVIEW_QUERY_SCHEMA,
 )
 async def preview_customers(request: Request) -> list[CustomerPreview] | JSONResponse:
     """Read up to five customers from the configured demo company."""
-    if request.query_params:
+    limit = _preview_limit(request)
+    if limit is None:
         return _error(
-            422, "INVALID_QUERY", "Preview customers tidak menerima parameter query."
+            422, "INVALID_QUERY", "Gunakan limit antara 1 dan 5, maksimal satu kali."
         )
-    return await _read(_sample_customers, "data customer", require_company=True)
+    return await _read(
+        lambda client: _sample_customers(client, limit),
+        "data customer",
+        require_company=True,
+    )
 
 
-async def _sample_items(client: BCClient) -> list[ItemPreview]:
-    records = await client.items.list(top=_PREVIEW_LIMIT)
+async def _sample_items(client: BCClient, limit: int) -> list[ItemPreview]:
+    records = await client.items.list(top=limit)
     return [
         ItemPreview(id=row.id, number=row.number, display_name=row.display_name)
-        for row in records[:_PREVIEW_LIMIT]
+        for row in records[:limit]
     ]
 
 
 @router.get(
-    "/items/preview", response_model=ItemPreviewList, responses=_ERROR_RESPONSES
+    "/items/preview",
+    response_model=ItemPreviewList,
+    responses=_ERROR_RESPONSES,
+    openapi_extra=_PREVIEW_QUERY_SCHEMA,
 )
 async def preview_items(request: Request) -> list[ItemPreview] | JSONResponse:
     """Read up to five items from the configured demo company."""
-    if request.query_params:
+    limit = _preview_limit(request)
+    if limit is None:
         return _error(
-            422, "INVALID_QUERY", "Preview items tidak menerima parameter query."
+            422, "INVALID_QUERY", "Gunakan limit antara 1 dan 5, maksimal satu kali."
         )
-    return await _read(_sample_items, "data item", require_company=True)
+    return await _read(
+        lambda client: _sample_items(client, limit), "data item", require_company=True
+    )

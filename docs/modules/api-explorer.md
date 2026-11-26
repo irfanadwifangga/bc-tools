@@ -48,13 +48,15 @@ Buka endpoint **customers**, lalu pilih **Lihat contoh data**. Tampilan awal **T
 
 `GET /api/v1/api-explorer/customers/preview` mengembalikan array berisi nol sampai lima customer dari demo company yang dipilih melalui `BC_COMPANY_ID`. Setiap baris memuat `id` (UUID), `number`, dan `displayName`. Jika company belum memiliki customer, hasilnya `200 []`.
 
-Backend memanggil `bc.customers.list(top=5)`. ID company yang kosong atau tidak valid menghasilkan `502 BC_CONFIG_ERROR`. Parameter query menghasilkan `422 INVALID_QUERY`. Error dari BC dipetakan mengikuti standar API backend.
+ID company yang kosong atau tidak valid menghasilkan `502 BC_CONFIG_ERROR`. Error dari BC dipetakan mengikuti standar API backend.
 
 ## Preview item
 
 Buka endpoint **items**, lalu pilih **Lihat contoh data**. Gunakan **Tabel** atau **JSON** untuk melihat hasil dan **Salin JSON** untuk menyalin respons.
 
-`GET /api/v1/api-explorer/items/preview` membaca maksimal lima item dari demo company yang dikonfigurasi melalui `BC_COMPANY_ID`. Setiap baris memuat `id`, `number`, dan `displayName`. Hasil kosong mengembalikan `200 []`. Route hanya menerima GET tanpa parameter query.
+`GET /api/v1/api-explorer/items/preview` membaca maksimal lima item dari demo company yang dikonfigurasi melalui `BC_COMPANY_ID`. Setiap baris memuat `id`, `number`, dan `displayName`. Hasil kosong mengembalikan `200 []`.
+
+Kedua preview menyediakan **Jumlah baris** dari 1 sampai 5 sebelum **Lihat contoh data**. Route GET menerima parameter opsional `limit` dengan default 5 dan meneruskannya sebagai `top` ke resource SDK. Nilai yang tidak valid, parameter ganda, atau parameter lain menghasilkan `422 INVALID_QUERY`. Untuk mengganti batas hasil yang sedang ditampilkan, pilih **Sembunyikan contoh data** terlebih dahulu.
 
 ## Contoh kode GET untuk customers dan items
 

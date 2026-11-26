@@ -40,6 +40,8 @@ _Terakhir diperbarui: 2026-11-25_
 
 - API Explorer menyediakan preview maksimal lima item dalam Tabel dan JSON. Uji sandbox menunggu verifikasi Irfan.
 
+- Preview `customers` dan `items` menerima pilihan 1–5 baris. Batas diteruskan ke SDK dan diuji dengan mock.
+
 ## Blocker dan pertanyaan terbuka
 | # | Pertanyaan | Pemilik | Dibutuhkan sebelum |
 |---|---|---|---|
