@@ -141,6 +141,71 @@ def test_number_filter_is_encoded_as_one_odata_literal() -> None:
     asyncio.run(run())
 
 
+def test_name_and_combined_filter_are_encoded_for_odata() -> None:
+    seen_filters: list[str] = []
+
+    def handle(request: httpx.Request) -> httpx.Response:
+        seen_filters.append(request.url.params["$filter"])
+        return httpx.Response(200, json={"value": []})
+
+    async def run() -> None:
+        async with _client(handle) as client:
+            await client.customers.list(name="Ada's Store")
+            await client.items.list(number="00'A", name="Ada's Store")
+
+    asyncio.run(run())
+    assert seen_filters == [
+        "contains(displayName,'Ada''s Store')",
+        "number eq '00''A' and contains(displayName,'Ada''s Store')",
+    ]
+
+
+def test_list_page_reads_odata_count_and_respects_top() -> None:
+    requests: list[httpx.Request] = []
+
+    def handle(request: httpx.Request) -> httpx.Response:
+        requests.append(request)
+        if len(requests) == 1:
+            assert request.url.params["$count"] == "true"
+            assert request.url.params["$top"] == "2"
+            return httpx.Response(
+                200,
+                json={
+                    "@odata.count": 12,
+                    "value": [{"id": _RECORD, "number": "1", "displayName": "One"}],
+                    "@odata.nextLink": "?$count=true&page=2",
+                },
+            )
+        if len(requests) == 2:
+            return httpx.Response(
+                200,
+                json={
+                    "value": [
+                        {"id": _RECORD, "number": "2", "displayName": "Two"},
+                        {"id": _RECORD, "number": "3", "displayName": "Three"},
+                    ],
+                    "@odata.nextLink": "?$count=true&page=3",
+                },
+            )
+        assert "$count" not in request.url.params
+        return httpx.Response(200, json={"value": [], "@odata.count": 99})
+
+    async def run() -> tuple[
+        tuple[list[Customer], int | None], tuple[list[Item], int | None]
+    ]:
+        async with _client(handle) as client:
+            with_count = await client.customers.list_page(top=2, include_count=True)
+            without_count = await client.items.list_page(include_count=False)
+            return with_count, without_count
+
+    (customers, total), (items, no_total) = asyncio.run(run())
+    assert [c.number for c in customers] == ["1", "2"]
+    assert total == 12
+    assert items == []
+    assert no_total is None
+    assert len(requests) == 3
+
+
 def test_rejects_invalid_scope_and_top_before_sending_a_request() -> None:
     def handle(_request: httpx.Request) -> httpx.Response:
         pytest.fail("Unexpected request")
@@ -157,6 +222,11 @@ def test_rejects_invalid_scope_and_top_before_sending_a_request() -> None:
                 await client.items.list(order_by="number asc,id desc")  # type: ignore[arg-type]
             with pytest.raises(BCRequestError, match="Invalid record number"):
                 await client.items.list(number="X" * 101)
+            for bad_name in ("", "   ", "X" * 101, "A\nB"):
+                with pytest.raises(BCRequestError, match="Invalid record name"):
+                    await client.customers.list(name=bad_name)
+            with pytest.raises(BCRequestError, match="Invalid include_count"):
+                await client.customers.list_page(include_count="true")  # type: ignore[arg-type]
             with pytest.raises(BCRequestError, match="Unsupported record fields"):
                 await client.customers.list(fields=[])
             with pytest.raises(BCRequestError, match="Unsupported record fields"):

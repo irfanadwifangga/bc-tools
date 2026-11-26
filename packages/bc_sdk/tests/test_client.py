@@ -100,6 +100,10 @@ def test_reads_data_for_the_configured_company() -> None:
         f"{_API}/items",
         f"{_API}/companies?Company={_COMPANY}",
         f"{_API}/companies?%24expand=customers",
+        f"{_API}/companies?%24count=false",
+        f"{_API}/companies?%24count=1",
+        f"{_API}/companies?%24count=",
+        f"{_API}/companies?%24count=true&%24count=true",
         f"{_API}/companies#fragment",
         f"{_API}/companies",
     ],
@@ -243,7 +247,15 @@ def test_maps_http_errors_without_following_redirect_or_exposing_body(
 
 
 @pytest.mark.parametrize(
-    "payload", ["bad", {"value": [1]}, {"value": [], "@odata.nextLink": 1}]
+    "payload",
+    [
+        "bad",
+        {"value": [1]},
+        {"value": [], "@odata.nextLink": 1},
+        {"value": [], "@odata.count": "1"},
+        {"value": [], "@odata.count": -1},
+        {"value": [], "@odata.count": True},
+    ],
 )
 def test_rejects_invalid_collection_shapes(payload: object) -> None:
     def handle(_request: httpx.Request) -> httpx.Response:
@@ -256,3 +268,16 @@ def test_rejects_invalid_collection_shapes(payload: object) -> None:
                     pytest.fail("Unexpected record")
 
     asyncio.run(run())
+
+
+def test_iter_pages_reads_valid_odata_count_with_count_param() -> None:
+    def handle(request: httpx.Request) -> httpx.Response:
+        assert request.url.params["$count"] == "true"
+        return httpx.Response(200, json={"value": [{"id": "one"}], "@odata.count": 42})
+
+    async def run() -> list[tuple[list[dict[str, object]], int | None]]:
+        async with _client(handle, _TokenProvider()) as client:
+            params = httpx.QueryParams({"$count": "true"})
+            return [page async for page in client._iter_pages("companies", params)]
+
+    assert asyncio.run(run()) == [([{"id": "one"}], 42)]

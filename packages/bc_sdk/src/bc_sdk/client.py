@@ -87,9 +87,11 @@ class BCClient:
         self.custom_metadata = Metadata(self._read_custom_metadata)
         self.companies = Companies(self._iter_records)
         self.customers = CompanyResource(
-            self._iter_records, company, "customers", Customer
+            self._iter_records, company, "customers", Customer, self._iter_pages
         )
-        self.items = CompanyResource(self._iter_records, company, "items", Item)
+        self.items = CompanyResource(
+            self._iter_records, company, "items", Item, self._iter_pages
+        )
 
     @classmethod
     def from_settings(cls, settings: BCSettings) -> Self:
@@ -163,11 +165,17 @@ class BCClient:
         if path == f"{self._base_path}$metadata" and url.query:
             raise BCRequestError("The metadata endpoint does not accept query options.")
 
-        for key in url.params:
-            if key.casefold() == "company" or (
-                path == f"{self._base_path}companies" and key.casefold() == "$expand"
+        seen_count = False
+        for key, value in url.params.multi_items():
+            lowered = key.casefold()
+            if lowered == "company" or (
+                path == f"{self._base_path}companies" and lowered == "$expand"
             ):
                 raise BCRequestError("The API query is outside the configured scope.")
+            if lowered == "$count":
+                if seen_count or value != "true":
+                    raise BCRequestError("Invalid $count query option.")
+                seen_count = True
 
     async def _request(self, method: str, url: httpx.URL) -> httpx.Response:
         if method != "GET":
@@ -237,9 +245,9 @@ class BCClient:
             raise BCRequestError("Business Central did not return a JSON object.")
         return body
 
-    async def _iter_records(
+    async def _iter_pages(
         self, path: str, params: httpx.QueryParams | None = None
-    ) -> AsyncIterator[dict[str, object]]:
+    ) -> AsyncIterator[tuple[list[dict[str, object]], int | None]]:
         current = self._initial_url(path, params)
         original_path = current.raw_path.partition(b"?")[0]
         visited: set[httpx.URL] = set()
@@ -253,8 +261,17 @@ class BCClient:
                 isinstance(record, dict) for record in records
             ):
                 raise BCRequestError("Business Central returned an invalid collection.")
-            for record in records:
-                yield record
+            raw_count = payload.get("@odata.count")
+            total_count: int | None = None
+            if raw_count is not None:
+                if (
+                    isinstance(raw_count, bool)
+                    or not isinstance(raw_count, int)
+                    or raw_count < 0
+                ):
+                    raise BCRequestError("Business Central returned an invalid count.")
+                total_count = raw_count
+            yield records, total_count
 
             next_link = payload.get("@odata.nextLink")
             if next_link is None:
@@ -271,3 +288,10 @@ class BCClient:
                 ) from None
             if current.raw_path.partition(b"?")[0] != original_path:
                 raise BCRequestError("The pagination link changed the API endpoint.")
+
+    async def _iter_records(
+        self, path: str, params: httpx.QueryParams | None = None
+    ) -> AsyncIterator[dict[str, object]]:
+        async for records, _ in self._iter_pages(path, params):
+            for record in records:
+                yield record

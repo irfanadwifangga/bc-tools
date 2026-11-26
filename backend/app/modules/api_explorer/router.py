@@ -12,14 +12,18 @@ from bc_sdk.errors import (
     BCRequestError,
 )
 from bc_sdk.metadata import MetadataEntity
+from bc_sdk.models import Customer, Item
 from bc_sdk.resources import (
+    MAX_RECORD_NAME_LENGTH,
     MAX_RECORD_NUMBER_LENGTH,
+    CompanyResource,
     RecordField,
     RecordOrder,
+    is_valid_record_name,
     is_valid_record_number,
     parse_record_fields,
 )
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Request, Response
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field, ValidationError
 
@@ -81,6 +85,16 @@ _PREVIEW_QUERY_SCHEMA = {
             },
         },
         {
+            "name": "name",
+            "in": "query",
+            "required": False,
+            "schema": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": MAX_RECORD_NAME_LENGTH,
+            },
+        },
+        {
             "name": "fields",
             "in": "query",
             "required": False,
@@ -88,6 +102,15 @@ _PREVIEW_QUERY_SCHEMA = {
                 "type": "string",
                 "minLength": 1,
                 "maxLength": 40,
+            },
+        },
+        {
+            "name": "count",
+            "in": "query",
+            "required": False,
+            "schema": {
+                "type": "boolean",
+                "default": False,
             },
         },
     ]
@@ -186,9 +209,19 @@ async def list_custom_entities(request: Request) -> list[MetadataEntity] | JSONR
 
 def _preview_query(
     request: Request,
-) -> tuple[int, RecordOrder | None, str | None, tuple[RecordField, ...] | None] | None:
+) -> (
+    tuple[
+        int,
+        RecordOrder | None,
+        str | None,
+        str | None,
+        tuple[RecordField, ...] | None,
+        bool,
+    ]
+    | None
+):
     params = request.query_params
-    if set(params) - {"limit", "order", "number", "fields"} or len(
+    if set(params) - {"limit", "order", "number", "name", "fields", "count"} or len(
         params.multi_items()
     ) != len(params):
         return None
@@ -199,35 +232,95 @@ def _preview_query(
     number = params.get("number")
     if number is not None and not is_valid_record_number(number):
         return None
+    name = params.get("name")
+    if name is not None and not is_valid_record_name(name):
+        return None
+    raw_count = params.get("count")
+    if raw_count is not None and raw_count not in {"true", "false"}:
+        return None
     raw_fields = params.get("fields")
     try:
         parsed_order = RecordOrder(order) if order is not None else None
         parsed_fields = (
             parse_record_fields(raw_fields) if raw_fields is not None else None
         )
-        return int(limit), parsed_order, number, parsed_fields
+        return (
+            int(limit),
+            parsed_order,
+            number,
+            name,
+            parsed_fields,
+            raw_count == "true",
+        )
     except ValueError:
         return None
 
 
-async def _sample_customers(
-    client: BCClient,
+async def _sample_preview[RecordT: (Customer, Item), PreviewT: _PreviewRecord](
+    resource: CompanyResource[RecordT],
+    preview_model: type[PreviewT],
     limit: int,
     order: RecordOrder | None,
     number: str | None,
+    name: str | None,
     fields: tuple[RecordField, ...] | None,
-) -> list[CustomerPreview]:
-    records = (
-        await client.customers.list(
+    include_count: bool,
+    response: Response,
+) -> list[PreviewT]:
+    total_count: int | None = None
+    if include_count:
+        records, total_count = await resource.list_page(
+            top=limit,
+            order_by=order,
+            number=number,
+            name=name,
+            fields=fields,
+            include_count=True,
+        )
+    elif name is None and fields is None:
+        records = await resource.list(top=limit, order_by=order, number=number)
+    elif name is None:
+        records = await resource.list(
             top=limit, order_by=order, number=number, fields=fields
         )
-        if fields is not None
-        else await client.customers.list(top=limit, order_by=order, number=number)
-    )
+    elif fields is None:
+        records = await resource.list(
+            top=limit, order_by=order, number=number, name=name
+        )
+    else:
+        records = await resource.list(
+            top=limit, order_by=order, number=number, name=name, fields=fields
+        )
+
+    if total_count is not None:
+        response.headers["X-Total-Count"] = str(total_count)
     return [
-        CustomerPreview(id=row.id, number=row.number, display_name=row.display_name)
+        preview_model(id=row.id, number=row.number, display_name=row.display_name)
         for row in records[:limit]
     ]
+
+
+async def _run_preview[RecordT: (Customer, Item), PreviewT: _PreviewRecord](
+    request: Request,
+    response: Response,
+    get_resource: Callable[[BCClient], CompanyResource[RecordT]],
+    preview_model: type[PreviewT],
+    label: str,
+) -> list[PreviewT] | JSONResponse:
+    query = _preview_query(request)
+    if query is None:
+        return _error(
+            422,
+            "INVALID_QUERY",
+            "Periksa jumlah baris, urutan, nomor, nama, field, atau hitungan yang dipilih.",
+        )
+    return await _read(
+        lambda client: _sample_preview(
+            get_resource(client), preview_model, *query, response
+        ),
+        label,
+        require_company=True,
+    )
 
 
 @router.get(
@@ -237,38 +330,17 @@ async def _sample_customers(
     responses=_ERROR_RESPONSES,
     openapi_extra=_PREVIEW_QUERY_SCHEMA,
 )
-async def preview_customers(request: Request) -> list[CustomerPreview] | JSONResponse:
+async def preview_customers(
+    request: Request, response: Response
+) -> list[CustomerPreview] | JSONResponse:
     """Read up to five customers from the configured demo company."""
-    query = _preview_query(request)
-    if query is None:
-        return _error(
-            422,
-            "INVALID_QUERY",
-            "Periksa jumlah baris, urutan, nomor, atau field yang dipilih.",
-        )
-    return await _read(
-        lambda client: _sample_customers(client, *query),
+    return await _run_preview(
+        request,
+        response,
+        lambda client: client.customers,
+        CustomerPreview,
         "data customer",
-        require_company=True,
     )
-
-
-async def _sample_items(
-    client: BCClient,
-    limit: int,
-    order: RecordOrder | None,
-    number: str | None,
-    fields: tuple[RecordField, ...] | None,
-) -> list[ItemPreview]:
-    records = (
-        await client.items.list(top=limit, order_by=order, number=number, fields=fields)
-        if fields is not None
-        else await client.items.list(top=limit, order_by=order, number=number)
-    )
-    return [
-        ItemPreview(id=row.id, number=row.number, display_name=row.display_name)
-        for row in records[:limit]
-    ]
 
 
 @router.get(
@@ -278,15 +350,10 @@ async def _sample_items(
     responses=_ERROR_RESPONSES,
     openapi_extra=_PREVIEW_QUERY_SCHEMA,
 )
-async def preview_items(request: Request) -> list[ItemPreview] | JSONResponse:
+async def preview_items(
+    request: Request, response: Response
+) -> list[ItemPreview] | JSONResponse:
     """Read up to five items from the configured demo company."""
-    query = _preview_query(request)
-    if query is None:
-        return _error(
-            422,
-            "INVALID_QUERY",
-            "Periksa jumlah baris, urutan, nomor, atau field yang dipilih.",
-        )
-    return await _read(
-        lambda client: _sample_items(client, *query), "data item", require_company=True
+    return await _run_preview(
+        request, response, lambda client: client.items, ItemPreview, "data item"
     )
