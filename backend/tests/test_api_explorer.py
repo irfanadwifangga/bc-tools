@@ -182,6 +182,13 @@ def test_preview_rejects_parameters_and_writes_before_sdk_creation(
             {"$top": 6},
             {"company_id": "other"},
             {"url": "https://example.invalid"},
+            {"limit": "0"},
+            {"limit": "6"},
+            {"limit": ""},
+            {"limit": "2.5"},
+            {"limit": "abc"},
+            {"limit": "2", "$top": "2"},
+            [("limit", "1"), ("limit", "2")],
         ):
             response = http.get(url, params=params)
             assert response.status_code == 422
@@ -206,3 +213,27 @@ def test_item_preview_contract(preview_config: None, count: int) -> None:
         client.items.list.assert_awaited_once_with(top=5)
     assert response.status_code == 200
     assert response.json() == rows[:5]
+
+
+@pytest.mark.parametrize(
+    ("endpoint", "model"), [("customers", Customer), ("items", Item)]
+)
+@pytest.mark.parametrize("limit", range(1, 6))
+def test_preview_applies_selected_limit(
+    preview_config: None, endpoint: str, model: type[Customer] | type[Item], limit: int
+) -> None:
+    rows = [
+        {"id": str(UUID(int=i + 1)), "number": f"D{i}", "displayName": f"Demo {i}"}
+        for i in range(6)
+    ]
+    with patch(_FACTORY) as factory, TestClient(app) as http:
+        resource = getattr(factory.return_value, endpoint)
+        resource.list = AsyncMock(
+            return_value=[model.model_validate(row) for row in rows]
+        )
+        response = http.get(
+            f"/api/v1/api-explorer/{endpoint}/preview", params={"limit": limit}
+        )
+        resource.list.assert_awaited_once_with(top=limit)
+    assert response.status_code == 200
+    assert response.json() == rows[:limit]

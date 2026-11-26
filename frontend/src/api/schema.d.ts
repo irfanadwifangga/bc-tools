@@ -216,7 +216,9 @@ export interface operations {
     };
     preview_customers_api_v1_api_explorer_customers_preview_get: {
         parameters: {
-            query?: never;
+            query?: {
+                limit?: number;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -272,7 +274,9 @@ export interface operations {
     };
     preview_items_api_v1_api_explorer_items_preview_get: {
         parameters: {
-            query?: never;
+            query?: {
+                limit?: number;
+            };
             header?: never;
             path?: never;
             cookie?: never;

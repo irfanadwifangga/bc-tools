@@ -15,16 +15,16 @@ export async function loadCatalog(signal: AbortSignal): Promise<CatalogEntity[]>
   return data;
 }
 
-export async function loadCustomerPreview(signal: AbortSignal, client = api): Promise<PreviewCustomer[]> {
-  const { data, error } = await client.GET("/api/v1/api-explorer/customers/preview", { signal });
+export async function loadCustomerPreview(signal: AbortSignal, limit?: number, client = api): Promise<PreviewCustomer[]> {
+  const { data, error } = await client.GET("/api/v1/api-explorer/customers/preview", { signal, params: { query: { limit } } });
   if (!Array.isArray(data)) {
     throw new Error(error?.error?.message || "Contoh data gagal dimuat.");
   }
   return data;
 }
 
-export async function loadItemPreview(signal: AbortSignal, client = api) {
-  const { data, error } = await client.GET("/api/v1/api-explorer/items/preview", { signal });
+export async function loadItemPreview(signal: AbortSignal, limit?: number, client = api) {
+  const { data, error } = await client.GET("/api/v1/api-explorer/items/preview", { signal, params: { query: { limit } } });
   if (!Array.isArray(data)) {
     throw new Error(error?.error?.message || "Contoh data gagal dimuat.");
   }
