@@ -25,7 +25,7 @@ Membantu BA dan administrator Business Central mengaudit siapa yang memiliki aks
 
 ## Sumber data BC (Automation API)
 
-[PERLU VERIFIKASI: Irfan memastikan endpoint Automation API `microsoft/automation/v2.0` (`permissionSets`, `userPermissionSets`, `expandedPermissionSets`, `accessControls`, `usersPermissions`) aktif di Sandbox dan dapat diakses dengan `D365 AUTOMATION` pada `BC-Sandbox-Latihan`, serta mencatat skema field aktual (ID objek, tipe objek, `readPermission`, `insertPermission`, `modifyPermission`, `deletePermission`, `executePermission`, `company`).]
+Irfan mengonfirmasi pada 2026-11-26 melalui integration test Sandbox (`DEMO COMPANY`, `D365 AUTOMATION`) bahwa `$metadata` `microsoft/automation/v2.0` mengembalikan 25 entity termasuk `users`, `permissionSets`, `userPermissionSets`, `expandedPermissionSets`, `accessControls`, `usersPermissions`, dan `userPermissions`, serta `permissionSets` mengembalikan field `id`, `appId`, `displayName`, `extensionName`, `scope`. [PERLU VERIFIKASI: skema field `$metadata` untuk `users`, `userPermissionSets`, `expandedPermissionSets`, `accessControls`, `usersPermissions`, dan `userPermissions` di Sandbox.]
 
 ## Batasan keamanan & arsitektur
 
@@ -37,9 +37,9 @@ Membantu BA dan administrator Business Central mengaudit siapa yang memiliki aks
 
 | # | Pertanyaan | Pemilik | Dibutuhkan sebelum |
 |---|---|---|---|
-| PA-1 | Konfirmasi hasil uji `D365 AUTOMATION` pada endpoint `microsoft/automation/v2.0` di Sandbox | Irfan | Implementasi `bc_sdk` Fase 3 |
-| PA-2 | Persetujuan [ADR-004](../decisions/ADR-004-automation-api-readonly.md) (`Proposed` -> `Accepted`) | Irfan | Implementasi `bc_sdk` Fase 3 |
-| PA-3 | Apakah **Permission Set** khusus user saja atau termasuk aplikasi Entra (`Microsoft Entra Applications`)? | Irfan | Implementasi backend Fase 3 |
+| PA-1 | Akses `D365 AUTOMATION` + 25 entity `microsoft/automation/v2.0` sudah lulus uji Sandbox; tinggal konfirmasi daftar field `$metadata` entity izin | Irfan | Implementasi backend Fase 3 |
+| PA-2 | Persetujuan [ADR-004](../decisions/ADR-004-automation-api-readonly.md) — **Disetujui (Opsi A)** pada 2026-11-26 | Irfan | Selesai |
+| PA-3 | Cakupan audit mencakup **User BC dan Aplikasi Entra** jika terekspos oleh endpoint `microsoft/automation/v2.0` (`D365 AUTOMATION` sudah ditambahkan di `BC-Sandbox-Latihan`) | Irfan | Implementasi backend Fase 3 |
 
 ## Acceptance criteria awal
 - [ ] `bc_sdk` mendukung pembacaan GET-only endpoint Automation API yang disetujui di ADR-004 dengan HTTP mock test

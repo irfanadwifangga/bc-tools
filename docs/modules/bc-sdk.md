@@ -39,6 +39,10 @@ Resource `customers` dan `items` juga menerima `fields` opsional dari enum `Reco
 
 Resource `customers` dan `items` juga menerima `name` opsional (1–100 karakter cetak, non-spasi) untuk menyusun `$filter=contains(displayName,'...')` (digabung `and` jika dipakai bersama `number`), serta `list_page(..., include_count=True)` untuk mengirim `$count=true` dan membaca `@odata.count`.
 
+## Automation API (Fase 3, read-only)
+
+Sesuai [ADR-004](../decisions/ADR-004-automation-api-readonly.md), `bc.automation` menyediakan akses GET-only ke allowlist endpoint `microsoft/automation/v2.0` (`$metadata`, `users`, `permissionSets`, `userPermissionSets`, `expandedPermissionSets`, `accessControls`, `usersPermissions`, `userPermissions`, `aggregatePermissionSets`). `list_metadata()` membaca katalog skema Automation API, sedangkan `list_records()` membaca record sesuai allowlist dengan paging `@odata.nextLink` dan batas `top` opsional.
+
 ## Katalog metadata (Fase 2)
 
 Jika `BCSettings.custom_api_route` terisi, `bc.custom_metadata.list_entities()` membaca `$metadata` dari satu kombinasi publisher, group, dan version pada host Business Central Sandbox yang dikonfigurasi. SDK membatasi permintaan custom ke path metadata tersebut.
