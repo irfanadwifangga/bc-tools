@@ -52,6 +52,8 @@ _Terakhir diperbarui: 2026-11-26_
 
 - API Explorer memakai komponen bersama `PageHeader` rata tengah dengan deskripsi, toolbar pencarian dengan filter sumber (`Semua`, `Standar`, `Custom`) dan toggle List/Grid di bawah kotak pencarian, kontrol `<Select>` Ant Design berikon di preview, serta modal detail split-pane (struktur field ber-filter & scroll mandiri di kiri, tab **Preview Data** dan **Contoh Kode GET** di kanan).
 
+- Preview dan contoh GET `customers` dan `items` mendukung pilihan **Field ($select)** dari `id`, `number`, dan `displayName` dengan validasi allowlist di SDK/backend (`422` untuk input tidak valid), kolom Tabel/JSON tersinkron, serta tes mock Python & frontend. Irfan memverifikasi `$select` parsial (`fields = ("id", "displayName")`) pada Sandbox `DEMO COMPANY` dan UI tombol/state (`Spin`, `Skeleton`, `Empty`, `Alert`).
+
 ## Blocker dan pertanyaan terbuka
 | # | Pertanyaan | Pemilik | Dibutuhkan sebelum |
 |---|---|---|---|

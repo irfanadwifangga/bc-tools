@@ -10,6 +10,15 @@ export function endpointKey(entity: CatalogEntity): string {
 export type PreviewCustomer = components["schemas"]["CustomerPreview"];
 export type PreviewQuery = NonNullable<paths["/api/v1/api-explorer/customers/preview"]["get"]["parameters"]["query"]>;
 export type PreviewOrder = NonNullable<PreviewQuery["order"]>;
+export const PREVIEW_FIELDS = ["id", "number", "displayName"] as const;
+export type PreviewField = (typeof PREVIEW_FIELDS)[number];
+
+export function selectedPreviewFields(fields?: string): PreviewField[] {
+  if (!fields) return [...PREVIEW_FIELDS];
+  const chosen = new Set(fields.split(","));
+  const result = PREVIEW_FIELDS.filter(field => chosen.has(field));
+  return result.length ? result : [...PREVIEW_FIELDS];
+}
 
 const api = createClient<paths>();
 

@@ -73,6 +73,9 @@ test("only customers and items offer copyable examples without loading previews"
     expect(html).toContain("Contoh Kode GET");
     expect(html).toContain(">Salin kode</span>");
     expect(html).toContain("Lihat contoh data");
+    expect(html).toContain("ant-btn-primary");
+    expect(html).toContain("anticon-eye");
+    expect(html).toContain("Field ($select)");
     expect(html).toContain("Jumlah baris");
     expect(html).toContain("Urutkan");
     expect(html).toContain("Nomor");
@@ -85,6 +88,17 @@ test("only customers and items offer copyable examples without loading previews"
   expect(vendorHtml).toContain("Struktur field");
   expect(vendorHtml).not.toContain("Preview Data");
   expect(vendorHtml).not.toContain("Contoh Kode GET");
+});
+
+test("selected fields update $select and object projection in both languages", () => {
+  const python = getCodeSample("customers", "Python", 2, undefined, undefined, ["number"]);
+  expect(python).toContain('fields = ("number",)');
+  expect(python).toContain('"$select": ",".join(fields)');
+  const csharp = getCodeSample("items", "C#", 2, undefined, undefined, ["id", "displayName"]);
+  expect(csharp).toContain("?$top=2&$select=id,displayName\"");
+  expect(csharp).toContain('id = row.GetProperty("id").GetString()');
+  expect(csharp).toContain('displayName = row.GetProperty("displayName").GetString()');
+  expect(csharp).not.toContain('GetProperty("number")');
 });
 
 test("PageHeader renders centered heading and optional description", () => {
