@@ -9,7 +9,7 @@ from pydantic.alias_generators import to_camel
 
 MAX_OBJECT_QUERY_LENGTH = 80
 MAX_OBJECT_MATCHES = 200
-_ROLE_FILTER_BATCH_SIZE = 15
+_ROLE_FILTER_BATCH_SIZE = 5
 OBJECT_TYPES = ("TableData", "Table", "Page", "Report", "Codeunit")
 ACCESS_FILTERS = ("any", "write", "read", "insert", "modify", "delete", "execute")
 DIFF_KINDS = ("user", "role")

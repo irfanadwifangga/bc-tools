@@ -40,7 +40,10 @@ def bc_error(status: int, code: str, message: str) -> JSONResponse:
 
 
 def make_bc_client(
-    *, require_company: bool, custom_api_route: str | None = None
+    *,
+    require_company: bool,
+    custom_api_route: str | None = None,
+    timeout: float = 10.0,
 ) -> BCClient:
     """Build a read-only BCClient from environment configuration."""
     settings = BCSettings.model_validate(
@@ -57,7 +60,7 @@ def make_bc_client(
         raise BCRequestError(
             "Configure the demo company ID before reading company data."
         )
-    return BCClient.from_settings(settings)
+    return BCClient.from_settings(settings, timeout=timeout)
 
 
 async def read_bc[T](
@@ -66,11 +69,14 @@ async def read_bc[T](
     *,
     require_company: bool = False,
     custom_api_route: str | None = None,
+    timeout: float = 10.0,
 ) -> T | JSONResponse:
     """Execute a read-only BC operation with standardized error mapping."""
     try:
         client = make_bc_client(
-            require_company=require_company, custom_api_route=custom_api_route
+            require_company=require_company,
+            custom_api_route=custom_api_route,
+            timeout=timeout,
         )
     except (ValidationError, BCError):
         return bc_error(

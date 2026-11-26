@@ -30,10 +30,11 @@ Irfan memverifikasi melalui integration test Sandbox (`DEMO COMPANY`, `D365 AUTO
 - `usersPermissions`: `id`, `userSecurityId`, `userName`, `fullName`, `state`, `expiryDate`, `windowsSecurityID`, `changePassword`, `licenseType`, `authenticationEmail`, `contactEmail`, `exchangeIdentifier`, `applicationId` (`Edm.Guid` — dipakai membedakan User BC vs Aplikasi Entra).
 - `permissionSets`: `scope`, `appId`, `id`, `displayName`, `extensionName`.
 - `accessControls`: `id`, `userSecurityId`, `roleId`, `roleName`, `company`, `userName`, `fullName`, `userLicenseType`, `scope`, `appId`, `appName` — dipakai sebagai sumber assignment role per user & company karena lolos query langsung (`company_scoped=True`).
-- `expandedPermissionSets`: `id`, `appId`, `appName`, `roleId`, `roleName`, `objectType`, `objectId` (`Edm.Int32`), `objectName`, `readPermission`, `insertPermission`, `modifyPermission`, `deletePermission`, `executePermission`, `alObjectName`, `scope`.
+- `expandedPermissionSets`: `id`, `appId`, `appName`, `roleId`, `roleName`, `objectType`, `objectId` (`Edm.Int32`), `objectName`, `readPermission`, `insertPermission`, `modifyPermission`, `deletePermission`, `executePermission`, `alObjectName`, `scope`. Uji Sandbox menunjukkan query berfilter `$filter` per role (`D365 READ`) mengembalikan `2.986` baris dalam `6.92s` dan query `objectId eq 18` (`top=20`) selesai dalam `0.38s`, sehingga rute `/objects` dan `/diff` memakai `timeout=45.0` detik dan batch `5` role.
+- `aggregatePermissionSets`: `id`, `appId`, `appName`, `name`, `roleId`, `scope` (terverifikasi `ok` dalam `0.25s`).
 - `userPermissionSets` & `userPermissions`: tersedia di `$metadata`, tetapi hasil uji Sandbox menunjukkan HTTP `400` jika diakses langsung pada `companies({id})/...` tanpa parent navigation, dan HTTP `404` di root tenant.
 
-[PERLU VERIFIKASI: performa query berfilter `$filter` pada `expandedPermissionSets` saat dipanggil dari UI pada Sandbox `DEMO COMPANY` (uji `Full-read` tanpa `$filter` mencatat `usersPermissions=16`, `accessControls=56`, `permissionSets=195`, sementara `expandedPermissionSets` tanpa `$filter` memicu timeout `BCServerError`).]
+[PERLU VERIFIKASI: tampilan & interaksi langsung 3 tab UI Permission Analyzer di browser terhadap backend lokal (`uvicorn` terbaru) pada Sandbox `DEMO COMPANY`.]
 
 ## Kontrak Endpoint Backend (`/api/v1/permission-analyzer`)
 

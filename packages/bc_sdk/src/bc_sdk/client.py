@@ -1,4 +1,5 @@
 import asyncio
+import math
 import re
 from collections.abc import AsyncIterator
 from datetime import UTC, datetime
@@ -57,9 +58,17 @@ class BCClient:
         company_id: str | None = None,
         custom_api_route: str | None = None,
         transport: httpx.AsyncBaseTransport | None = None,
+        timeout: float = 10.0,
     ) -> None:
         if environment.casefold() != "sandbox":
             raise BCRequestError("Only the Business Central Sandbox is supported.")
+        if (
+            isinstance(timeout, bool)
+            or not isinstance(timeout, (int, float))
+            or not math.isfinite(timeout)
+            or timeout <= 0
+        ):
+            raise BCRequestError("Timeout must be a positive finite number.")
         try:
             tenant = UUID(tenant_id)
             company = UUID(company_id) if company_id is not None else None
@@ -83,7 +92,10 @@ class BCClient:
         self._company_path = f"companies({company})/" if company is not None else None
         self._token_provider = token_provider
         self._http = httpx.AsyncClient(
-            timeout=10.0, follow_redirects=False, trust_env=False, transport=transport
+            timeout=float(timeout),
+            follow_redirects=False,
+            trust_env=False,
+            transport=transport,
         )
         self.metadata = Metadata(self._read_metadata)
         self.custom_metadata = Metadata(self._read_custom_metadata)
@@ -101,7 +113,7 @@ class BCClient:
         )
 
     @classmethod
-    def from_settings(cls, settings: BCSettings) -> Self:
+    def from_settings(cls, settings: BCSettings, *, timeout: float = 10.0) -> Self:
         """Construct a Sandbox client with app-only authentication."""
         tenant_id = str(settings.tenant_id)
         return cls(
@@ -111,6 +123,7 @@ class BCClient:
             if settings.company_id is not None
             else None,
             custom_api_route=settings.custom_api_route,
+            timeout=timeout,
             token_provider=MsalTokenProvider(
                 tenant_id=tenant_id,
                 client_id=str(settings.client_id),

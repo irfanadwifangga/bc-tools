@@ -130,6 +130,13 @@ def test_automation_supports_filter_expr_and_validates_it() -> None:
                 await client.automation.list_records(
                     "expandedPermissionSets", filter_expr="   "
                 )
+            with pytest.raises(BCRequestError, match="Timeout"):
+                BCClient(
+                    tenant_id=_TENANT,
+                    environment="Sandbox",
+                    token_provider=_TokenProvider(),
+                    timeout=0,
+                )
             return rows
 
     assert asyncio.run(run()) == [{"roleId": "D365 READ"}]

@@ -196,6 +196,7 @@ async def search_objects(
         lambda client: search_object_access(client, query),
         "akses objek",
         require_company=True,
+        timeout=45.0,
     )
 
 
@@ -221,6 +222,7 @@ async def diff_permissions(
             lambda client: get_permission_diff(client, query),
             "perbandingan izin",
             require_company=True,
+            timeout=45.0,
         )
     except PermissionTargetNotFoundError as exc:
         return bc_error(404, "BC_NOT_FOUND", str(exc))
