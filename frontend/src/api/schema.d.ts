@@ -84,6 +84,66 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/permission-analyzer/users": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Permission Users
+         * @description List users, Entra applications, permission set assignments, and companies.
+         */
+        get: operations["list_permission_users_api_v1_permission_analyzer_users_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/permission-analyzer/objects": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Search Objects
+         * @description Search who holds Read/Insert/Modify/Delete/Execute permissions on BC objects.
+         */
+        get: operations["search_objects_api_v1_permission_analyzer_objects_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/permission-analyzer/diff": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Diff Permissions
+         * @description Compare effective roles and object permissions between two users or permission sets.
+         */
+        get: operations["diff_permissions_api_v1_permission_analyzer_diff_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/health": {
         parameters: {
             query?: never;
@@ -113,6 +173,77 @@ export interface components {
             number?: string | null;
             /** Displayname */
             displayName?: string | null;
+        };
+        /** DiffObjectItem */
+        DiffObjectItem: {
+            /** Objecttype */
+            objectType: string;
+            /** Objectid */
+            objectId: number;
+            /** Objectname */
+            objectName: string;
+            /** Readpermission */
+            readPermission: string;
+            /** Insertpermission */
+            insertPermission: string;
+            /** Modifypermission */
+            modifyPermission: string;
+            /** Deletepermission */
+            deletePermission: string;
+            /** Executepermission */
+            executePermission: string;
+            /** Issensitive */
+            isSensitive: boolean;
+        };
+        /** DiffRoleItem */
+        DiffRoleItem: {
+            /** Roleid */
+            roleId: string;
+            /**
+             * Rolename
+             * @default
+             */
+            roleName: string;
+            /**
+             * Company
+             * @default
+             */
+            company: string;
+            /**
+             * Scope
+             * @default
+             */
+            scope: string;
+            /**
+             * Type
+             * @default
+             */
+            type: string;
+            /**
+             * Securitygroupcode
+             * @default
+             */
+            securityGroupCode: string;
+            /** Issensitive */
+            isSensitive: boolean;
+        };
+        /** DiffSection[DiffObjectItem] */
+        DiffSection_DiffObjectItem_: {
+            /** Onlyleft */
+            onlyLeft: components["schemas"]["DiffObjectItem"][];
+            /** Onlyright */
+            onlyRight: components["schemas"]["DiffObjectItem"][];
+            /** Same */
+            same: components["schemas"]["DiffObjectItem"][];
+        };
+        /** DiffSection[DiffRoleItem] */
+        DiffSection_DiffRoleItem_: {
+            /** Onlyleft */
+            onlyLeft: components["schemas"]["DiffRoleItem"][];
+            /** Onlyright */
+            onlyRight: components["schemas"]["DiffRoleItem"][];
+            /** Same */
+            same: components["schemas"]["DiffRoleItem"][];
         };
         /** ErrorDetail */
         ErrorDetail: {
@@ -162,6 +293,217 @@ export interface components {
             name: string;
             /** Type */
             type: string;
+        };
+        /** ObjectAccessHolder */
+        ObjectAccessHolder: {
+            /** Usersecurityid */
+            userSecurityId: string;
+            /** Username */
+            userName: string;
+            /**
+             * Fullname
+             * @default
+             */
+            fullName: string;
+            /**
+             * Principaltype
+             * @enum {string}
+             */
+            principalType: "user" | "application";
+            /**
+             * State
+             * @default
+             */
+            state: string;
+            /**
+             * Company
+             * @default
+             */
+            company: string;
+            /**
+             * Scope
+             * @default
+             */
+            scope: string;
+            /**
+             * Type
+             * @default
+             */
+            type: string;
+            /**
+             * Securitygroupcode
+             * @default
+             */
+            securityGroupCode: string;
+        };
+        /** ObjectAccessMatch */
+        ObjectAccessMatch: {
+            /** Objecttype */
+            objectType: string;
+            /** Objectid */
+            objectId: number;
+            /** Objectname */
+            objectName: string;
+            /**
+             * Alobjectname
+             * @default
+             */
+            alObjectName: string;
+            /** Roleid */
+            roleId: string;
+            /**
+             * Rolename
+             * @default
+             */
+            roleName: string;
+            /**
+             * Scope
+             * @default
+             */
+            scope: string;
+            /**
+             * Appname
+             * @default
+             */
+            appName: string;
+            /** Readpermission */
+            readPermission: string;
+            /** Insertpermission */
+            insertPermission: string;
+            /** Modifypermission */
+            modifyPermission: string;
+            /** Deletepermission */
+            deletePermission: string;
+            /** Executepermission */
+            executePermission: string;
+            /** Issensitive */
+            isSensitive: boolean;
+            /** Holders */
+            holders: components["schemas"]["ObjectAccessHolder"][];
+        };
+        /** ObjectAccessSearchResponse */
+        ObjectAccessSearchResponse: {
+            /** Totalmatches */
+            totalMatches: number;
+            /** Truncated */
+            truncated: boolean;
+            /** Matches */
+            matches: components["schemas"]["ObjectAccessMatch"][];
+        };
+        /** PermissionDiffResponse */
+        PermissionDiffResponse: {
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "user" | "role";
+            /** Leftlabel */
+            leftLabel: string;
+            /** Rightlabel */
+            rightLabel: string;
+            roleDiff: components["schemas"]["DiffSection_DiffRoleItem_"];
+            objectDiff: components["schemas"]["DiffSection_DiffObjectItem_"];
+        };
+        /** PermissionSetSummary */
+        PermissionSetSummary: {
+            /** Id */
+            id: string;
+            /**
+             * Displayname
+             * @default
+             */
+            displayName: string;
+            /**
+             * Scope
+             * @default
+             */
+            scope: string;
+            /** Appid */
+            appId?: string | null;
+            /**
+             * Extensionname
+             * @default
+             */
+            extensionName: string;
+        };
+        /** PermissionUsersResponse */
+        PermissionUsersResponse: {
+            /** Users */
+            users: components["schemas"]["UserPermissionSummary"][];
+            /** Permissionsets */
+            permissionSets: components["schemas"]["PermissionSetSummary"][];
+            /** Companies */
+            companies: string[];
+        };
+        /** UserPermissionSummary */
+        UserPermissionSummary: {
+            /** Usersecurityid */
+            userSecurityId: string;
+            /** Username */
+            userName: string;
+            /**
+             * Fullname
+             * @default
+             */
+            fullName: string;
+            /**
+             * State
+             * @default
+             */
+            state: string;
+            /**
+             * Licensetype
+             * @default
+             */
+            licenseType: string;
+            /** Applicationid */
+            applicationId?: string | null;
+            /**
+             * Principaltype
+             * @enum {string}
+             */
+            principalType: "user" | "application";
+            /** Issuper */
+            isSuper: boolean;
+            /** Assignments */
+            assignments: components["schemas"]["UserRoleAssignment"][];
+        };
+        /** UserRoleAssignment */
+        UserRoleAssignment: {
+            /** Roleid */
+            roleId: string;
+            /**
+             * Rolename
+             * @default
+             */
+            roleName: string;
+            /**
+             * Company
+             * @default
+             */
+            company: string;
+            /**
+             * Scope
+             * @default
+             */
+            scope: string;
+            /**
+             * Type
+             * @default
+             */
+            type: string;
+            /**
+             * Securitygroupcode
+             * @default
+             */
+            securityGroupCode: string;
+            /** Appid */
+            appId?: string | null;
+            /**
+             * Appname
+             * @default
+             */
+            appName: string;
         };
     };
     responses: never;
@@ -370,6 +712,183 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ItemPreview"][];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Bad Gateway */
+            502: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    list_permission_users_api_v1_permission_analyzer_users_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PermissionUsersResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Bad Gateway */
+            502: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    search_objects_api_v1_permission_analyzer_objects_get: {
+        parameters: {
+            query: {
+                query: string;
+                object_type?: "TableData" | "Table" | "Page" | "Report" | "Codeunit";
+                access?: "any" | "write" | "read" | "insert" | "modify" | "delete" | "execute";
+                company?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ObjectAccessSearchResponse"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Bad Gateway */
+            502: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    diff_permissions_api_v1_permission_analyzer_diff_get: {
+        parameters: {
+            query: {
+                kind: "user" | "role";
+                left: string;
+                right: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PermissionDiffResponse"];
                 };
             };
             /** @description Not Found */

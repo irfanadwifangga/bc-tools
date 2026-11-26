@@ -1,0 +1,99 @@
+.permission-analyzer.workspace-sheet {
+  max-width: 1120px;
+}
+
+.pa-filter-bar {
+  display: grid;
+  grid-template-columns: minmax(220px, 1.4fr) repeat(2, minmax(150px, 0.8fr)) auto;
+  gap: 12px;
+  align-items: end;
+  margin-block-end: 16px;
+}
+
+.pa-filter-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.pa-filter-field label,
+.pa-filter-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--workspace-muted);
+}
+
+.pa-switch-field {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 32px;
+}
+
+.pa-summary-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+  margin-block-end: 12px;
+  color: var(--workspace-muted);
+  font-size: 13px;
+}
+
+.pa-mono {
+  font-family: var(--workspace-record-font);
+}
+
+.pa-state-box {
+  padding: 28px 20px;
+  border: 1px solid var(--workspace-line);
+  border-radius: 6px;
+  text-align: center;
+}
+
+.pa-diff-controls {
+  display: grid;
+  grid-template-columns: minmax(170px, 0.8fr) repeat(2, minmax(220px, 1fr)) auto;
+  gap: 12px;
+  align-items: end;
+  margin-block-end: 18px;
+}
+
+.pa-diff-section + .pa-diff-section {
+  margin-block-start: 20px;
+}
+
+.pa-diff-section-title {
+  margin: 0 0 10px;
+  font-size: 14px;
+  font-weight: 650;
+  color: var(--workspace-muted);
+}
+
+.pa-perms-strip {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.pa-holders-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+@media (max-width: 900px) {
+  .pa-filter-bar,
+  .pa-diff-controls {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 560px) {
+  .pa-filter-bar,
+  .pa-diff-controls {
+    grid-template-columns: 1fr;
+  }
+}
