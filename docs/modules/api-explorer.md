@@ -50,6 +50,12 @@ Buka endpoint **customers**, lalu pilih **Lihat contoh data**. Tampilan awal **T
 
 Backend memanggil `bc.customers.list(top=5)`. ID company yang kosong atau tidak valid menghasilkan `502 BC_CONFIG_ERROR`. Parameter query menghasilkan `422 INVALID_QUERY`. Error dari BC dipetakan mengikuti standar API backend.
 
+## Preview item
+
+Buka endpoint **items**, lalu pilih **Lihat contoh data**. Gunakan **Tabel** atau **JSON** untuk melihat hasil dan **Salin JSON** untuk menyalin respons.
+
+`GET /api/v1/api-explorer/items/preview` membaca maksimal lima item dari demo company yang dikonfigurasi melalui `BC_COMPANY_ID`. Setiap baris memuat `id`, `number`, dan `displayName`. Hasil kosong mengembalikan `200 []`. Route hanya menerima GET tanpa parameter query.
+
 ## Contoh kode GET untuk customers
 
 Buka detail **customers**, pilih **Contoh kode GET**, lalu **Python** atau **C#**. Kata kunci, string, literal angka atau boolean, dan komentar dibedakan secara visual di tema terang dan gelap. **Salin kode** menyalin contoh dalam bahasa yang sedang ditampilkan. Membuka atau menyalin kode dilakukan lokal. Saat dijalankan, contoh mengambil token aplikasi, memeriksa nama company, lalu membaca maksimal lima customer dengan field `id`, `number`, dan `displayName`. Kedua contoh menampilkan array JSON, termasuk `[]` untuk hasil kosong.

@@ -16,9 +16,10 @@ export function JsonCode({ text }: { text: string }) {
   })}</code>;
 }
 
-export function CustomerPreviewData({ rows, format }: {
+export function CustomerPreviewData({ rows, format, resource = "customer" }: {
   rows: PreviewCustomer[];
   format: PreviewFormat;
+  resource?: "customer" | "item";
 }) {
   if (format === "JSON") {
     const text = JSON.stringify(rows, null, 2);
@@ -30,7 +31,7 @@ export function CustomerPreviewData({ rows, format }: {
   if (rows.length === 0) return null;
 
   return (
-    <table aria-label="Contoh data customer">
+    <table aria-label={`Contoh data ${resource}`}>
       <thead><tr><th scope="col">id</th><th scope="col">number</th><th scope="col">displayName</th></tr></thead>
       <tbody>{rows.map(row => (
         <tr key={row.id}><td>{row.id}</td><td>{row.number}</td><td>{row.displayName}</td></tr>

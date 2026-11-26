@@ -37,6 +37,15 @@ class CustomerPreview(BaseModel):
 
 _PREVIEW_LIMIT = 5
 CustomerPreviewList = Annotated[list[CustomerPreview], Field(max_length=_PREVIEW_LIMIT)]
+
+
+class ItemPreview(BaseModel):
+    id: UUID
+    number: str
+    display_name: str = Field(serialization_alias="displayName")
+
+
+ItemPreviewList = Annotated[list[ItemPreview], Field(max_length=_PREVIEW_LIMIT)]
 _ERROR_RESPONSES: dict[int | str, dict[str, object]] = {
     status: {"model": ErrorResponse} for status in (404, 422, 429, 502)
 }
@@ -118,3 +127,23 @@ async def preview_customers(request: Request) -> list[CustomerPreview] | JSONRes
             422, "INVALID_QUERY", "Preview customers tidak menerima parameter query."
         )
     return await _read(_sample_customers, "data customer", require_company=True)
+
+
+async def _sample_items(client: BCClient) -> list[ItemPreview]:
+    records = await client.items.list(top=_PREVIEW_LIMIT)
+    return [
+        ItemPreview(id=row.id, number=row.number, display_name=row.display_name)
+        for row in records[:_PREVIEW_LIMIT]
+    ]
+
+
+@router.get(
+    "/items/preview", response_model=ItemPreviewList, responses=_ERROR_RESPONSES
+)
+async def preview_items(request: Request) -> list[ItemPreview] | JSONResponse:
+    """Read up to five items from the configured demo company."""
+    if request.query_params:
+        return _error(
+            422, "INVALID_QUERY", "Preview items tidak menerima parameter query."
+        )
+    return await _read(_sample_items, "data item", require_company=True)

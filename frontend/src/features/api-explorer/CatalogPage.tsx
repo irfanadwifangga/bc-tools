@@ -50,6 +50,7 @@ export function EndpointRow({ entity, open, query, onSelect }: {
             <CustomerPreview />
             <CustomerCodeSamples />
           </>}
+          {entity.name === "items" && <CustomerPreview resource="item" />}
           {entity.fields.length ? (
             <table aria-label={`Field ${entity.name}`}>
               <thead><tr><th scope="col">Field</th><th scope="col">Tipe</th></tr></thead>
