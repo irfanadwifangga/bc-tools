@@ -44,7 +44,7 @@ API Explorer menandai sumber setiap endpoint sebagai **Standar** atau **Custom**
 
 Endpoint dikelompokkan menurut huruf awal nama dan diurutkan A–Z tanpa membedakan huruf besar dan kecil. Grup `#` menampung nama dengan karakter awal di luar A–Z. Saat mencari nama endpoint atau field, hanya grup yang memiliki hasil yang tampil.
 
-Jalankan backend dengan perintah di atas, lalu jalankan `bun run dev` dari `frontend/`. Pilih **API Explorer** di navigasi. Pencarian mencocokkan sebagian nama endpoint atau nama field dari katalog yang sudah dimuat, dengan tombol hapus cepat di kotak pencarian serta baris filter sumber (**Semua**, **Standar**, dan **Custom**) dan tampilan (**List**, **Grid**) tepat di bawah kotak pencarian. Misalnya, `postalCode` menampilkan setiap endpoint yang memiliki field dengan nama tersebut. Teks yang cocok disorot. Saat endpoint belum dipilih, nama field pertama yang cocok tampil di samping nama endpoint. Pilih endpoint untuk membuka modal detail dengan panel **Struktur field** (dilengkapi pencarian field lokal dan scroll mandiri) serta panel kanan bertab **Preview Data** dan **Contoh Kode GET** (untuk `customers` dan `items` standar) agar kedua bagian tampil berdampingan tanpa scroll panjang. Tombol **Coba lagi** memuat ulang katalog setelah terjadi kesalahan.
+Jalankan backend dengan perintah di atas, lalu jalankan `bun run dev` dari `frontend/`. Pilih **API Explorer** di navigasi. Pencarian mencocokkan sebagian nama endpoint atau nama field dari katalog yang sudah dimuat, dengan tombol hapus cepat di kotak pencarian serta baris filter sumber (**Semua**, **Standar**, dan **Custom**) dan tampilan (**List**, **Grid**) tepat di bawah kotak pencarian. Misalnya, `postalCode` menampilkan setiap endpoint yang memiliki field dengan nama tersebut. Teks yang cocok disorot. Saat endpoint belum dipilih, nama field pertama yang cocok tampil di samping nama endpoint. Pilih endpoint untuk membuka modal detail dengan panel **Struktur field** (dilengkapi pencarian field lokal dan scroll mandiri) serta panel kanan **Contoh Kode GET** (atau bertab **Preview Data** dan **Contoh Kode GET** untuk `customers` dan `items` standar) agar kedua bagian tampil berdampingan tanpa scroll panjang. Tombol **Coba lagi** memuat ulang katalog setelah terjadi kesalahan.
 
 Vite meneruskan request katalog dan preview customer ke backend lokal pada port 8000. Jika skema backend berubah, jalankan `bun run api:types` dari frontend saat backend aktif, lalu periksa perubahan tipe dengan `bun run typecheck`.
 
@@ -64,28 +64,26 @@ Buka endpoint **items**, lalu pilih **Lihat contoh data**. Gunakan **Tabel** ata
 
 Kedua preview menyediakan **Jumlah baris** dari 1 sampai 5 sebelum **Lihat contoh data**. Route GET menerima parameter opsional `limit` dengan default 5 dan meneruskannya sebagai `top` ke resource SDK. Nilai yang tidak valid, parameter ganda, atau parameter lain menghasilkan `422 INVALID_QUERY`. Untuk mengganti batas hasil yang sedang ditampilkan, pilih **Sembunyikan contoh data** terlebih dahulu.
 
-Isi **Nomor** untuk meminta kecocokan pada field `number`. Nomor dapat berisi hingga 100 karakter cetak. Jika kolom dikosongkan, preview memuat hasil tanpa filter. Nomor yang tidak ditemukan menghasilkan `200 []`. API menerima parameter `number` dan SDK membentuk ekspresi OData `number eq`. Contoh Python dan C# mengikuti nomor yang dimasukkan.
+Isi **Nomor** untuk meminta kecocokan pada field `number`, atau **Nama** untuk pencarian substring `displayName` (`contains(displayName,'...')`). Keduanya dapat berisi hingga 100 karakter cetak. Jika kolom dikosongkan, preview memuat hasil tanpa filter tersebut. Nomor atau nama yang tidak ditemukan menghasilkan `200 []`. Aktifkan **Jumlah total ($count)** untuk mengirim `count=true` ke backend, mengambil `@odata.count` via `bc_sdk`, dan menampilkan total baris cocok dari header `X-Total-Count`. Contoh Python dan C# mengikuti filter serta `$count` yang dipilih.
 
-## Contoh kode GET untuk customers dan items
+## Contoh kode GET untuk seluruh endpoint
 
-Pilih **Urutkan** sebelum memuat preview. Opsi **Urutan BC** memakai urutan bawaan. Pilihan nomor atau nama diteruskan sebagai `order` ke route preview, lalu sebagai `$orderby` ke BC bersama `$top`. Nilai yang diizinkan adalah `number asc`, `number desc`, `displayName asc`, dan `displayName desc`. Contoh Python dan C# mengikuti pilihan itu.
+Untuk `customers` dan `items` standar, **Urutkan**, **Jumlah baris**, **Field ($select)**, **Nomor**, **Nama**, dan **Jumlah total ($count)** langsung disinkronkan ke contoh Python dan C#. Untuk endpoint standar lain serta custom API, tab/panel **Contoh Kode GET** otomatis menyertakan maksimal lima field awal dari metadata endpoint (`$select`, `$top=5`); khusus `companies` memakai path `/api/v2.0/companies`, sedangkan custom API membaca `BC_CUSTOM_API_ROUTE` dari environment lokal.
 
-Nilai `$top` pada contoh Python dan C# mengikuti pilihan **Jumlah baris**. Pilihan **Field ($select)** (`id`, `number`, `displayName`, minimal satu aktif) meneruskan parameter `fields` ke route preview dan menyaring kolom Tabel, JSON, serta `$select` pada contoh Python dan C#. Nilai `fields` tidak valid atau duplikat menghasilkan `422 INVALID_QUERY`. Tombol **Salin kode** menyalin contoh dengan nilai yang sedang ditampilkan.
+Buka detail endpoint mana pun, pilih **Contoh Kode GET**, lalu **Python** atau **C#**. Kata kunci, string, literal angka atau boolean, dan komentar dibedakan secara visual di tema terang dan gelap. **Salin kode** menyalin contoh dalam bahasa yang sedang ditampilkan. Membuka atau menyalin kode dilakukan lokal.
 
-Buka detail **customers** atau **items**, pilih **Contoh kode GET**, lalu **Python** atau **C#**. Kata kunci, string, literal angka atau boolean, dan komentar dibedakan secara visual di tema terang dan gelap. **Salin kode** menyalin contoh dalam bahasa yang sedang ditampilkan. Membuka atau menyalin kode dilakukan lokal. Saat dijalankan, contoh mengambil token aplikasi, memeriksa nama company, lalu membaca maksimal lima baris dari endpoint yang dipilih dengan field `id`, `number`, dan `displayName`. Kedua bahasa menampilkan array JSON, termasuk `[]` untuk hasil kosong.
-
-Python memerlukan `msal` untuk token dan `httpx` untuk GET. Simpan sebagai `customers.py`, lalu jalankan `uv run --with msal --with httpx --env-file .env python customers.py` dari folder dengan konfigurasi sandbox. Untuk C#, salin ke `Program.cs` pada proyek console .NET, jalankan `dotnet add package Microsoft.Identity.Client` di proyek contoh untuk autentikasi MSAL.NET, lalu `dotnet run` dengan environment proses yang sudah dikonfigurasi. Kedua contoh membaca `BC_TENANT_ID`, `BC_CLIENT_ID`, `BC_CLIENT_SECRET`, dan `BC_COMPANY_ID`. Jika diberikan, `BC_ENVIRONMENT` harus bernilai `Sandbox` (kapitalisasi bebas).
+Python memerlukan `msal` untuk token dan `httpx` untuk GET. Simpan sebagai script Python, lalu jalankan `uv run --with msal --with httpx --env-file .env python sample.py` dari folder dengan konfigurasi sandbox. Untuk C#, salin ke `Program.cs` pada proyek console .NET, jalankan `dotnet add package Microsoft.Identity.Client` di proyek contoh untuk autentikasi MSAL.NET, lalu `dotnet run` dengan environment proses yang sudah dikonfigurasi. Kedua contoh membaca `BC_TENANT_ID`, `BC_CLIENT_ID`, `BC_CLIENT_SECRET`, dan `BC_COMPANY_ID` (serta `BC_CUSTOM_API_ROUTE` untuk custom API). Jika diberikan, `BC_ENVIRONMENT` harus bernilai `Sandbox` (kapitalisasi bebas).
 
 ## Aturan keamanan
 Hanya GET; path allowlist; tanpa URL penuh dari klien; `$top` dibatasi. Lihat `docs/standards/api.md`.
 
 ## Acceptance criteria
-- [ ] Daftar endpoint BC tampil (standard dan custom API yang terdeteksi)
-- [ ] Metadata entity/field tampil
-- [ ] GET request berjalan dan JSON tampil
-- [ ] Generate sample Python (httpx + MSAL, mandiri tanpa `bc_sdk`) dan C# (`HttpClient` + MSAL.NET)
-- [ ] Copy-to-clipboard
-- [ ] Aturan keamanan di atas ditegakkan dan dites (termasuk percobaan non-GET dan path di luar allowlist)
+- [x] Daftar endpoint BC tampil (standard dan custom API yang terdeteksi)
+- [x] Metadata entity/field tampil
+- [x] GET request berjalan dan JSON tampil (untuk `customers` & `items` di Sandbox)
+- [x] Generate sample Python (httpx + MSAL, mandiri tanpa `bc_sdk`) dan C# (`HttpClient` + MSAL.NET)
+- [x] Copy-to-clipboard
+- [x] Aturan keamanan di atas ditegakkan dan dites (termasuk percobaan non-GET dan path di luar allowlist)
 
 ## Definition of Done
 Pengguna menemukan endpoint BC dan menghasilkan sample code tanpa Postman.

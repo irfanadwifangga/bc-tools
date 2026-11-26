@@ -54,6 +54,8 @@ _Terakhir diperbarui: 2026-11-26_
 
 - Preview dan contoh GET `customers` dan `items` mendukung pilihan **Field ($select)** dari `id`, `number`, dan `displayName` dengan validasi allowlist di SDK/backend (`422` untuk input tidak valid), kolom Tabel/JSON tersinkron, serta tes mock Python & frontend. Irfan memverifikasi `$select` parsial (`fields = ("id", "displayName")`) pada Sandbox `DEMO COMPANY` dan UI tombol/state (`Spin`, `Skeleton`, `Empty`, `Alert`).
 
+- Preview dan contoh GET `customers` & `items` ditambah filter `name` (`contains(displayName,'...')`) dan opsi `$count` (`X-Total-Count`), panel **Contoh Kode GET** diperluas ke seluruh endpoint standar dan custom API, `.env.example` diperbarui dengan `# BC_CUSTOM_API_ROUTE=`, modal layar sempit dirapikan, dan bundle frontend di-split di `vite.config.ts`. Irfan memverifikasi `$count` (`5 ditampilkan dari 12 total`) pada `customers` dan generator kode `countriesRegions` di Sandbox; uji Sandbox filter `name` dan eksekusi script generik tetap menunggu verifikasi.
+
 ## Blocker dan pertanyaan terbuka
 | # | Pertanyaan | Pemilik | Dibutuhkan sebelum |
 |---|---|---|---|

@@ -8,11 +8,7 @@ export function endpointKey(entity: CatalogEntity): string {
 }
 
 export type PreviewCustomer = components["schemas"]["CustomerPreview"];
-type BasePreviewQuery = NonNullable<paths["/api/v1/api-explorer/customers/preview"]["get"]["parameters"]["query"]>;
-export type PreviewQuery = BasePreviewQuery & {
-  name?: string;
-  count?: boolean;
-};
+export type PreviewQuery = NonNullable<paths["/api/v1/api-explorer/customers/preview"]["get"]["parameters"]["query"]>;
 export type PreviewOrder = NonNullable<PreviewQuery["order"]>;
 export const PREVIEW_FIELDS = ["id", "number", "displayName"] as const;
 export type PreviewField = (typeof PREVIEW_FIELDS)[number];
