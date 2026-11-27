@@ -161,6 +161,7 @@ test("ChangeAnalyzerPage renders loading, error, diff table, and WorkspaceLayout
   expect(loadingHtml).toContain("Panduan Penggunaan");
   expect(loadingHtml).toContain("Tutorial Step-by-Step");
   expect(loadingHtml).toContain("Coba Contoh Simulasi (v28 → v29)");
+  expect(loadingHtml).toContain("Reset");
   expect(loadingHtml).toContain("Mengambil snapshot $metadata dari Sandbox");
 
   const errorHtml = renderToStaticMarkup(

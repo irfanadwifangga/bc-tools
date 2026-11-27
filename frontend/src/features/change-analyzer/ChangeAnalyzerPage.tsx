@@ -6,6 +6,7 @@ import {
   DiffOutlined,
   DownloadOutlined,
   QuestionCircleOutlined,
+  ReloadOutlined,
   UploadOutlined,
 } from "@ant-design/icons";
 import {
@@ -313,6 +314,35 @@ export function ChangeAnalyzerPage({
     setTarget(DEMO_TARGET);
   }
 
+  const hasState = Boolean(
+    baseline ||
+      target ||
+      baselineText ||
+      targetText ||
+      parseError ||
+      liveState.status !== "idle" ||
+      search ||
+      sourceFilter !== "all" ||
+      onlyBreaking,
+  );
+
+  function resetAll() {
+    requestRef.current?.abort();
+    if (baselineFileRef.current) baselineFileRef.current.value = "";
+    if (targetFileRef.current) targetFileRef.current.value = "";
+    setLiveState({ status: "idle" });
+    setBaseline(null);
+    setTarget(null);
+    setBaselineText("");
+    setTargetText("");
+    setParseError(null);
+    setSearch("");
+    setSourceFilter("all");
+    setOnlyBreaking(false);
+    setCopied(false);
+    setTourOpen(false);
+  }
+
   function startTour() {
     setGuideOpen(false);
     if (!baseline && !target) {
@@ -431,6 +461,14 @@ export function ChangeAnalyzerPage({
         </Button>
         <Button size="small" onClick={loadDemoSimulation}>
           Coba Contoh Simulasi (v28 → v29)
+        </Button>
+        <Button
+          size="small"
+          icon={<ReloadOutlined aria-hidden="true" />}
+          disabled={!hasState}
+          onClick={resetAll}
+        >
+          Reset
         </Button>
       </div>
 
