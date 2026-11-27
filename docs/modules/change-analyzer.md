@@ -1,6 +1,6 @@
 # Modul: Change Analyzer (B-12)
 
-- **Fase:** 3 (Pasca-MVP) · **Status:** Implementasi Slice 1 (API Schema Snapshot & Diff)
+- **Fase:** 3 (Pasca-MVP) · **Status:** Selesai — API Schema Snapshot & Diff terverifikasi live di Sandbox (`DEMO COMPANY`)
 - **Lokasi:** `backend/app/modules/change_analyzer/` + `frontend/src/features/change-analyzer/`
 
 ## Tujuan
@@ -34,7 +34,7 @@ Membantu developer dan BA Business Central mendeteksi perubahan kontrak API (`$m
 ## Acceptance criteria
 - [x] `GET /api/v1/change-analyzer/snapshot` mengembalikan snapshot `$metadata` deterministik via `bc_sdk` dengan validasi query (`422`) dan unit test mock
 - [x] Frontend dapat mengambil/mengunduh snapshot JSON, membandingkan dua snapshot atau terhadap Live Sandbox, dan menandai *breaking change* vs penambahan
-- [x] `ruff`, `mypy`, `pytest`, `bun test`, `tsc`, dan `vite build` lulus (dengan HTTP/client mock); verifikasi live Sandbox menunggu uji manual Irfan di `STATUS.md`
+- [x] `ruff`, `mypy`, `pytest`, `bun test`, `tsc`, dan `vite build` lulus (dengan HTTP/client mock); simulasi/Tour/Reset dan snapshot live Sandbox (`DEMO COMPANY`) terverifikasi oleh Irfan pada 2026-11-27 dan terdokumentasi di `STATUS.md`
 
 ## Definition of Done
 Developer BC dapat menyimpan baseline kontrak `$metadata` dan langsung melihat endpoint/field mana yang *breaking* atau bertambah setelah upgrade BC maupun deploy Custom API.
