@@ -5,34 +5,58 @@ Dibangun modular, reusable, dan terdokumentasi. **AI adalah capability tambahan 
 
 ## Status
 
-Fase 0 (fondasi dan keputusan). Lihat [`docs/status/STATUS.md`](docs/status/STATUS.md).
+**`v0.3.0`** — MVP (Fase 0–2) dan **Permission Analyzer** (`B-11`) selesai serta terverifikasi di Sandbox `DEMO COMPANY`. Lihat [`docs/status/STATUS.md`](docs/status/STATUS.md).
 
-## Mode MVP
+## Mode Operasi
 
-Lokal, single-user, read-only, sandbox demo company. Tanpa login portal.
+Lokal (`127.0.0.1`), single-user, read-only (GET-only terhadap BC Sandbox demo company), tanpa login portal.
 
-## Modul MVP
+## Modul Tersedia
 
-| Modul | Status | Spesifikasi |
-|---|---|---|
-| `bc_sdk` | Direncanakan (Fase 1) | [bc-sdk.md](docs/modules/bc-sdk.md) |
-| API Explorer | Direncanakan (Fase 2) | [api-explorer.md](docs/modules/api-explorer.md) |
+| Modul | Status | Ringkasan | Spesifikasi |
+|---|---|---|---|
+| `bc_sdk` | Selesai (`v0.3.0`) | Client async GET-only (MSAL, `v2.0`, custom `$metadata`, `automation/v2.0`) | [bc-sdk.md](docs/modules/bc-sdk.md) |
+| Ringkasan | Selesai (`v0.2.0`) | Status backend lokal, jumlah endpoint Standar/Custom, Customer & Item | [STATUS.md](docs/status/STATUS.md) |
+| API Explorer | Selesai (`v0.2.0`) | Katalog `$metadata` standar & custom, preview Tabel/JSON, contoh kode Python/C# | [api-explorer.md](docs/modules/api-explorer.md) |
+| Permission Analyzer | Selesai (`v0.3.0`) | Audit user & aplikasi Entra, cari akses objek, dan diff user/permission set | [permission-analyzer.md](docs/modules/permission-analyzer.md) |
 
 ## Struktur
 
 ```
 bc-tools/
-├── AGENTS.md              # instruksi AI agent
+├── AGENTS.md              # instruksi AI agent & aturan kerja
 ├── backend/               # FastAPI (modular monolith)
-├── packages/bc_sdk/       # SDK BC mandiri (auth, client, resources, errors)
-├── frontend/              # React + Vite + TS + Ant Design (Fase 1+)
-├── infra/                 # script bantu (docker menyusul setelah ada pengguna kedua)
+├── packages/bc_sdk/       # SDK BC mandiri (auth, client, resources, automation, errors)
+├── frontend/              # React + Vite + TS + Ant Design
+├── infra/                 # script bantu
+├── scripts/               # launcher/utility lokal
 ├── docs/                  # dokumentasi (lihat docs/README.md)
 └── data/                  # data lokal (di-gitignore)
 ```
 
-## Mulai (Fase 0)
+## Menjalankan Lokal
 
-1. Baca [`AGENTS.md`](AGENTS.md) dan [instruksi Fase 0](docs/tasks/phase-0.md).
-2. Jalankan `uv sync --locked --all-packages` dari root repo dengan Python 3.12.
-3. Ikuti [runbook](docs/runbook.md) untuk pemeriksaan lokal. Setup Fase 0 tidak memerlukan konfigurasi BC.
+Prasyarat: Windows/PowerShell, Python 3.12 (`uv`), dan `bun`.
+
+1. Salin `.env.example` ke `.env` lalu isi kredensial Sandbox (`BC_TENANT_ID`, `BC_CLIENT_ID`, `BC_CLIENT_SECRET`, `BC_ENVIRONMENT=Sandbox`, `BC_COMPANY_ID`, opsional `BC_CUSTOM_API_ROUTE`).
+2. Install dependensi dari root repo dan `frontend/`:
+   ```powershell
+   uv sync --locked --all-packages
+   cd frontend; bun install
+   ```
+3. Jalankan backend (dari root repo):
+   ```powershell
+   uv run --locked --all-packages --env-file .env uvicorn backend.app.main:app --host 127.0.0.1
+   ```
+4. Jalankan frontend (terminal terpisah, dari `frontend/`):
+   ```powershell
+   bun run dev
+   ```
+5. Jalankan pemeriksaan & unit test (tanpa akses BC; lihat [runbook](docs/runbook.md) untuk integration test):
+   ```powershell
+   uv run --locked --all-packages ruff check .
+   uv run --locked --all-packages ruff format --check .
+   uv run --locked --all-packages mypy
+   uv run --locked --all-packages pytest -q
+   cd frontend; bun test; bun run typecheck; bun run build
+   ```
