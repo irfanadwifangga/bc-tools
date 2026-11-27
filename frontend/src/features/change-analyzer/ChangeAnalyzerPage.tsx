@@ -66,6 +66,58 @@ const SOURCE_LABELS: Record<SnapshotSource, string> = {
   automation: "Automation",
 };
 
+const DEMO_BASELINE: SchemaSnapshot = {
+  schemaVersion: 1,
+  capturedAt: "2026-11-26T09:00:00Z",
+  environment: "Sandbox",
+  customApiRoute: "ptmis/demo/v1.0",
+  sources: ["standard", "custom"],
+  endpoints: [
+    {
+      source: "standard",
+      name: "customers",
+      entityType: "Microsoft.NAV.customer",
+      fields: [
+        { name: "id", type: "Edm.Guid" },
+        { name: "number", type: "Edm.String" },
+        { name: "legacyTaxCode", type: "Edm.String" },
+      ],
+    },
+    {
+      source: "standard",
+      name: "salesQuoteLines",
+      entityType: "Microsoft.NAV.salesQuoteLine",
+      fields: [{ name: "id", type: "Edm.Guid" }],
+    },
+  ],
+};
+
+const DEMO_TARGET: SchemaSnapshot = {
+  schemaVersion: 1,
+  capturedAt: "2026-11-27T12:00:00Z",
+  environment: "Sandbox",
+  customApiRoute: "ptmis/demo/v1.0",
+  sources: ["standard", "custom"],
+  endpoints: [
+    {
+      source: "standard",
+      name: "customers",
+      entityType: "Microsoft.NAV.customer",
+      fields: [
+        { name: "id", type: "Edm.Guid" },
+        { name: "number", type: "Edm.Int32" },
+        { name: "taxRegistrationNo", type: "Edm.String" },
+      ],
+    },
+    {
+      source: "custom",
+      name: "demoOrders",
+      entityType: "Microsoft.NAV.demoOrder",
+      fields: [{ name: "id", type: "Edm.Guid" }],
+    },
+  ],
+};
+
 function snapshotMetaLabel(snapshot: SchemaSnapshot, fallback: string): string {
   const when = snapshot.capturedAt ? snapshot.capturedAt.slice(0, 19).replace("T", " ") : fallback;
   return `${snapshot.endpoints.length} endpoint · ${when}`;
@@ -239,6 +291,15 @@ export function ChangeAnalyzerPage({
     setTimeout(() => setCopied(false), 2000);
   }
 
+  function loadDemoSimulation() {
+    setParseError(null);
+    setSearch("");
+    setSourceFilter("all");
+    setOnlyBreaking(false);
+    setBaseline(DEMO_BASELINE);
+    setTarget(DEMO_TARGET);
+  }
+
   const columns: ColumnsType<EndpointChange> = [
     {
       title: "Endpoint",
@@ -287,6 +348,37 @@ export function ChangeAnalyzerPage({
         title="Change Analyzer"
         description="Bandingkan perubahan kontrak API ($metadata) Sandbox antar snapshot (mis. BC v28 → v29 atau deploy Custom API) untuk mendeteksi breaking change."
         titleId="change-analyzer-title"
+      />
+
+      <Alert
+        type="info"
+        showIcon
+        className="ca-guide-alert"
+        message="Cara pakai & simulasi cepat"
+        description={
+          <div className="ca-guide-body">
+            <ol className="ca-guide-list">
+              <li>
+                <strong>Sebelum update BC / deploy Custom API:</strong> klik{" "}
+                <strong>Unduh Baseline JSON</strong> untuk menyimpan skema awal.
+              </li>
+              <li>
+                <strong>Setelah update:</strong> unggah file Baseline di kiri, lalu klik{" "}
+                <strong>Ambil Live ke Target</strong> di kanan (atau unggah JSON kedua).
+              </li>
+              <li>
+                <strong>Baca hasil:</strong> tag merah <strong>Breaking</strong> menandakan
+                endpoint/field dihapus atau tipe <code>Edm.*</code> berubah; klik tanda{" "}
+                <code>+</code> pada baris untuk melihat detail field.
+              </li>
+            </ol>
+            <div>
+              <Button size="small" onClick={loadDemoSimulation}>
+                Coba Contoh Simulasi (v28 → v29)
+              </Button>
+            </div>
+          </div>
+        }
       />
 
       <div className="ca-snapshot-bar">

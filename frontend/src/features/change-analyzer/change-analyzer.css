@@ -2,6 +2,25 @@
   max-width: 1120px;
 }
 
+.ca-guide-alert {
+  margin-block-end: 18px;
+}
+
+.ca-guide-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ca-guide-list {
+  margin: 0;
+  padding-inline-start: 18px;
+}
+
+.ca-guide-list li + li {
+  margin-block-start: 4px;
+}
+
 .ca-snapshot-bar {
   display: grid;
   grid-template-columns: minmax(220px, 1fr) auto auto;

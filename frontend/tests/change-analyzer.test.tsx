@@ -157,6 +157,8 @@ test("ChangeAnalyzerPage renders loading, error, diff table, and WorkspaceLayout
   const loadingHtml = renderToStaticMarkup(
     <ChangeAnalyzerPage initialLiveState={{ status: "loading" }} />,
   );
+  expect(loadingHtml).toContain("Cara pakai &amp; simulasi cepat");
+  expect(loadingHtml).toContain("Coba Contoh Simulasi (v28 → v29)");
   expect(loadingHtml).toContain("Mengambil snapshot $metadata dari Sandbox");
 
   const errorHtml = renderToStaticMarkup(
