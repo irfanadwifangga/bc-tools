@@ -3,7 +3,7 @@
 _Terakhir diperbarui: 2026-11-27_
 
 ## Status fase
-**MVP Fase 0–2 selesai (`v0.2.0`)** dan masuk `main` lewat [PR #23](https://github.com/irfanadwifangga/bc-tools/pull/23). **Fase 3 — Permission Analyzer (B-11) selesai**: Slice 1 (`bc_sdk` Automation API) masuk lewat [PR #26](https://github.com/irfanadwifangga/bc-tools/pull/26) dan Slice 2 (backend + UI) masuk lewat [PR #27](https://github.com/irfanadwifangga/bc-tools/pull/27), dengan seluruh 3 tab terverifikasi live di Sandbox `DEMO COMPANY`; lihat [spesifikasi modul](../modules/permission-analyzer.md) dan [ADR-004](../decisions/ADR-004-automation-api-readonly.md) (`Accepted`).
+**MVP Fase 0–2 selesai (`v0.2.0`)** dan masuk `main` lewat [PR #23](https://github.com/irfanadwifangga/bc-tools/pull/23). **Fase 3 — Permission Analyzer (`B-11`) selesai (`v0.3.0`)**: Slice 1 (`bc_sdk` Automation API) masuk lewat [PR #26](https://github.com/irfanadwifangga/bc-tools/pull/26), Slice 2 (backend + UI) lewat [PR #27](https://github.com/irfanadwifangga/bc-tools/pull/27), dan poles modul existing lewat [PR #28](https://github.com/irfanadwifangga/bc-tools/pull/28), dengan seluruh 3 tab terverifikasi live di Sandbox `DEMO COMPANY`; lihat [spesifikasi modul](../modules/permission-analyzer.md) dan [ADR-004](../decisions/ADR-004-automation-api-readonly.md) (`Accepted`). Item `B-12` (Change Analyzer) ditunda di [backlog.md](backlog.md) sampai ada *pain point* rutin.
 
 ## Selesai
 - Scaffold repo, `AGENTS.md`, dokumen inti, standar, spesifikasi modul, draft ADR-001/002/003 (disusun Claude sebagai analis)
