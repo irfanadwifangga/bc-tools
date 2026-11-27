@@ -229,6 +229,10 @@ body {
   color: var(--workspace-muted);
 }
 
+.overview-card-value[data-tone="error"] {
+  color: var(--workspace-error);
+}
+
 .overview-card-note {
   color: var(--workspace-muted);
   font-size: 12px;

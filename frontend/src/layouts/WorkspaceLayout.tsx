@@ -68,6 +68,7 @@ export function WorkspaceLayout({ choice, onThemeChange }: WorkspaceLayoutProps)
     "--workspace-muted": token.colorTextSecondary,
     "--workspace-accent": token.colorPrimary,
     "--workspace-selection": token.colorPrimaryBg,
+    "--workspace-error": token.colorError,
     "--workspace-record-font": recordFont,
   }), [token]);
 

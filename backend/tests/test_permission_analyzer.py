@@ -476,6 +476,7 @@ def test_endpoints_reject_invalid_queries_and_writes_before_sdk_creation() -> No
             {"query": ""},
             {"query": "   "},
             {"query": "X" * 81},
+            {"query": (" " * 80) + "a"},
             {"query": "Cust\nomer"},
             {"query": "Customer", "unknown": "1"},
             {"query": "Customer", "object_type": "Invalid"},
@@ -539,3 +540,97 @@ def test_permission_analyzer_requires_company_config(
         factory.assert_not_called()
     assert res.status_code == 502
     assert res.json()["error"]["code"] == "BC_CONFIG_ERROR"
+
+
+def test_objects_search_unicode_digit_uses_name_filter_and_empty_skips_extra_reads(
+    sandbox_config: None,
+) -> None:
+    calls: list[tuple[str, str | None]] = []
+
+    async def list_records(
+        entity: str, *, company_scoped: bool = True, filter_expr: str | None = None
+    ) -> list[dict[str, object]]:
+        assert company_scoped is True
+        calls.append((entity, filter_expr))
+        return []
+
+    with patch(_FACTORY) as factory, TestClient(app) as http:
+        factory.return_value.automation.list_records = AsyncMock(
+            side_effect=list_records
+        )
+        res = http.get(f"{_BASE}/objects", params={"query": "²"})
+
+    assert res.status_code == 200
+    assert res.json() == {"totalMatches": 0, "truncated": False, "matches": []}
+    assert calls == [("expandedPermissionSets", "contains(objectName,'²')")]
+
+
+def test_diff_user_returns_404_when_user_not_found(sandbox_config: None) -> None:
+    async def list_records(
+        entity: str, *, company_scoped: bool = True, filter_expr: str | None = None
+    ) -> list[dict[str, object]]:
+        assert company_scoped is True
+        assert filter_expr is None
+        return (
+            _sample_users_permissions()
+            if entity == "usersPermissions"
+            else _sample_user_permission_sets()
+        )
+
+    with patch(_FACTORY) as factory, TestClient(app) as http:
+        factory.return_value.automation.list_records = AsyncMock(
+            side_effect=list_records
+        )
+        res = http.get(
+            f"{_BASE}/diff",
+            params={"kind": "user", "left": _USER_1, "right": "missing-user"},
+        )
+
+    assert res.status_code == 404
+    assert res.json()["error"]["code"] == "BC_NOT_FOUND"
+
+
+def test_diff_user_batches_expanded_role_filters_by_five(
+    sandbox_config: None,
+) -> None:
+    many_roles = [f"ROLE-{idx}" for idx in range(6)]
+    extra_user_sets: list[dict[str, object]] = [
+        {
+            "userSecurityId": _USER_1,
+            "roleId": role_id,
+            "roleName": role_id,
+            "company": "",
+            "scope": "System",
+            "type": "Direct",
+            "securityGroupCode": "",
+            "appId": _ZERO_GUID,
+        }
+        for role_id in many_roles
+    ]
+    seen_filters: list[str | None] = []
+
+    async def list_records(
+        entity: str, *, company_scoped: bool = True, filter_expr: str | None = None
+    ) -> list[dict[str, object]]:
+        assert company_scoped is True
+        if entity == "expandedPermissionSets":
+            seen_filters.append(filter_expr)
+            return []
+        if entity == "usersPermissions":
+            return _sample_users_permissions()
+        return extra_user_sets
+
+    with patch(_FACTORY) as factory, TestClient(app) as http:
+        factory.return_value.automation.list_records = AsyncMock(
+            side_effect=list_records
+        )
+        res = http.get(
+            f"{_BASE}/diff",
+            params={"kind": "user", "left": _USER_1, "right": _USER_2},
+        )
+
+    assert res.status_code == 200
+    assert seen_filters == [
+        " or ".join(f"roleId eq '{role_id}'" for role_id in many_roles[:5]),
+        f"roleId eq '{many_roles[5]}'",
+    ]

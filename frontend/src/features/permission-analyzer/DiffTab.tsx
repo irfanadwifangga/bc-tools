@@ -13,7 +13,7 @@ import {
   type PermissionSetSummary,
   type UserPermissionSummary,
 } from "./api";
-import { PermissionStrip, SensitiveTag } from "./PermissionBadges";
+import { buildRoleColumns, PermissionStrip, roleRowKey, SensitiveTag } from "./PermissionBadges";
 
 interface DiffTabProps {
   users: UserPermissionSummary[];
@@ -27,57 +27,6 @@ export type DiffState =
   | { status: "loading" }
   | { status: "ready"; data: PermissionDiffResponse }
   | { status: "error"; message: string };
-
-function buildRoleDiffColumns(rows: DiffRoleItem[]): ColumnsType<DiffRoleItem> {
-  const hasType = rows.some(item => Boolean(item.type?.trim()));
-  const hasSecurityGroup = rows.some(item => Boolean(item.securityGroupCode?.trim()));
-  const cols: ColumnsType<DiffRoleItem> = [
-    {
-      title: "Role ID",
-      dataIndex: "roleId",
-      key: "roleId",
-      render: (value: string, row) => (
-        <div className="pa-role-cell">
-          <span className="pa-mono">{value}</span>
-          {row.roleName && row.roleName !== value && (
-            <Typography.Text type="secondary"> · {row.roleName}</Typography.Text>
-          )}
-        </div>
-      ),
-    },
-    {
-      title: "Company",
-      dataIndex: "company",
-      key: "company",
-      render: (value?: string | null) => value?.trim() || "Semua Company",
-    },
-    {
-      title: "Scope",
-      dataIndex: "scope",
-      key: "scope",
-      render: (value?: string | null) => value || "—",
-    },
-  ];
-  if (hasType) {
-    cols.push({
-      title: "Type",
-      dataIndex: "type",
-      key: "type",
-      render: (value?: string | null) => value || "—",
-    });
-  }
-  if (hasSecurityGroup) {
-    cols.push({
-      title: "Security Group",
-      dataIndex: "securityGroupCode",
-      key: "securityGroupCode",
-      render: (value?: string | null) =>
-        value?.trim() ? <span className="pa-mono">{value}</span> : "—",
-    });
-  }
-  const width = `${(100 / cols.length).toFixed(2)}%`;
-  return cols.map(col => ({ ...col, width }));
-}
 
 const objectDiffColumns: ColumnsType<DiffObjectItem> = [
   {
@@ -134,10 +83,8 @@ function DiffBucketPanel({
             <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="Tidak ada perbedaan permission set." />
           ) : (
             <Table<DiffRoleItem>
-              rowKey={item =>
-                `${item.roleId}|${item.company ?? ""}|${item.scope ?? ""}|${item.type ?? ""}|${item.securityGroupCode ?? ""}`
-              }
-              columns={buildRoleDiffColumns(roles)}
+              rowKey={roleRowKey}
+              columns={buildRoleColumns(roles)}
               dataSource={roles}
               size="small"
               scroll={{ x: 640 }}
@@ -206,6 +153,7 @@ export function DiffTab({
   }, [kind, users, permissionSets]);
 
   function handleModeChange(nextKind: DiffKind) {
+    requestRef.current?.abort();
     setKind(nextKind);
     setLeft("");
     setRight("");
@@ -232,7 +180,7 @@ export function DiffTab({
     } catch (reason) {
       if (!controller.signal.aborted) {
         const message =
-          reason instanceof Error && reason.message
+          reason instanceof Error && !(reason instanceof TypeError) && reason.message
             ? reason.message
             : "Perbandingan izin gagal dimuat.";
         setState({ status: "error", message });

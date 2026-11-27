@@ -114,3 +114,26 @@ test("loadOverviewStatus handles empty custom catalog and partial or full error 
     items: { state: "error", message: "Item gagal" },
   });
 });
+
+test("OverviewPage renders error tones and masks raw TypeError network messages", async () => {
+  const errored: OverviewStatus = {
+    backend: { state: "error", message: "Backend lokal tidak terjangkau." },
+    standardCatalog: { state: "error", message: "Katalog standar gagal dimuat." },
+    customCatalog: { state: "error", message: "Katalog custom gagal dimuat." },
+    customers: { state: "error", message: "Data DEMO COMPANY gagal dimuat." },
+    items: { state: "error", message: "Data DEMO COMPANY gagal dimuat." },
+  };
+  const html = renderToStaticMarkup(<OverviewPage initialStatus={errored} />);
+  expect(html).toContain('data-tone="error"');
+  expect(html).toContain("Backend lokal tidak terjangkau.");
+
+  const networkErrorClient = createClient<paths>({
+    baseUrl: "http://localhost",
+    fetch: async () => {
+      throw new TypeError("Failed to fetch");
+    },
+  });
+  const status = await loadOverviewStatus(new AbortController().signal, networkErrorClient);
+  expect(status.backend).toEqual({ state: "error", message: "Backend lokal tidak terjangkau." });
+  expect(status.customers).toEqual({ state: "error", message: "Data DEMO COMPANY gagal dimuat." });
+});

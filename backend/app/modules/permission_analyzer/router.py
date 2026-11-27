@@ -86,14 +86,10 @@ _DIFF_QUERY_SCHEMA = {
 
 
 def _clean_text(raw: str | None, *, max_length: int) -> str | None:
-    if raw is None:
+    if raw is None or len(raw) > max_length:
         return None
     stripped = raw.strip()
-    if (
-        not stripped
-        or len(stripped) > max_length
-        or not all(ch.isprintable() for ch in raw)
-    ):
+    if not stripped or not all(ch.isprintable() for ch in raw):
         return None
     return stripped
 

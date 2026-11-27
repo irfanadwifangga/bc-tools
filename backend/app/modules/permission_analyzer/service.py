@@ -382,7 +382,7 @@ def _odata_quote(value: str) -> str:
 
 def _object_filter_expr(query: ObjectSearchQuery) -> str:
     # BC Automation API rejects combined OR filters on expandedPermissionSets.
-    if query.query.isdigit():
+    if query.query.isascii() and query.query.isdecimal():
         return f"objectId eq {int(query.query)}"
     return f"contains(objectName,{_odata_quote(query.query)})"
 
@@ -432,6 +432,8 @@ async def search_object_access(
         company_scoped=True,
         filter_expr=_object_filter_expr(query),
     )
+    if not expanded_rows:
+        return ObjectAccessSearchResponse(total_matches=0, truncated=False, matches=[])
     user_sets_rows = await client.automation.list_records(
         "accessControls", company_scoped=True
     )

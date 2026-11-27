@@ -89,7 +89,7 @@ export function ObjectSearchTab({
     } catch (reason) {
       if (!controller.signal.aborted) {
         const message =
-          reason instanceof Error && reason.message
+          reason instanceof Error && !(reason instanceof TypeError) && reason.message
             ? reason.message
             : "Pencarian akses objek gagal dimuat.";
         setState({ status: "error", message });
@@ -300,7 +300,7 @@ export function ObjectSearchTab({
 
       {state.status === "ready" && state.data.matches.length > 0 && (
         <Table<ObjectAccessMatch>
-          rowKey={row => `${row.objectType}|${row.objectId}|${row.roleId}|${row.scope ?? ""}`}
+          rowKey={row => `${row.objectType}|${row.objectId}|${row.roleId}|${row.scope ?? ""}|${row.appName ?? ""}`}
           columns={columns}
           dataSource={state.data.matches}
           size="middle"

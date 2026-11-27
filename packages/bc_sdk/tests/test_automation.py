@@ -155,6 +155,12 @@ def test_automation_rejects_disallowed_endpoints_and_invalid_inputs() -> None:
                 await client.automation.list_records("../v2.0/companies")
             with pytest.raises(BCRequestError, match="positive integer"):
                 await client.automation.list_records("users", top=0)
+            with pytest.raises(BCRequestError, match="positive integer"):
+                await client.automation.list_records("users", top=True)
+            with pytest.raises(BCRequestError, match="filter expression"):
+                await client.automation.list_records(
+                    "expandedPermissionSets", filter_expr="roleId eq 'A'\nor 1=1"
+                )
             with pytest.raises(
                 BCRequestError, match="outside the configured Sandbox scope"
             ):

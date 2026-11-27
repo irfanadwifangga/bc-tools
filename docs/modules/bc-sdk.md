@@ -73,16 +73,16 @@ Pagination memakai nextLink untuk endpoint yang sama. Redirect ditolak. Retry di
 Resource standar `companies`, `customers`, dan `items` memakai client yang sama dan diuji dengan HTTP mock. Integration test GET sandbox bersifat manual. Lihat [runbook](../runbook.md).
 
 ## Acceptance criteria
-- [ ] Token diperoleh otomatis dengan client credentials
+- [x] Token diperoleh otomatis dengan client credentials
 - [x] Ketiga resource lulus integration test GET terhadap `DEMO COMPANY` di sandbox.
-- [ ] Paging mengikuti `@odata.nextLink`
-- [ ] Retry/backoff untuk 429 dan 5xx; `Retry-After` dihormati
-- [ ] Logging berjalan; token/secret tidak pernah tercatat (ada test)
-- [ ] Error handling standar (`BCError` hierarchy) dengan pesan jelas
-- [ ] Client menolak method selain GET (ada test)
-- [ ] Dapat digunakan modul backend manapun tanpa menulis HTTP langsung
-- [ ] Unit test dengan HTTP di-mock; cakupan perilaku inti
-- [ ] Docs ini diperbarui dengan bentuk API final
+- [x] Paging mengikuti `@odata.nextLink`
+- [x] Retry/backoff untuk 429 dan 5xx; `Retry-After` dihormati
+- [x] Logging berjalan; token/secret tidak pernah tercatat (ada test)
+- [x] Error handling standar (`BCError` hierarchy) dengan pesan jelas
+- [x] Client menolak method selain GET (ada test)
+- [x] Dapat digunakan modul backend manapun tanpa menulis HTTP langsung
+- [x] Unit test dengan HTTP di-mock; cakupan perilaku inti
+- [x] Docs ini diperbarui dengan bentuk API final
 
 ## Definition of Done
 Developer memanggil `bc.companies.list()`, `bc.customers.list()`, `bc.items.list()` tanpa menulis HTTP request,
