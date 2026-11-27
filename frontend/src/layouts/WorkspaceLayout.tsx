@@ -2,6 +2,7 @@ import {
   ApiOutlined,
   CheckOutlined,
   DesktopOutlined,
+  DiffOutlined,
   MenuFoldOutlined,
   MenuUnfoldOutlined,
   MoonOutlined,
@@ -13,6 +14,7 @@ import { Breadcrumb, Button, Dropdown, Layout, Tooltip, theme } from "antd";
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { recordFont } from "../theme/tokens";
 import { CatalogPage } from "../features/api-explorer/CatalogPage";
+import { ChangeAnalyzerPage } from "../features/change-analyzer/ChangeAnalyzerPage";
 import { OverviewPage } from "../features/overview/OverviewPage";
 import { PermissionAnalyzerPage } from "../features/permission-analyzer/PermissionAnalyzerPage";
 
@@ -20,6 +22,7 @@ const pages = [
   { id: "ringkasan", title: "Ringkasan", icon: UnorderedListOutlined },
   { id: "api-explorer", title: "API Explorer", icon: ApiOutlined },
   { id: "permission-analyzer", title: "Permission Analyzer", icon: SafetyCertificateOutlined },
+  { id: "change-analyzer", title: "Change Analyzer", icon: DiffOutlined },
 ];
 
 function currentPage() {
@@ -192,6 +195,7 @@ export function WorkspaceLayout({ choice, onThemeChange }: WorkspaceLayoutProps)
         <Layout.Content className="workspace-content" id={page.id} inert={mobileMenuOpen}>
           {page.id === "api-explorer" ? <CatalogPage />
             : page.id === "permission-analyzer" ? <PermissionAnalyzerPage />
+            : page.id === "change-analyzer" ? <ChangeAnalyzerPage />
             : <OverviewPage />}
         </Layout.Content>
       </Layout>

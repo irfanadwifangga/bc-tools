@@ -40,6 +40,7 @@ export default defineConfig({
       "/api/v1/permission-analyzer/users": "http://127.0.0.1:8000",
       "/api/v1/permission-analyzer/objects": "http://127.0.0.1:8000",
       "/api/v1/permission-analyzer/diff": "http://127.0.0.1:8000",
+      "/api/v1/change-analyzer/snapshot": "http://127.0.0.1:8000",
     },
   },
 });

@@ -1,0 +1,150 @@
+.change-analyzer.workspace-sheet {
+  max-width: 1120px;
+}
+
+.ca-help-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-block-end: 14px;
+}
+
+.ca-guide-list {
+  margin: 0;
+  padding-inline-start: 18px;
+}
+
+.ca-guide-list li + li {
+  margin-block-start: 8px;
+}
+
+.ca-snapshot-bar {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) auto auto;
+  gap: 12px;
+  align-items: end;
+  margin-block-end: 18px;
+}
+
+.ca-compare-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-block-end: 18px;
+}
+
+.ca-input-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+  border: 1px solid var(--workspace-line);
+  border-radius: 6px;
+}
+
+.ca-input-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.ca-input-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.ca-file-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+}
+
+.ca-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-block-end: 18px;
+}
+
+.ca-filter-bar {
+  display: grid;
+  grid-template-columns: minmax(220px, 1.4fr) minmax(160px, 0.8fr) auto auto;
+  gap: 12px;
+  align-items: end;
+  margin-block-end: 14px;
+}
+
+.ca-filter-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.ca-filter-field label,
+.ca-filter-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--workspace-muted);
+}
+
+.ca-switch-field {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 32px;
+}
+
+.ca-state-box {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 16px;
+  padding: 28px 20px;
+  border: 1px solid var(--workspace-line);
+  border-radius: 6px;
+  text-align: center;
+}
+
+.ca-state-spinner {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: var(--workspace-muted);
+}
+
+.ca-mono {
+  font-family: var(--workspace-record-font);
+}
+
+.change-analyzer .ant-pagination {
+  gap: 6px;
+}
+
+@media (max-width: 900px) {
+  .ca-compare-grid,
+  .ca-summary-grid,
+  .ca-filter-bar {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .ca-snapshot-bar {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 560px) {
+  .ca-compare-grid,
+  .ca-summary-grid,
+  .ca-filter-bar {
+    grid-template-columns: 1fr;
+  }
+}

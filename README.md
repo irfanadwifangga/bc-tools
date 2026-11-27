@@ -19,6 +19,7 @@ Lokal (`127.0.0.1`), single-user, read-only (GET-only terhadap BC Sandbox demo c
 | Ringkasan | Selesai (`v0.2.0`) | Status backend lokal, jumlah endpoint Standar/Custom, Customer & Item | [STATUS.md](docs/status/STATUS.md) |
 | API Explorer | Selesai (`v0.2.0`) | Katalog `$metadata` standar & custom, preview Tabel/JSON, contoh kode Python/C# | [api-explorer.md](docs/modules/api-explorer.md) |
 | Permission Analyzer | Selesai (`v0.3.0`) | Audit user & aplikasi Entra, cari akses objek, dan diff user/permission set | [permission-analyzer.md](docs/modules/permission-analyzer.md) |
+| Change Analyzer | Selesai (`B-12`) | Snapshot & diff kontrak `$metadata` API untuk deteksi *breaking change* | [change-analyzer.md](docs/modules/change-analyzer.md) |
 
 ## Struktur
 
