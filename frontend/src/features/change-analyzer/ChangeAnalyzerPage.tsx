@@ -1,9 +1,11 @@
 import {
   CheckOutlined,
   CloudDownloadOutlined,
+  CompassOutlined,
   CopyOutlined,
   DiffOutlined,
   DownloadOutlined,
+  QuestionCircleOutlined,
   UploadOutlined,
 } from "@ant-design/icons";
 import {
@@ -11,15 +13,18 @@ import {
   Button,
   Empty,
   Input,
+  Modal,
   Select,
   Skeleton,
   Spin,
   Switch,
   Table,
   Tag,
+  Tour,
   Typography,
   theme,
 } from "antd";
+import type { TourProps } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { PageHeader } from "../../components/PageHeader";
@@ -200,10 +205,18 @@ export function ChangeAnalyzerPage({
   const [sourceFilter, setSourceFilter] = useState<"all" | SnapshotSource>("all");
   const [onlyBreaking, setOnlyBreaking] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [guideOpen, setGuideOpen] = useState(false);
+  const [tourOpen, setTourOpen] = useState(false);
+  const [tourStep, setTourStep] = useState(0);
 
   const requestRef = useRef<AbortController | null>(null);
   const baselineFileRef = useRef<HTMLInputElement | null>(null);
   const targetFileRef = useRef<HTMLInputElement | null>(null);
+  const snapshotBarRef = useRef<HTMLDivElement | null>(null);
+  const baselineCardRef = useRef<HTMLDivElement | null>(null);
+  const targetCardRef = useRef<HTMLDivElement | null>(null);
+  const summaryGridRef = useRef<HTMLDivElement | null>(null);
+  const filterBarRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => () => requestRef.current?.abort(), []);
 
@@ -300,6 +313,57 @@ export function ChangeAnalyzerPage({
     setTarget(DEMO_TARGET);
   }
 
+  function startTour() {
+    setGuideOpen(false);
+    if (!baseline && !target) {
+      loadDemoSimulation();
+    }
+    setTourStep(0);
+    setTourOpen(true);
+  }
+
+  const tourSteps: NonNullable<TourProps["steps"]> = [
+    {
+      title: "1. Pilih Sumber & Unduh Baseline",
+      description:
+        "Sebelum update BC (mis. v28 → v29) atau deploy Custom API baru, pilih sumber $metadata lalu klik Unduh Baseline JSON untuk menyimpan kontrak skema awal.",
+      target: () => snapshotBarRef.current!,
+      nextButtonProps: { children: "Lanjut" },
+    },
+    {
+      title: "2. Muat Baseline (Lama)",
+      description:
+        "Unggah file Baseline JSON yang sudah disimpan sebelumnya, tempel teks JSON, atau pakai snapshot Live Sandbox yang diambil sebelumnya.",
+      target: () => baselineCardRef.current!,
+      prevButtonProps: { children: "Kembali" },
+      nextButtonProps: { children: "Lanjut" },
+    },
+    {
+      title: "3. Muat Target (Baru)",
+      description:
+        "Ambil snapshot Live Sandbox sesudah update (Pakai Live Sandbox) atau unggah file JSON kedua untuk dibandingkan dengan Baseline.",
+      target: () => targetCardRef.current!,
+      prevButtonProps: { children: "Kembali" },
+      nextButtonProps: { children: "Lanjut" },
+    },
+    {
+      title: "4. Cek Ringkasan Dampak",
+      description:
+        "Kartu Breaking Changes menunjukkan jumlah endpoint yang dihapus, berubah entityType, atau field-nya dihapus / berubah tipe Edm.*.",
+      target: () => summaryGridRef.current!,
+      prevButtonProps: { children: "Kembali" },
+      nextButtonProps: { children: "Lanjut" },
+    },
+    {
+      title: "5. Saring Breaking & Ekspor Laporan",
+      description:
+        "Aktifkan toggle Breaking untuk fokus ke perubahan berisiko, klik tanda + pada baris untuk detail field, atau klik Salin Ringkasan Markdown.",
+      target: () => filterBarRef.current!,
+      prevButtonProps: { children: "Kembali" },
+      nextButtonProps: { children: "Selesai" },
+    },
+  ];
+
   const columns: ColumnsType<EndpointChange> = [
     {
       title: "Endpoint",
@@ -350,38 +414,27 @@ export function ChangeAnalyzerPage({
         titleId="change-analyzer-title"
       />
 
-      <Alert
-        type="info"
-        showIcon
-        className="ca-guide-alert"
-        message="Cara pakai & simulasi cepat"
-        description={
-          <div className="ca-guide-body">
-            <ol className="ca-guide-list">
-              <li>
-                <strong>Sebelum update BC / deploy Custom API:</strong> klik{" "}
-                <strong>Unduh Baseline JSON</strong> untuk menyimpan skema awal.
-              </li>
-              <li>
-                <strong>Setelah update:</strong> unggah file Baseline di kiri, lalu klik{" "}
-                <strong>Ambil Live ke Target</strong> di kanan (atau unggah JSON kedua).
-              </li>
-              <li>
-                <strong>Baca hasil:</strong> tag merah <strong>Breaking</strong> menandakan
-                endpoint/field dihapus atau tipe <code>Edm.*</code> berubah; klik tanda{" "}
-                <code>+</code> pada baris untuk melihat detail field.
-              </li>
-            </ol>
-            <div>
-              <Button size="small" onClick={loadDemoSimulation}>
-                Coba Contoh Simulasi (v28 → v29)
-              </Button>
-            </div>
-          </div>
-        }
-      />
+      <div className="ca-help-row">
+        <Button
+          size="small"
+          icon={<QuestionCircleOutlined aria-hidden="true" />}
+          onClick={() => setGuideOpen(true)}
+        >
+          Panduan Penggunaan
+        </Button>
+        <Button
+          size="small"
+          icon={<CompassOutlined aria-hidden="true" />}
+          onClick={startTour}
+        >
+          Tutorial Step-by-Step
+        </Button>
+        <Button size="small" onClick={loadDemoSimulation}>
+          Coba Contoh Simulasi (v28 → v29)
+        </Button>
+      </div>
 
-      <div className="ca-snapshot-bar">
+      <div className="ca-snapshot-bar" ref={snapshotBarRef}>
         <div className="ca-filter-field">
           <label htmlFor={`${baseId}-source`}>Sumber $metadata Sandbox</label>
           <Select<NonNullable<SnapshotSourceFilter>>
@@ -447,6 +500,7 @@ export function ChangeAnalyzerPage({
 
       <div className="ca-compare-grid">
         <div
+          ref={baselineCardRef}
           className="ca-input-card"
           style={{ background: token.colorBgContainer, borderColor: token.colorBorderSecondary }}
         >
@@ -501,6 +555,7 @@ export function ChangeAnalyzerPage({
         </div>
 
         <div
+          ref={targetCardRef}
           className="ca-input-card"
           style={{ background: token.colorBgContainer, borderColor: token.colorBorderSecondary }}
         >
@@ -567,7 +622,7 @@ export function ChangeAnalyzerPage({
 
       {diff && (
         <div>
-          <div className="ca-summary-grid" role="status">
+          <div className="ca-summary-grid" role="status" ref={summaryGridRef}>
             <article className="overview-card">
               <span className="overview-card-label">Endpoint Target</span>
               <span className="overview-card-value">{diff.summary.totalTarget}</span>
@@ -604,7 +659,7 @@ export function ChangeAnalyzerPage({
             </article>
           </div>
 
-          <div className="ca-filter-bar">
+          <div className="ca-filter-bar" ref={filterBarRef}>
             <div className="ca-filter-field">
               <label htmlFor={`${baseId}-search`}>Cari endpoint atau field</label>
               <Input
@@ -693,6 +748,47 @@ export function ChangeAnalyzerPage({
           )}
         </div>
       )}
+
+      <Modal
+        title="Panduan Penggunaan Change Analyzer"
+        open={guideOpen}
+        onCancel={() => setGuideOpen(false)}
+        footer={[
+          <Button key="tour" type="primary" icon={<CompassOutlined aria-hidden="true" />} onClick={startTour}>
+            Mulai Tutorial Step-by-Step
+          </Button>,
+          <Button key="close" onClick={() => setGuideOpen(false)}>
+            Tutup
+          </Button>,
+        ]}
+      >
+        <ol className="ca-guide-list">
+          <li>
+            <strong>Sebelum update BC (mis. v28 → v29) atau deploy Custom API:</strong> pilih
+            sumber <code>$metadata</code> lalu klik <strong>Unduh Baseline JSON</strong> untuk
+            menyimpan kontrak skema awal.
+          </li>
+          <li>
+            <strong>Setelah update atau deploy:</strong> unggah file Baseline di kartu{" "}
+            <strong>Baseline (Lama)</strong>, lalu klik <strong>Ambil Live ke Target</strong>{" "}
+            (atau unggah file JSON kedua di <strong>Target (Baru)</strong>).
+          </li>
+          <li>
+            <strong>Arti hasil:</strong> tag merah <strong>Breaking</strong> menandakan
+            endpoint/field dihapus, <code>entityType</code> berubah, atau tipe <code>Edm.*</code>{" "}
+            berubah; tag biru <strong>Penambahan</strong> berarti endpoint atau field baru aman
+            ditambahkan. Klik ikon <code>+</code> pada baris untuk melihat rincian per field.
+          </li>
+        </ol>
+      </Modal>
+
+      <Tour
+        open={tourOpen}
+        current={tourStep}
+        onChange={setTourStep}
+        onClose={() => setTourOpen(false)}
+        steps={tourSteps}
+      />
     </section>
   );
 }
