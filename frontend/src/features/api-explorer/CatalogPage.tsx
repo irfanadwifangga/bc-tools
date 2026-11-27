@@ -284,7 +284,10 @@ export function CatalogPage() {
               {`${results.length} endpoint`}
             </p>
             {results.length === 0 ? (
-              <div className="catalog-state-box">
+              <div
+                className="catalog-state-box"
+                style={{ background: token.colorBgContainer, borderColor: token.colorBorderSecondary }}
+              >
                 <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="Tidak ada endpoint yang cocok.">
                   {(search || sourceFilter !== "all") && (
                     <Button onClick={() => { setSearch(""); setSourceFilter("all"); }}>

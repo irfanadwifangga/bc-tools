@@ -53,7 +53,9 @@ const SDK_CAPABILITIES = [
 const api = createClient<paths>();
 
 function errorMessage(reason: unknown, fallback: string): string {
-  return reason instanceof Error && reason.message ? reason.message : fallback;
+  return reason instanceof Error && !(reason instanceof TypeError) && reason.message
+    ? reason.message
+    : fallback;
 }
 
 async function checkHealth(signal: AbortSignal, client = api): Promise<ServiceStatus> {

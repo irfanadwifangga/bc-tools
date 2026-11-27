@@ -1,4 +1,5 @@
-import { Badge, Tag } from "antd";
+import { Badge, Tag, Typography } from "antd";
+import type { ColumnsType } from "antd/es/table";
 import type { PrincipalType } from "./api";
 
 export function PrincipalTag({ type }: { type: PrincipalType }) {
@@ -78,4 +79,68 @@ export function PermissionStrip({ item }: { item: RimdeSource }) {
       })}
     </span>
   );
+}
+
+export interface RoleAssignmentRow {
+  roleId: string;
+  roleName?: string | null;
+  company?: string | null;
+  scope?: string | null;
+  type?: string | null;
+  securityGroupCode?: string | null;
+}
+
+export function roleRowKey(item: RoleAssignmentRow): string {
+  return `${item.roleId}|${item.company ?? ""}|${item.scope ?? ""}|${item.type ?? ""}|${item.securityGroupCode ?? ""}`;
+}
+
+export function buildRoleColumns<T extends RoleAssignmentRow>(rows: T[]): ColumnsType<T> {
+  const hasType = rows.some(item => Boolean(item.type?.trim()));
+  const hasSecurityGroup = rows.some(item => Boolean(item.securityGroupCode?.trim()));
+  const cols: ColumnsType<T> = [
+    {
+      title: "Role ID",
+      dataIndex: "roleId",
+      key: "roleId",
+      render: (value: string, row) => (
+        <div className="pa-role-cell">
+          <span className="pa-mono">{value}</span>
+          {row.roleName && row.roleName !== value && (
+            <Typography.Text type="secondary"> · {row.roleName}</Typography.Text>
+          )}
+        </div>
+      ),
+    },
+    {
+      title: "Company",
+      dataIndex: "company",
+      key: "company",
+      render: (value?: string | null) => value?.trim() || "Semua Company",
+    },
+    {
+      title: "Scope",
+      dataIndex: "scope",
+      key: "scope",
+      render: (value?: string | null) => value || "—",
+    },
+  ];
+  if (hasType) {
+    cols.push({
+      title: "Type",
+      dataIndex: "type",
+      key: "type",
+      render: (value?: string | null) => value || "—",
+    });
+  }
+  if (hasSecurityGroup) {
+    cols.push({
+      title: "Security Group",
+      dataIndex: "securityGroupCode",
+      key: "securityGroupCode",
+      render: (value?: string | null) =>
+        value?.trim() ? <span className="pa-mono">{value}</span> : "—",
+    });
+  }
+  const width = `${(100 / cols.length).toFixed(2)}%`;
+  return cols.map(col => ({ ...col, width }));
 }

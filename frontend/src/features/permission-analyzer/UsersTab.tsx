@@ -8,63 +8,12 @@ import {
   type UserPermissionSummary,
   type UserRoleAssignment,
 } from "./api";
-import { PrincipalTag, SensitiveTag, UserStateBadge } from "./PermissionBadges";
+import { buildRoleColumns, PrincipalTag, roleRowKey, SensitiveTag, UserStateBadge } from "./PermissionBadges";
 
 interface UsersTabProps {
   users: UserPermissionSummary[];
   companies: string[];
   defaultExpandAll?: boolean;
-}
-
-function buildAssignmentColumns(rows: UserRoleAssignment[]): ColumnsType<UserRoleAssignment> {
-  const hasType = rows.some(item => Boolean(item.type?.trim()));
-  const hasSecurityGroup = rows.some(item => Boolean(item.securityGroupCode?.trim()));
-  const cols: ColumnsType<UserRoleAssignment> = [
-    {
-      title: "Role ID",
-      dataIndex: "roleId",
-      key: "roleId",
-      render: (value: string, row) => (
-        <div className="pa-role-cell">
-          <span className="pa-mono">{value}</span>
-          {row.roleName && row.roleName !== value && (
-            <Typography.Text type="secondary"> · {row.roleName}</Typography.Text>
-          )}
-        </div>
-      ),
-    },
-    {
-      title: "Company",
-      dataIndex: "company",
-      key: "company",
-      render: (value?: string | null) => value?.trim() || "Semua Company",
-    },
-    {
-      title: "Scope",
-      dataIndex: "scope",
-      key: "scope",
-      render: (value?: string | null) => value || "—",
-    },
-  ];
-  if (hasType) {
-    cols.push({
-      title: "Type",
-      dataIndex: "type",
-      key: "type",
-      render: (value?: string | null) => value || "—",
-    });
-  }
-  if (hasSecurityGroup) {
-    cols.push({
-      title: "Security Group",
-      dataIndex: "securityGroupCode",
-      key: "securityGroupCode",
-      render: (value?: string | null) =>
-        value?.trim() ? <span className="pa-mono">{value}</span> : "—",
-    });
-  }
-  const width = `${(100 / cols.length).toFixed(2)}%`;
-  return cols.map(col => ({ ...col, width }));
 }
 
 export function UsersTab({ users, companies, defaultExpandAll = false }: UsersTabProps) {
@@ -261,10 +210,8 @@ export function UsersTab({ users, companies, defaultExpandAll = false }: UsersTa
             rowExpandable: record => record.assignments.length > 0,
             expandedRowRender: record => (
               <Table<UserRoleAssignment>
-                rowKey={item =>
-                  `${item.roleId}|${item.company ?? ""}|${item.scope ?? ""}|${item.type ?? ""}|${item.securityGroupCode ?? ""}`
-                }
-                columns={buildAssignmentColumns(record.assignments)}
+                rowKey={roleRowKey}
+                columns={buildRoleColumns(record.assignments)}
                 dataSource={record.assignments}
                 size="small"
                 pagination={false}

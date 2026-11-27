@@ -14,6 +14,7 @@ import {
 import { DiffTab } from "../src/features/permission-analyzer/DiffTab";
 import { ObjectSearchTab } from "../src/features/permission-analyzer/ObjectSearchTab";
 import { PermissionAnalyzerPage } from "../src/features/permission-analyzer/PermissionAnalyzerPage";
+import { PermissionStrip, UserStateBadge } from "../src/features/permission-analyzer/PermissionBadges";
 import { WorkspaceLayout } from "../src/layouts/WorkspaceLayout";
 
 const sampleUsersResponse: PermissionUsersResponse = {
@@ -344,4 +345,73 @@ test("WorkspaceLayout includes Permission Analyzer navigation link", () => {
   } finally {
     (globalThis as { window?: unknown }).window = prevWindow;
   }
+});
+
+test("ObjectSearchTab renders error, truncated banner, and empty states", () => {
+  const errorHtml = renderToStaticMarkup(
+    <ObjectSearchTab
+      companies={["DEMO COMPANY"]}
+      initialState={{ status: "error", message: "Backend tidak terjangkau." }}
+    />,
+  );
+  expect(errorHtml).toContain("Backend tidak terjangkau.");
+
+  const truncatedHtml = renderToStaticMarkup(
+    <ObjectSearchTab
+      companies={["DEMO COMPANY"]}
+      initialState={{
+        status: "ready",
+        data: { totalMatches: 250, truncated: true, matches: [] },
+      }}
+    />,
+  );
+  expect(truncatedHtml).toContain("dibatasi maksimal 200 baris");
+  expect(truncatedHtml).toContain("250 total kecocokan");
+  expect(truncatedHtml).toContain("Tidak ada izin objek yang cocok dengan kriteria pencarian.");
+});
+
+test("DiffTab renders role mode and empty diff buckets", () => {
+  const html = renderToStaticMarkup(
+    <DiffTab
+      users={sampleUsersResponse.users}
+      permissionSets={sampleUsersResponse.permissionSets}
+      initialState={{
+        status: "ready",
+        data: {
+          kind: "role",
+          leftLabel: "SUPER",
+          rightLabel: "D365 AUTOMATION",
+          roleDiff: { onlyLeft: [], onlyRight: [], same: [] },
+          objectDiff: { onlyLeft: [], onlyRight: [], same: [] },
+        },
+      }}
+    />,
+  );
+  expect(html).toContain("Hanya di A (0)");
+  expect(html).toContain("Hanya di B (0)");
+  expect(html).toContain("Sama (0)");
+  expect(html).toContain("Tidak ada izin yang hanya dimiliki A.");
+  expect(html).not.toContain("Permission Set (0)");
+});
+
+test("PermissionBadges renders None permissions and Disabled/unknown user state", () => {
+  const noneHtml = renderToStaticMarkup(
+    <PermissionStrip
+      item={{
+        readPermission: "None",
+        insertPermission: "None",
+        modifyPermission: "None",
+        deletePermission: "None",
+        executePermission: "None",
+      }}
+    />,
+  );
+  expect(noneHtml).toContain(">None<");
+
+  const disabledHtml = renderToStaticMarkup(<UserStateBadge state="Disabled" />);
+  expect(disabledHtml).toContain("ant-badge-status-error");
+  expect(disabledHtml).toContain("Disabled");
+
+  const unknownHtml = renderToStaticMarkup(<UserStateBadge state={null} />);
+  expect(unknownHtml).toContain("Tidak diketahui");
 });

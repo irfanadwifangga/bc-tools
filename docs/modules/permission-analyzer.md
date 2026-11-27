@@ -1,6 +1,6 @@
 # Modul: Permission Analyzer (B-11)
 
-- **Fase:** 3 (Pasca-MVP) · **Status:** Slice 1 (SDK) & Slice 2 (Backend & UI) selesai; tab **User & Aplikasi** terverifikasi live Sandbox (`DEMO COMPANY`, 16 akun), tab **Cari Akses Objek** (pasca-fix `$filter`) & **Bandingkan (Diff)** menunggu uji live browser
+- **Fase:** 3 (Pasca-MVP) · **Status:** Selesai — Slice 1 (SDK) & Slice 2 (Backend & UI) terverifikasi live di Sandbox (`DEMO COMPANY`)
 - **Lokasi target (saat implementasi):** `backend/app/modules/permission_analyzer/` + `frontend/src/features/permission-analyzer/` + ekstensi read-only di `packages/bc_sdk/`
 
 ## Tujuan
@@ -34,7 +34,7 @@ Irfan memverifikasi melalui integration test Sandbox (`DEMO COMPANY`, `D365 AUTO
 - `aggregatePermissionSets`: `id`, `appId`, `appName`, `name`, `roleId`, `scope` (terverifikasi `ok` dalam `0.25s`).
 - `userPermissionSets` & `userPermissions`: tersedia di `$metadata`, tetapi hasil uji Sandbox menunjukkan HTTP `400` jika diakses langsung pada `companies({id})/...` tanpa parent navigation, dan HTTP `404` di root tenant.
 
-[PERLU VERIFIKASI: hasil live tab **Cari Akses Objek** (pasca-penyederhanaan `$filter`) dan **Bandingkan (Diff)** di browser terhadap Sandbox `DEMO COMPANY`.]
+Irfan memverifikasi ketiga tab UI Permission Analyzer (**User & Aplikasi**, **Cari Akses Objek** untuk query `18` dan `Customer`, serta **Bandingkan (Diff)** antar user maupun antar permission set) berjalan live terhadap Sandbox `DEMO COMPANY` pada 2026-11-27.
 
 ## Kontrak Endpoint Backend (`/api/v1/permission-analyzer`)
 
@@ -60,7 +60,7 @@ Irfan memverifikasi melalui integration test Sandbox (`DEMO COMPANY`, `D365 AUTO
 - [x] `bc_sdk` mendukung pembacaan GET-only endpoint Automation API yang disetujui di ADR-004 dengan HTTP mock test
 - [x] Backend menyediakan endpoint read-only untuk ringkasan izin user, pencarian akses objek (Read/Write/Delete/`SUPER`), dan diff dua user/permission set
 - [x] UI menampilkan filter user/objek/akses berisiko serta tampilan diff berdampingan
-- [x] `ruff`, `mypy`, `pytest`, `bun test`, `tsc`, dan `vite build` lulus (dengan HTTP/client mock); tab **User & Aplikasi** + probe Sandbox terdokumentasi di `STATUS.md` (tab `/objects` & `/diff` menunggu verifikasi live pasca-fix `$filter`)
+- [x] `ruff`, `mypy`, `pytest`, `bun test`, `tsc`, dan `vite build` lulus (dengan HTTP/client mock); ketiga tab UI terverifikasi live Sandbox dan terdokumentasi di `STATUS.md`
 
 ## Definition of Done
 Irfan dapat memeriksa siapa yang memiliki akses baca/tulis/hapus ke suatu objek dan membandingkan dua user atau permission set di Sandbox secara lokal tanpa menelusuri layar BC satu per satu.
