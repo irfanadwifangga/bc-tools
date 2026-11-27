@@ -84,6 +84,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/change-analyzer/snapshot": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Schema Snapshot
+         * @description Capture a read-only $metadata schema snapshot from Business Central Sandbox.
+         */
+        get: operations["get_schema_snapshot_api_v1_change_analyzer_snapshot_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/permission-analyzer/users": {
         parameters: {
             query?: never;
@@ -435,6 +455,48 @@ export interface components {
             /** Companies */
             companies: string[];
         };
+        /** SchemaSnapshotResponse */
+        SchemaSnapshotResponse: {
+            /**
+             * Schemaversion
+             * @default 1
+             */
+            schemaVersion: number;
+            /** Capturedat */
+            capturedAt: string;
+            /**
+             * Environment
+             * @default Sandbox
+             */
+            environment: string;
+            /** Customapiroute */
+            customApiRoute?: string | null;
+            /** Sources */
+            sources: ("standard" | "custom" | "automation")[];
+            /** Endpoints */
+            endpoints: components["schemas"]["SnapshotEndpoint"][];
+        };
+        /** SnapshotEndpoint */
+        SnapshotEndpoint: {
+            /**
+             * Source
+             * @enum {string}
+             */
+            source: "standard" | "custom" | "automation";
+            /** Name */
+            name: string;
+            /** Entitytype */
+            entityType: string;
+            /** Fields */
+            fields: components["schemas"]["SnapshotField"][];
+        };
+        /** SnapshotField */
+        SnapshotField: {
+            /** Name */
+            name: string;
+            /** Type */
+            type: string;
+        };
         /** UserPermissionSummary */
         UserPermissionSummary: {
             /** Usersecurityid */
@@ -712,6 +774,64 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ItemPreview"][];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Unprocessable Entity */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Bad Gateway */
+            502: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    get_schema_snapshot_api_v1_change_analyzer_snapshot_get: {
+        parameters: {
+            query?: {
+                source?: "all" | "standard" | "custom" | "automation";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SchemaSnapshotResponse"];
                 };
             };
             /** @description Not Found */
