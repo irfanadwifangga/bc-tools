@@ -15,7 +15,7 @@ Prioritas: P1 (MVP inti) · P2 (MVP stretch) · P3 (pasca-MVP). Perubahan scope 
 | B-09 | Login multi-user (delegated/OBO) + ADR baru | P3 | - | Sebelum dibagikan |
 | B-10 | Dashboard, activity log, notifikasi, user settings | P3 | - | Ditunda dari MVP |
 | B-11 | Permission Analyzer | P3 | 3 | Selesai (`v0.3.0`, PR #26–#28) |
-| B-12 | Change Analyzer | P3 | 3 | Selesai (API Schema Snapshot & Diff, `#change-analyzer`, PR #31) |
+| B-12 | Change Analyzer | P3 | 3 | Selesai (`v0.4.0`, API Schema Snapshot & Diff, `#change-analyzer`, PR #31) |
 | B-13 | BC Consultant Copilot (Azure OpenAI + AI Search + RAG) | P3 | - | Setelah fondasi stabil |
 | B-14 | Currency Sync | P3 | - | Menunggu API resmi dan requirement final |
 | B-15 | Operasi write ke BC | P3 | - | ADR terpisah; ETag/If-Match, idempotensi |
