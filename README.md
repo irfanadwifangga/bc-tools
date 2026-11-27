@@ -5,7 +5,7 @@ Dibangun modular, reusable, dan terdokumentasi. **AI adalah capability tambahan 
 
 ## Status
 
-**`v0.3.0`** — MVP (Fase 0–2) dan **Permission Analyzer** (`B-11`) selesai serta terverifikasi di Sandbox `DEMO COMPANY`. Lihat [`docs/status/STATUS.md`](docs/status/STATUS.md).
+**`v0.4.0`** — MVP (Fase 0–2), **Permission Analyzer** (`B-11`), dan **Change Analyzer** (`B-12`) selesai serta terverifikasi di Sandbox `DEMO COMPANY`. Lihat [`docs/status/STATUS.md`](docs/status/STATUS.md).
 
 ## Mode Operasi
 
@@ -19,7 +19,7 @@ Lokal (`127.0.0.1`), single-user, read-only (GET-only terhadap BC Sandbox demo c
 | Ringkasan | Selesai (`v0.2.0`) | Status backend lokal, jumlah endpoint Standar/Custom, Customer & Item | [STATUS.md](docs/status/STATUS.md) |
 | API Explorer | Selesai (`v0.2.0`) | Katalog `$metadata` standar & custom, preview Tabel/JSON, contoh kode Python/C# | [api-explorer.md](docs/modules/api-explorer.md) |
 | Permission Analyzer | Selesai (`v0.3.0`) | Audit user & aplikasi Entra, cari akses objek, dan diff user/permission set | [permission-analyzer.md](docs/modules/permission-analyzer.md) |
-| Change Analyzer | Selesai (`B-12`) | Snapshot & diff kontrak `$metadata` API untuk deteksi *breaking change* | [change-analyzer.md](docs/modules/change-analyzer.md) |
+| Change Analyzer | Selesai (`v0.4.0`) | Snapshot & diff kontrak `$metadata` API untuk deteksi *breaking change* | [change-analyzer.md](docs/modules/change-analyzer.md) |
 
 ## Struktur
 
